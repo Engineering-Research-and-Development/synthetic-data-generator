@@ -8,11 +8,17 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 
+from upload.views import preview_csv, send_data, upload_csv
+
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
+
+    path('upload/', upload_csv, name='upload_csv'),
+    path('preview/', preview_csv, name='preview_csv'),
+    path('send/', send_data, name='send_data'),
 ]
 
 

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Preview CSV Data</h1>
+    {{ data|safe }}
+    <form method="post" action="{% url 'send_data' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Send Data</button>
+    </form>
+{% endblock %}
