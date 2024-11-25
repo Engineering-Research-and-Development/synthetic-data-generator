@@ -73,21 +73,20 @@ class KerasTabularVAE(UnspecializedModel):
 
     def build(self, input_shape):
         latent_dim = 2
-        sum_shape = sum(input_shape)
 
         encoder_inputs = keras.Input(shape=input_shape)
-        x = layers.Dense(sum_shape * 32, activation="relu")(encoder_inputs)
-        x = layers.Dense(sum_shape * 64, activation="relu")(x)
-        x = layers.Dense(sum_shape * 16, activation="relu")(x)
+        x = layers.Dense(32, activation="relu")(encoder_inputs)
+        x = layers.Dense(64, activation="relu")(x)
+        x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(latent_dim, name="z_mean")(x)
         z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
         latent_inputs = keras.Input(shape=(latent_dim,))
-        y = layers.Dense(sum_shape * 16, activation="relu")(latent_inputs)
-        y = layers.Dense(sum_shape * 64, activation="relu")(y)
-        y = layers.Dense(sum_shape * 32, activation="relu")(y)
+        y = layers.Dense(16, activation="relu")(latent_inputs)
+        y = layers.Dense(64, activation="relu")(y)
+        y = layers.Dense(32, activation="relu")(y)
         decoder_outputs = layers.Dense(input_shape[0], activation="relu")(y)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
