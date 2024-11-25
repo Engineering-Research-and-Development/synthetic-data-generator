@@ -1,24 +1,29 @@
-from utils.model_utils import parse_stringed_input_shape
-from models.Model import Model
+from models.Model import UnspecializedModel
 from traceback import print_tb
 
-def get_model(model: dict) -> Model:
-    try:
-        model_file = model.get("image", "")
-        metadata = model.get("metadata", {})
-        input_shape = parse_stringed_input_shape(metadata.get("input_shape", ""))
-        module_name = metadata.get("algorithm", "")
+import importlib
 
-        if model_file != "":
-            model = Model.from_image(model_file)
-        else:
-            print(input_shape)
-            model = Model.from_module(module_name, input_shape)
+
+def dynamic_import(class_name:str):
+    module_name, class_name = class_name.rsplit('.', 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, class_name)
+
+
+def model_factory(request: dict) -> UnspecializedModel:
+    try:
+        model_file = request.get("image", None)
+        metadata = request.get("metadata", {})
+        model_type = request.get("algorithm", "")
+
+        ModelClass = dynamic_import(model_type)
+        model = ModelClass(metadata, model_type, model_file)
+        model.initialize()
         return model
+
     except ValueError as e:
         print_tb(e.__traceback__)
         print("Data is missing from request", e)
-
 
 
 
@@ -26,10 +31,10 @@ if __name__ == "__main__":
 
     test = {
         "model_file": "",
+        "algorithm": "models.classes.keras_tabular_vae.KerasTabularVAE",
         "metadata": {
-            "algorithm": "KerasTabularVAE",
             "input_shape": "(10)"
         }
     }
-    m = get_model(test)
+    m = model_factory(test)
     print(m)

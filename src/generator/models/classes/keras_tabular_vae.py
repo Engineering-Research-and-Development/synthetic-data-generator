@@ -5,6 +5,8 @@ from keras import layers, saving, ops
 import numpy as np
 import tensorflow as tf
 
+from models.Model import UnspecializedModel
+
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
@@ -68,29 +70,45 @@ class VAE(keras.Model):
 
 
 
-def create_model(input_shape: tuple[int, ...]):
+class KerasTabularVAE(UnspecializedModel):
 
-    latent_dim = 2
-    sum_shape = sum(input_shape)
+    def build(self, input_shape):
+        latent_dim = 2
+        sum_shape = sum(input_shape)
 
-    encoder_inputs = keras.Input(shape=input_shape)
-    x = layers.Dense(sum_shape*32, activation="relu")(encoder_inputs)
-    x = layers.Dense(sum_shape*64, activation="relu")(x)
-    x = layers.Dense(sum_shape*16, activation="relu")(x)
-    z_mean = layers.Dense(latent_dim, name="z_mean")(x)
-    z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
-    z = Sampling()([z_mean, z_log_var])
-    encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+        encoder_inputs = keras.Input(shape=input_shape)
+        x = layers.Dense(sum_shape * 32, activation="relu")(encoder_inputs)
+        x = layers.Dense(sum_shape * 64, activation="relu")(x)
+        x = layers.Dense(sum_shape * 16, activation="relu")(x)
+        z_mean = layers.Dense(latent_dim, name="z_mean")(x)
+        z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
+        z = Sampling()([z_mean, z_log_var])
+        encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
-    latent_inputs = keras.Input(shape=(latent_dim,))
-    y = layers.Dense(sum_shape*16, activation="relu")(latent_inputs)
-    y = layers.Dense(sum_shape*64, activation="relu")(y)
-    y = layers.Dense(sum_shape*32, activation="relu")(y)
-    decoder_outputs = layers.Dense(input_shape[0], activation="relu")(y)
-    decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
+        latent_inputs = keras.Input(shape=(latent_dim,))
+        y = layers.Dense(sum_shape * 16, activation="relu")(latent_inputs)
+        y = layers.Dense(sum_shape * 64, activation="relu")(y)
+        y = layers.Dense(sum_shape * 32, activation="relu")(y)
+        decoder_outputs = layers.Dense(input_shape[0], activation="relu")(y)
+        decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
-    vae = VAE(encoder, decoder)
-    vae.summary()
-    vae.compile(optimizer=keras.optimizers.Adam())
-    return vae
+        vae = VAE(encoder, decoder)
+        vae.summary()
+        vae.compile(optimizer=keras.optimizers.Adam())
+        return vae
+
+    def load(self, weights_path):
+        model = saving.load_model(weights_path)
+        return model
+
+    def train(self, data, labels, **kwargs):
+        pass
+
+    def fine_tune(self, data, labels, **kwargs):
+        pass
+
+    def infer(self, data, **kwargs):
+        pass
+
+
 

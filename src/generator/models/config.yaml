@@ -1,3 +1,0 @@
-model_formats:
-  - sklearn: [".pkl"]
-  - keras: [".keras"]

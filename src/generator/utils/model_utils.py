@@ -1,5 +1,3 @@
-import re
-
 
 def parse_stringed_input_shape(stringed_shape:str) -> tuple[int, ...]:
     """
@@ -16,5 +14,4 @@ def parse_stringed_input_shape(stringed_shape:str) -> tuple[int, ...]:
 
 
 if __name__ == "__main__":
-    test = "(10,10,11)"
-    print(parse_stringed_input_shape(test))
+    pass
