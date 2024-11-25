@@ -1,4 +1,4 @@
-from models.Model import UnspecializedModel
+from models.classes.Model import UnspecializedModel
 from traceback import print_tb
 
 import importlib
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     test = {
         "model_file": "",
-        "algorithm": "models.classes.keras_tabular_vae.KerasTabularVAE",
+        "algorithm": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
         "metadata": {
             "input_shape": "(10)"
         }

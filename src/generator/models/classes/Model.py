@@ -43,16 +43,16 @@ class UnspecializedModel(ABC):
         pass
 
     @abstractmethod
-    def train(self, data, labels, **kwargs):
+    def train(self, data, **kwargs):
         """Train the model."""
         pass
 
     @abstractmethod
-    def fine_tune(self, data, labels, **kwargs):
+    def fine_tune(self, data, **kwargs):
         """Fine-tune the model."""
         pass
 
     @abstractmethod
-    def infer(self, data, **kwargs):
+    def infer(self, n_rows, **kwargs):
         """Run inference."""
         pass

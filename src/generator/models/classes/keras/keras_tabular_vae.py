@@ -2,10 +2,9 @@
 import os
 import keras
 from keras import layers, saving, ops
-import numpy as np
 import tensorflow as tf
 
-from models.Model import UnspecializedModel
+from models.classes.Model import UnspecializedModel
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
@@ -101,13 +100,13 @@ class KerasTabularVAE(UnspecializedModel):
         model = saving.load_model(weights_path)
         return model
 
-    def train(self, data, labels, **kwargs):
+    def train(self, data, **kwargs):
         pass
 
-    def fine_tune(self, data, labels, **kwargs):
+    def fine_tune(self, data, **kwargs):
         pass
 
-    def infer(self, data, **kwargs):
+    def infer(self, n_rows, **kwargs):
         pass
 
 
