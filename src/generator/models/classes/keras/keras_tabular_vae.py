@@ -1,7 +1,9 @@
-
+import numpy as np
 import os
 import keras
 from keras import layers, saving, ops
+from keras import initializers
+
 import tensorflow as tf
 
 from models.classes.Model import UnspecializedModel
@@ -47,12 +49,7 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(
-                ops.sum(
-                    keras.losses.binary_crossentropy(data, reconstruction),
-                    axis=(1, 2),
-                )
-            )
+            reconstruction_loss = ops.mean(ops.sum(keras.losses.mean_absolute_error(data, reconstruction)))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
@@ -79,7 +76,7 @@ class KerasTabularVAE(UnspecializedModel):
         x = layers.Dense(64, activation="relu")(x)
         x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(latent_dim, name="z_mean")(x)
-        z_log_var = layers.Dense(latent_dim, name="z_log_var")(x)
+        z_log_var = layers.Dense(latent_dim, kernel_initializer=initializers.zeros(),  name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
@@ -92,15 +89,22 @@ class KerasTabularVAE(UnspecializedModel):
 
         vae = VAE(encoder, decoder)
         vae.summary()
-        vae.compile(optimizer=keras.optimizers.Adam())
         return vae
 
     def load(self, weights_path):
         model = saving.load_model(weights_path)
         return model
 
-    def train(self, data, **kwargs):
-        pass
+    def train(self, data: np.array, **kwargs):
+        self.model.compile(optimizer=keras.optimizers.Adam())
+        history = self.model.fit(data, epochs=100, batch_size=1)
+        self.metadata["training_info"] = {
+            "loss": history.history["loss"][-1].numpy().item(),
+            "val_loss": -1,
+            "train_samples": data.shape[0],
+            "validation_samples": 0
+        }
+
 
     def fine_tune(self, data, **kwargs):
         pass
