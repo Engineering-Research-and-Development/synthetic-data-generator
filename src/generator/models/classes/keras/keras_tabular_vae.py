@@ -68,19 +68,23 @@ class VAE(keras.Model):
 
 class KerasTabularVAE(UnspecializedModel):
 
-    def build(self, input_shape):
-        latent_dim = 2
+    def __init__(self, metadata:dict, model_name:str, weights_path:str=None):
+        super().__init__(metadata, model_name, weights_path)
+        self.latent_dim = 2
+
+
+    def build(self, input_shape:tuple[int,...]):
 
         encoder_inputs = keras.Input(shape=input_shape)
         x = layers.Dense(32, activation="relu")(encoder_inputs)
         x = layers.Dense(64, activation="relu")(x)
         x = layers.Dense(16, activation="relu")(x)
-        z_mean = layers.Dense(latent_dim, name="z_mean")(x)
-        z_log_var = layers.Dense(latent_dim, kernel_initializer=initializers.zeros(),  name="z_log_var")(x)
+        z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
+        z_log_var = layers.Dense(self.latent_dim, kernel_initializer=initializers.zeros(),  name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
-        latent_inputs = keras.Input(shape=(latent_dim,))
+        latent_inputs = keras.Input(shape=(self.latent_dim,))
         y = layers.Dense(16, activation="relu")(latent_inputs)
         y = layers.Dense(64, activation="relu")(y)
         y = layers.Dense(32, activation="relu")(y)
@@ -105,11 +109,16 @@ class KerasTabularVAE(UnspecializedModel):
             "validation_samples": 0
         }
 
-
-    def fine_tune(self, data, **kwargs):
+    def fine_tune(self, data: np.array, **kwargs):
         pass
 
-    def infer(self, n_rows, **kwargs):
+    def infer(self, n_rows:int, **kwargs):
+        z_random = np.random.normal(size=(n_rows, self.latent_dim))
+        results = self.model.decoder.predict(z_random)
+        return results
+
+
+    def save(self, weights_path:str, **kwargs):
         pass
 
 

@@ -38,7 +38,7 @@ class UnspecializedModel(ABC):
         pass
 
     @abstractmethod
-    def load(self, weights_path):
+    def load(self, weights_path:str):
         """Load pre-trained weights."""
         pass
 
@@ -53,6 +53,11 @@ class UnspecializedModel(ABC):
         pass
 
     @abstractmethod
-    def infer(self, n_rows, **kwargs):
+    def infer(self, n_rows:int, **kwargs):
+        """Run inference."""
+        pass
+
+    @abstractmethod
+    def save(self, weights_path:str, **kwargs):
         """Run inference."""
         pass

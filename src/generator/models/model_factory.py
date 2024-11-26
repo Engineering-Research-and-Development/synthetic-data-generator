@@ -1,8 +1,7 @@
 from models.classes.Model import UnspecializedModel
 from traceback import print_tb
-
 import importlib
-import pandas as pd
+
 
 
 def dynamic_import(class_name:str):
@@ -28,18 +27,3 @@ def model_factory(request: dict) -> UnspecializedModel:
 
 
 
-if __name__ == "__main__":
-
-    test = {
-        "model_file": "",
-        "algorithm": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
-        "metadata": {
-            "input_shape": "(13)"
-        }
-    }
-    m = model_factory(test)
-    csv = pd.read_csv("wine_clean.csv")
-    data = csv.values
-    m.train(data)
-    print(m)
-    print(m.metadata)
