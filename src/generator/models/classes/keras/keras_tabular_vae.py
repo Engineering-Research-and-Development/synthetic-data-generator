@@ -22,7 +22,7 @@ class Sampling(layers.Layer):
         z_mean, z_log_var = inputs
         batch = ops.shape(z_mean)[0]
         dim = ops.shape(z_mean)[1]
-        epsilon = keras.random.normal(shape=(batch, dim), seed=self.seed_generator)
+        epsilon = keras.random.uniform(shape=(batch, dim), seed=self.seed_generator)
         return z_mean + ops.exp(0.5 * z_log_var) * epsilon
 
 
@@ -49,7 +49,7 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(ops.sum(keras.losses.mean_absolute_error(data, reconstruction)))
+            reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=-1))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
@@ -80,7 +80,7 @@ class KerasTabularVAE(UnspecializedModel):
         x = layers.Dense(64, activation="relu")(x)
         x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
-        z_log_var = layers.Dense(self.latent_dim, kernel_initializer=initializers.zeros(),  name="z_log_var")(x)
+        z_log_var = layers.Dense(self.latent_dim,  name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
@@ -88,7 +88,7 @@ class KerasTabularVAE(UnspecializedModel):
         y = layers.Dense(16, activation="relu")(latent_inputs)
         y = layers.Dense(64, activation="relu")(y)
         y = layers.Dense(32, activation="relu")(y)
-        decoder_outputs = layers.Dense(input_shape[0], activation="relu")(y)
+        decoder_outputs = layers.Dense(input_shape[0], activation="linear")(y)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
         vae = VAE(encoder, decoder)
@@ -100,8 +100,8 @@ class KerasTabularVAE(UnspecializedModel):
         return model
 
     def train(self, data: np.array, **kwargs):
-        self.model.compile(optimizer=keras.optimizers.Adam())
-        history = self.model.fit(data, epochs=100, batch_size=1)
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
+        history = self.model.fit(data, epochs=200, batch_size=8)
         self.metadata["training_info"] = {
             "loss": history.history["loss"][-1].numpy().item(),
             "val_loss": -1,
