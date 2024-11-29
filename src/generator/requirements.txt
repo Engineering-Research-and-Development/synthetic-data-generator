@@ -6,3 +6,5 @@ scikit-learn==1.5.2
 keras==3.6
 tensorflow==2.18.0
 pyaml
+fastapi
+uvicorn

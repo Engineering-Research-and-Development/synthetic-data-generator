@@ -1,0 +1,4 @@
+model_registry:
+  url: "http://localhost:8888/"
+  apis:
+    - get_model_by_id: "get_model_by_id"
