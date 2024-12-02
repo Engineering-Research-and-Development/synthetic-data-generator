@@ -23,3 +23,5 @@ architectural style. Infact:
 of the model repository endpoints
 * `service.py` implements the business logic of the model repository and
 uses the ORM defined in `model.py`.
+* `validation.py` defines the Pydantic models that the endpoint take in input and
+return in output so that they can be automatically validated
