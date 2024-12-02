@@ -6,7 +6,7 @@ that are interested in obtaining info
 ### 1. Database folder
 The database folder contains all code that handles the definition and
 population of the following database schema that we have defined:
-![db schema](/docs/db_schema.png)
+![db schema](db_schema.png)
 *The db schema defined by us*  
 In details, inside this folder there are two files:
 *   `mock_data_generator.py` is responsible for the generation and
