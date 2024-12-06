@@ -15,9 +15,10 @@ def model_factory(request: dict) -> UnspecializedModel:
         model_file = request.get("image", None)
         metadata = request.get("metadata", {})
         model_type = request.get("algorithm", "")
+        model_name = request.get("model_name", "Foo")
 
         ModelClass = dynamic_import(model_type)
-        model = ModelClass(metadata, model_type, model_file)
+        model = ModelClass(metadata, model_name, model_file)
         model.initialize()
         return model
 

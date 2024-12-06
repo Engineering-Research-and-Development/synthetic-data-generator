@@ -3,10 +3,10 @@ import os
 import keras
 from keras import layers, saving, ops
 from keras import initializers
-
 import tensorflow as tf
 
 from models.classes.Model import UnspecializedModel
+from utils.structure import MODEL_FOLDER
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
@@ -68,8 +68,8 @@ class VAE(keras.Model):
 
 class KerasTabularVAE(UnspecializedModel):
 
-    def __init__(self, metadata:dict, model_name:str, weights_path:str=None):
-        super().__init__(metadata, model_name, weights_path)
+    def __init__(self, metadata:dict, model_name:str, weights_filename:str=None):
+        super().__init__(metadata, model_name, weights_filename)
         self.latent_dim = 2
 
 
@@ -95,8 +95,8 @@ class KerasTabularVAE(UnspecializedModel):
         vae.summary()
         return vae
 
-    def load(self, weights_path):
-        model = saving.load_model(weights_path)
+    def load(self):
+        model = saving.load_model(self.weights_filename)
         return model
 
     def train(self, data: np.array, **kwargs):
@@ -118,8 +118,13 @@ class KerasTabularVAE(UnspecializedModel):
         return results
 
 
-    def save(self, weights_path:str, **kwargs):
-        pass
+    def save(self, save_filename:str, **kwargs):
+        save_filename = os.path.join(MODEL_FOLDER, save_filename) + ".keras"
+        try:
+            saving.save_model(model=self.model, filepath=save_filename)
+            self.weights_filename = save_filename
+        except Exception as e:
+            print(e)
 
 
 

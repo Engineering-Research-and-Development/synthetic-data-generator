@@ -4,10 +4,10 @@ from abc import ABC, abstractmethod
 from traceback import print_tb
 
 class UnspecializedModel(ABC):
-    def __init__(self, metadata:dict, model_name:str, weights_path:str=None):
+    def __init__(self, metadata:dict, model_name:str, weights_filename:str=None):
         self.metadata = metadata
         self.model_name = model_name
-        self.weights_path = weights_path
+        self.weights_filename = weights_filename
         self.input_shape = None # Placeholder for tuple input shape
         self.parse_metadata()
         self.model = None  # Placeholder for the model instance
@@ -23,12 +23,13 @@ class UnspecializedModel(ABC):
 
 
     def initialize(self):
-        if self.weights_path:
-            print(f"Loading pre-trained model: {self.weights_path}")
-            self.model = self.load(self.weights_path)
+        if self.weights_filename:
+            print(f"Loading pre-trained model: {self.weights_filename}")
+            self.model = self.load()
         else:
             print(f"Building model from scratch: {self.model_name}")
             self.model = self.build(self.input_shape)
+
 
     @abstractmethod
     def build(self, input_shape):
@@ -38,7 +39,7 @@ class UnspecializedModel(ABC):
         pass
 
     @abstractmethod
-    def load(self, weights_path:str):
+    def load(self):
         """Load pre-trained weights."""
         pass
 
@@ -58,6 +59,6 @@ class UnspecializedModel(ABC):
         pass
 
     @abstractmethod
-    def save(self, weights_path:str, **kwargs):
+    def save(self, save_filename:str, **kwargs):
         """Run inference."""
         pass
