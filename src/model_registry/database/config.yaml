@@ -1,0 +1,6 @@
+---
+database_credentials:
+  db_uri: "modelregistry"
+  username: "postgres"
+  password: "admin"
+...

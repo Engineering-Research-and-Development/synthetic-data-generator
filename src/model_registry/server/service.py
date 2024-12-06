@@ -1,7 +1,8 @@
-"""This module implements all the database operations offered by the model registry module. """
+"""This module implements all the business logic that is offered by the model registry module. """
 
 import peewee
 from fastapi import HTTPException
+from peewee import Database
 
 from model_registry.database.model import database, tables, Algorithm, MlModel, Parameter, ModelParameter
 from model_registry.server.validation import MlModelIn, ModifyMlModel, AlgorithmIn, ParameterIn, ModelParameterIn, \
@@ -21,6 +22,17 @@ def create_all_tables() -> None:
 def reset_database() -> None:
     drop_all_tables()
     create_all_tables()
+
+@database.connection_context()
+def is_database_empty() -> bool:
+    """
+    This function checks if all the tables of the database are empty. If so returns true otherwise returns false
+    :return: False if all tables have data, otherwise returns True
+    """
+    for table in tables:
+        if len(table.select()) == 0:
+            return True
+    return False
 
 
 # CRUD for models

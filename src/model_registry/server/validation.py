@@ -3,8 +3,13 @@ output validation can be enforced. Also since we are using an ORM to define data
 which is carried out in this section."""
 
 from pydantic import BaseModel, ConfigDict,TypeAdapter
+from typing import Literal
 
-from model_registry.database.model import Algorithm, Parameter
+from model_registry.database.model import Algorithm
+
+
+class ValidHeaders(BaseModel):
+    x_client_type: Literal["frontend","generator","input_coherence"]
 
 
 class AlgorithmOut(BaseModel):
@@ -25,6 +30,7 @@ class MlModelOut(BaseModel):
     dtype: str
     algorithm: AlgorithmOut
 
+
 class ParameterOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -42,18 +48,21 @@ class ModelParameterOut(BaseModel):
     min_threshold: float
 
 
-class MlModelIn(BaseModel):
-    name: str
-    description: str
-    status: str = 'Blank'
-    version: int = 0
-    image: str
-    input_shape: str
-    dtype: str
-    algorithm: int
 
 class AlgorithmIn(BaseModel):
     name: str
+
+
+class MlModelIn(BaseModel):
+    image: str
+    name: str
+    status: str = 'Blank'
+    description: str
+    version: int = 0
+    input_shape: str
+    dtype: str
+    algorithm: int | AlgorithmIn
+
 
 class ParameterIn(BaseModel):
     param_name: str

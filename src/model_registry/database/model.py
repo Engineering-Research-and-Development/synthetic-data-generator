@@ -1,12 +1,18 @@
+"""This module contains the definition of the database schema of our application, as well as the definition of the
+database connector that is used through the whole package """
+
 from peewee import Model, CharField, ForeignKeyField,PostgresqlDatabase, IntegerField, FloatField
+from yaml import safe_load
+import pkgutil
 
-
-"""This module contains the definition of the database schema of our application, as well as the definition of the 
-database connector that is used trough the whole package """
+# Loading config file
+config_file = pkgutil.get_data("model_registry.database","config.yaml")
+config = safe_load(config_file)
+credentials = config["database_credentials"]
 
 # Defining database connector
-# TODO: database_uri, user and password should be passed to this module
-database = PostgresqlDatabase("modelregistry",user="postgres",password="admin")
+# database_uri, user and password are defined in config.yaml
+database = PostgresqlDatabase(credentials["db_uri"],user=credentials["username"],password=credentials["password"])
 
 
 # As per peewe doc -- the standard "pattern" is to define a base model class
