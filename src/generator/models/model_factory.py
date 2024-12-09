@@ -17,14 +17,17 @@ def model_factory(request: dict) -> UnspecializedModel:
         model_type = request.get("algorithm", "")
         model_name = request.get("model_name", "Foo")
 
-        ModelClass = dynamic_import(model_type)
-        model = ModelClass(metadata, model_name, model_file)
-        model.initialize()
-        return model
-
     except ValueError as e:
         print_tb(e.__traceback__)
         print("Data is missing from request", e)
+        return UnspecializedModel({}, "", None)
+
+    ModelClass = dynamic_import(model_type)
+    model = ModelClass(metadata, model_name, model_file)
+    model.initialize()
+    return model
+
+
 
 
 

@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 import os
 import keras
@@ -68,8 +70,8 @@ class VAE(keras.Model):
 
 class KerasTabularVAE(UnspecializedModel):
 
-    def __init__(self, metadata:dict, model_name:str, weights_filename:str=None):
-        super().__init__(metadata, model_name, weights_filename)
+    def __init__(self, metadata:dict, model_name:str, model_filepath:str=None):
+        super().__init__(metadata, model_name, model_filepath)
         self.latent_dim = 2
 
 
@@ -96,8 +98,15 @@ class KerasTabularVAE(UnspecializedModel):
         return vae
 
     def load(self):
-        model = saving.load_model(self.weights_filename)
-        return model
+        encoder_filename = os.path.join(self.model_filepath, "encoder.keras")
+        decoder_filename = os.path.join(self.model_filepath, "decoder.keras")
+        scaler_filename = os.path.join(self.model_filepath, "scaler.pkl")
+        encoder = saving.load_model(encoder_filename)
+        decoder = saving.load_model(decoder_filename)
+        model = VAE(encoder, decoder)
+        with open(scaler_filename, "rb") as f:
+            scaler = pickle.load(f)
+        return model, scaler
 
     def train(self, data: np.array, **kwargs):
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
@@ -118,13 +127,29 @@ class KerasTabularVAE(UnspecializedModel):
         return results
 
 
-    def save(self, save_filename:str, **kwargs):
-        save_filename = os.path.join(MODEL_FOLDER, save_filename) + ".keras"
+    def save(self, save_folder:str, **kwargs):
+        save_folder = os.path.join(MODEL_FOLDER, save_folder)
+
+        if not os.path.isdir(save_folder):
+            os.makedirs(save_folder)
         try:
-            saving.save_model(model=self.model, filepath=save_filename)
-            self.weights_filename = save_filename
+            encoder_filename = os.path.join(save_folder, "encoder.keras")
+            decoder_filename = os.path.join(save_folder, "decoder.keras")
+            saving.save_model(self.model.encoder, encoder_filename)
+            saving.save_model(self.model.decoder, decoder_filename)
         except Exception as e:
-            print(e)
+            print("Unable to save the model file", e)
+            return
+
+        try:
+            scaler_filename = os.path.join(save_folder, "scaler.pkl")
+            with open(scaler_filename, 'wb') as f:
+                pickle.dump(self.scaler, f)
+        except Exception as e:
+            print("Unable to save the scaler file", e)
+            return
+
+        self.model_filepath = save_folder
 
 
 

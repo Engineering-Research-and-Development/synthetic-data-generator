@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 
 if __name__ == "__main__":
     test = {
-        "model_file": "",
+        "image": "",
         "model_name": "Test-T_VAE",
         "algorithm": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
         "metadata": {
@@ -20,6 +20,7 @@ if __name__ == "__main__":
 
     scaler = StandardScaler()
     data = scaler.fit_transform(data)
+    m.scaler = scaler
     m.train(data)
     df_normalized = pd.DataFrame(data)
     df_normalized.to_csv("wine_norm.csv", index=False)

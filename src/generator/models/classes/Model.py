@@ -4,13 +4,14 @@ from abc import ABC, abstractmethod
 from traceback import print_tb
 
 class UnspecializedModel(ABC):
-    def __init__(self, metadata:dict, model_name:str, weights_filename:str=None):
+    def __init__(self, metadata:dict, model_name:str, model_filepath:str=None):
         self.metadata = metadata
         self.model_name = model_name
-        self.weights_filename = weights_filename
+        self.model_filepath = model_filepath
         self.input_shape = None # Placeholder for tuple input shape
         self.parse_metadata()
         self.model = None  # Placeholder for the model instance
+        self.scaler = None # Placeholder for model scaler
 
 
     def parse_metadata(self):
@@ -23,9 +24,11 @@ class UnspecializedModel(ABC):
 
 
     def initialize(self):
-        if self.weights_filename:
-            print(f"Loading pre-trained model: {self.weights_filename}")
-            self.model = self.load()
+        if self.model_filepath:
+            print(f"Loading pre-trained model: {self.model_filepath}")
+            model, scaler = self.load()
+            self.model = model
+            self.scaler = scaler
         else:
             print(f"Building model from scratch: {self.model_name}")
             self.model = self.build(self.input_shape)
