@@ -127,8 +127,10 @@ class KerasTabularVAE(UnspecializedModel):
         return results
 
 
-    def save(self, save_folder:str, **kwargs):
-        save_folder = os.path.join(MODEL_FOLDER, save_folder)
+    def save(self, **kwargs):
+        new_version = self._check_folder_latest_version() + 1
+        model_folder = f"{self.model_name}:{new_version}"
+        save_folder = os.path.join(MODEL_FOLDER, model_folder)
 
         if not os.path.isdir(save_folder):
             os.makedirs(save_folder)

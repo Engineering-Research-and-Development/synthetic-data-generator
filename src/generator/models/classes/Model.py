@@ -1,4 +1,7 @@
+import os
+
 from utils.model_utils import parse_stringed_input_shape
+from utils.structure import MODEL_FOLDER
 
 from abc import ABC, abstractmethod
 from traceback import print_tb
@@ -34,6 +37,14 @@ class UnspecializedModel(ABC):
             self.model = self.build(self.input_shape)
 
 
+    def _check_folder_latest_version(self):
+        my_folders_versions = [int(fold.split(":")[1]) for fold in os.listdir(MODEL_FOLDER) if self.model_name in fold]
+        if len(my_folders_versions) > 0:
+            return max(my_folders_versions)
+        else:
+            return 0
+
+
     @abstractmethod
     def build(self, input_shape):
         """Build the model.
@@ -62,6 +73,6 @@ class UnspecializedModel(ABC):
         pass
 
     @abstractmethod
-    def save(self, save_filename:str, **kwargs):
+    def save(self, **kwargs):
         """Run inference."""
         pass

@@ -8,7 +8,6 @@ if __name__ == "__main__":
         "model_name": "Test-T_VAE",
         "algorithm": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
         "metadata": {
-            "save_filename": "Test-T_VAE-v1",
             "input_shape": "(13)",
             "model_version": "v1"
         }
@@ -16,7 +15,6 @@ if __name__ == "__main__":
     m = model_factory(test)
     csv = pd.read_csv("wine_clean.csv")
     data = csv.values
-    model_filename = test.get("metadata", {}).get("save_filename", "Foo")
 
     scaler = StandardScaler()
     data = scaler.fit_transform(data)
@@ -26,7 +24,7 @@ if __name__ == "__main__":
     df_normalized.to_csv("wine_norm.csv", index=False)
     print(m)
     print(m.metadata)
-    m.save(model_filename)
+    m.save(model_folder)
     new_data = m.infer(1000)
     new_data = scaler.inverse_transform(new_data)
     df_predict = pd.DataFrame(new_data)

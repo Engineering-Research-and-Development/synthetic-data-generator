@@ -6,13 +6,12 @@ from utils.structure import MODEL_FOLDER
 
 if __name__ == "__main__":
 
-    model_folder = os.path.join(MODEL_FOLDER, "Test-T_VAE-v1")
+    model_folder = os.path.join(MODEL_FOLDER, "Test-T_VAE:1")
     test = {
         "image": model_folder,
         "model_name": "Test-T_VAE",
         "algorithm": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
         "metadata": {
-            "save_folder": "Test-T_VAE-v1",
             "input_shape": "(13)",
             "model_version": "v1"
         }
