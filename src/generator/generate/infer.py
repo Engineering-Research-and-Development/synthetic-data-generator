@@ -10,10 +10,10 @@ if __name__ == "__main__":
     test = {
         "image": model_folder,
         "model_name": "Test-T_VAE",
-        "algorithm": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
+        "model_version": "v1",
+        "algorithm_name": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
         "metadata": {
             "input_shape": "(13)",
-            "model_version": "v1"
         }
     }
     m = model_factory(test)

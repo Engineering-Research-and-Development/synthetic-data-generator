@@ -14,7 +14,7 @@ def model_factory(request: dict) -> UnspecializedModel:
     try:
         model_file = request.get("image", None)
         metadata = request.get("metadata", {})
-        model_type = request.get("algorithm", "")
+        model_type = request.get("algorithm_name", "")
         model_name = request.get("model_name", "Foo")
 
     except ValueError as e:

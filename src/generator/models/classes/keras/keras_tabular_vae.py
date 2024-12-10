@@ -112,7 +112,8 @@ class KerasTabularVAE(UnspecializedModel):
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
         history = self.model.fit(data, epochs=200, batch_size=8)
         self.metadata["training_info"] = {
-            "loss": history.history["loss"][-1].numpy().item(),
+            "loss_name": "ELBO",
+            "train_loss": history.history["loss"][-1].numpy().item(),
             "val_loss": -1,
             "train_samples": data.shape[0],
             "validation_samples": 0
