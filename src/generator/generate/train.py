@@ -11,9 +11,8 @@ if __name__ == "__main__":
         "model_name": "Test-T_VAE",
         "model_version": "v1",
         "algorithm_name": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
-        "metadata": {
-            "input_shape": "(13)",
-        }
+        "input_shape": "(13)",
+        "metadata": {}
     }
     column_names = ['alcohol','malic_acid','ash','acl', 'Mmg', 'phenols', 'flavanoids','nonflavanoid_phenols',
                     'proanth','color_int','hue', 'od','prolin']
@@ -35,6 +34,7 @@ if __name__ == "__main__":
     new_data = scaler.inverse_transform(new_data)
     df_predict = pd.DataFrame(new_data)
     df_predict.columns = column_names
+
     evaluator = TabularComparisonEvaluator(csv_data, df_predict, column_names, [])
     report = evaluator.compute()
     print(json.dumps(report))

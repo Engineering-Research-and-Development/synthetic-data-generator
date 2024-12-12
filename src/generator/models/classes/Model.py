@@ -11,29 +11,30 @@ class UnspecializedModel(ABC):
         self.metadata = metadata
         self.model_name = model_name
         self.model_filepath = model_filepath
-        self.input_shape = None # Placeholder for tuple input shape
-        self.parse_metadata()
+        self.input_shape = None
         self.model = None  # Placeholder for the model instance
         self.scaler = None # Placeholder for model scaler
 
 
-    def parse_metadata(self):
-        metadata = self.metadata
+    def parse_shape(self, input_shape):
         try:
-            self.input_shape = parse_stringed_input_shape(metadata.get("input_shape", ""))
+            tuple_shape = parse_stringed_input_shape(input_shape)
+            self.input_shape = tuple_shape
         except ValueError as e:
-            print_tb(e.__traceback__)
-            print("Data is missing from request", e)
+            print("Cannot build the model, missing input shape", e)
+            return
 
 
-    def initialize(self):
+    def initialize(self, input_shape:str=""):
         if self.model_filepath:
             print(f"Loading pre-trained model: {self.model_filepath}")
             model, scaler = self.load()
             self.model = model
             self.scaler = scaler
+            self.parse_shape(input_shape)
         else:
             print(f"Building model from scratch: {self.model_name}")
+            self.parse_shape(input_shape)
             self.model = self.build(self.input_shape)
 
 

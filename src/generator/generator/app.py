@@ -5,7 +5,7 @@ from services.model_services import get_model_by_id
 
 generator = FastAPI()
 
-def parse_request(request: dict) -> tuple[dict, list, list]:
+def elaborate_request(request: dict) -> tuple[dict, list, list]:
     """
 
     :param request: a request to be parsed
@@ -38,7 +38,7 @@ def train(request: dict):
     :return:
     """
     try:
-        model, behaviours, data = parse_request(request)
+        model, behaviours, data = elaborate_request(request)
     except ValueError as e:
         print("Out:", e)
         return JSONResponse(status_code=400, content={"message": str(e)})
@@ -46,5 +46,4 @@ def train(request: dict):
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(generator, host="0.0.0.0", port=8010)
