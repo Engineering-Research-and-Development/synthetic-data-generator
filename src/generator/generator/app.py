@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 from exceptions.ModelException import ModelException
+from generate.infer import run_infer_job
 from generate.train import run_train_inference_job
 from services.model_services import get_model_by_id
 
@@ -23,9 +24,6 @@ def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
 
     # TODO: Implement Behaviours
     behaviours = []
-
-    if len(dataset) == 0:
-        raise ValueError("Request data missing")
 
     if n_rows < 1:
         raise ValueError("Cannot Request less than 1 row!")
@@ -49,6 +47,24 @@ def train(request: dict):
     except Exception as e:
         print("Out:", e)
         return JSONResponse(status_code=400, content={"message": str(e)})
+
+
+@generator.post("/infer")
+def train(request: dict):
+    """
+
+    :param request: a request for train and infer
+    :return:
+    """
+    try:
+        results, metrics = run_infer_job(*elaborate_request(request))
+        print(results)
+        print(metrics)
+        return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
+    except Exception as e:
+        print("Out:", e)
+        return JSONResponse(status_code=400, content={"message": str(e)})
+
 
 
 if __name__ == "__main__":

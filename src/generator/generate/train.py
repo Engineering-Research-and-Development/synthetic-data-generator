@@ -6,6 +6,9 @@ from evaluate.tabular_evaluate import TabularComparisonEvaluator
 
 
 def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
+    if len(dataset) == 0:
+        raise ValueError("Training data missing")
+
     dataframe, columns, numerical_columns, categorical_columns =  parse_tabular_data(data=dataset)
     np_input = dataframe.to_numpy()
     input_shape = str(np_input.shape[1:])
