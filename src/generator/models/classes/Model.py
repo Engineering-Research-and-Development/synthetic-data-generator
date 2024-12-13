@@ -16,12 +16,12 @@ class UnspecializedModel(ABC):
         self.scaler = None # Placeholder for model scaler
 
 
-    def parse_shape(self, input_shape):
+    def parse_shape(self, input_shape:str):
         try:
             tuple_shape = parse_stringed_input_shape(input_shape)
             self.input_shape = tuple_shape
         except ValueError as e:
-            print("Cannot build the model, missing input shape", e)
+            print("Cannot build the model, missing input shape: ", e)
             return
 
 

@@ -9,7 +9,7 @@ def parse_stringed_input_shape(stringed_shape:str) -> tuple[int, ...]:
     brackets = ["(", ")", "[", "]", "{", "}"]
     for b in brackets:
         stringed_shape = stringed_shape.replace(b, "")
-    return tuple([int(n) for n in stringed_shape.split(",")])
+    return tuple([int(n) for n in stringed_shape.split(",") if n is not ""])
 
 
 

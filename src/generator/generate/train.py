@@ -1,42 +1,30 @@
+from preprocess.scale import scale_input
 from models.model_factory import model_factory
+from utils.parsing import parse_tabular_data, parse_tabular_data_json
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 from evaluate.tabular_evaluate import TabularComparisonEvaluator
 
-import json
 
-if __name__ == "__main__":
-    test = {
-        "image": "",
-        "model_name": "Test-T_VAE",
-        "model_version": "v1",
-        "algorithm_name": "models.classes.keras.keras_tabular_vae.KerasTabularVAE",
-        "input_shape": "(13)",
-        "metadata": {}
-    }
-    column_names = ['alcohol','malic_acid','ash','acl', 'Mmg', 'phenols', 'flavanoids','nonflavanoid_phenols',
-                    'proanth','color_int','hue', 'od','prolin']
-    m = model_factory(test)
-    csv_data = pd.read_csv("wine_clean.csv", header=None)
-    csv_data.columns = column_names
-    data = csv_data.values
-
-    scaler = StandardScaler()
-    data = scaler.fit_transform(data)
+def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
+    dataframe, columns, numerical_columns, categorical_columns =  parse_tabular_data(data=dataset)
+    np_input = dataframe.to_numpy()
+    input_shape = str(np_input.shape[1:])
+    m = model_factory(model, input_shape)
+    scaler, np_input_scaled, _ = scale_input(train_data=np_input)
     m.scaler = scaler
-    m.train(data)
-    df_normalized = pd.DataFrame(data)
-    df_normalized.to_csv("wine_norm.csv", index=False)
-    print(m)
-    print(m.metadata)
-    #m.save()
-    new_data = m.infer(1000)
-    new_data = scaler.inverse_transform(new_data)
-    df_predict = pd.DataFrame(new_data)
-    df_predict.columns = column_names
-
-    evaluator = TabularComparisonEvaluator(csv_data, df_predict, column_names, [])
+    m.train(data=np_input_scaled)
+    m.save()
+    predicted_data = m.infer(n_rows)
+    predicted_data = scaler.inverse_transform(predicted_data)
+    df_predict = pd.DataFrame(data=predicted_data,
+                              columns=columns)
+    evaluator = TabularComparisonEvaluator(real_data=dataframe,
+                                           synthetic_data=df_predict,
+                                           numerical_columns=numerical_columns,
+                                           categorical_columns=categorical_columns)
     report = evaluator.compute()
-    print(json.dumps(report))
-    df_predict.to_csv("wine_generated.csv", index=False)
-    df_predict.describe()
+    results = parse_tabular_data_json(dataset=df_predict,
+                                      numerical_columns=numerical_columns,
+                                      categorical_columns=categorical_columns)
+    return results, report
+

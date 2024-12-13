@@ -76,7 +76,6 @@ class KerasTabularVAE(UnspecializedModel):
 
 
     def build(self, input_shape:tuple[int,...]):
-
         encoder_inputs = keras.Input(shape=input_shape)
         x = layers.Dense(32, activation="relu")(encoder_inputs)
         x = layers.Dense(64, activation="relu")(x)

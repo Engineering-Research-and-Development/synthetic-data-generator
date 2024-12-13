@@ -3,6 +3,7 @@ from models.classes.Model import UnspecializedModel
 from traceback import print_tb
 import importlib
 
+from utils.parsing import parse_model_info
 
 
 def dynamic_import(class_name:str):
@@ -24,18 +25,16 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
         "metadata" -> a dictionary itself, containing miscellaneous information
         "algorithm_name" -> includes the model class module to load
         "model_name" -> the model name, used to identify the model itself
-        "input_shape" [optioal] -> contains a stringed tuple that identifies the input layer shape
+        "input_shape" [optional] -> contains a stringed tuple that identifies the input layer shape
     }
     :param input_shape:
     :return:
     """
     try:
-        model_file = model_dict.get("image", None)
-        metadata = model_dict.get("metadata", {})
-        model_type = model_dict.get("algorithm_name", "")
-        model_name = model_dict.get("model_name", "Foo")
+        model_file, metadata, model_type, model_name, input_shape_model = parse_model_info(model_dict)
         if input_shape is None:
-            input_shape = model_dict.get("input_shape", "")
+            input_shape = input_shape_model
+
 
     except ValueError as e:
         raise ModelException(f"Model is missing useful information: {str(e)}")

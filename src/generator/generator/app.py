@@ -1,32 +1,36 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from generate import train
+
+from exceptions.ModelException import ModelException
+from generate.train import run_train_inference_job
 from services.model_services import get_model_by_id
 
 generator = FastAPI()
 
-def elaborate_request(request: dict) -> tuple[dict, list, list]:
+def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
     """
 
-    :param request: a request to be parsed
+    :param body: a request body to be parsed
     :return:
     """
-    model_id = request.get("model_id", -1)
-    behaviour_ids = request.get("behaviour_ids", [])
-    data = request.get("dataset", [])
+    model = body.get("model", {})
+    behaviour_ids = body.get("behaviour_ids", [])
+    dataset = body.get("dataset", [])
+    n_rows = body.get("n_rows", 100)
 
-    if model_id > 0:
-        model = get_model_by_id(model_id)
-    else:
-        raise ValueError("Model ID not found")
+    if model == {}:
+        raise ModelException("Model ID not found")
 
     # TODO: Implement Behaviours
     behaviours = []
 
-    if len(data) == 0:
+    if len(dataset) == 0:
         raise ValueError("Request data missing")
 
-    return model, behaviours, data
+    if n_rows < 1:
+        raise ValueError("Cannot Request less than 1 row!")
+
+    return model, behaviours, dataset, n_rows
 
 
 
@@ -38,8 +42,11 @@ def train(request: dict):
     :return:
     """
     try:
-        model, behaviours, data = elaborate_request(request)
-    except ValueError as e:
+        results, metrics = run_train_inference_job(*elaborate_request(request))
+        print(results)
+        print(metrics)
+        return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
+    except Exception as e:
         print("Out:", e)
         return JSONResponse(status_code=400, content={"message": str(e)})
 
