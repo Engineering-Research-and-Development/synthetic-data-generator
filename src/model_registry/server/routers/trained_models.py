@@ -9,19 +9,6 @@ from .. import service
 router = APIRouter()
 
 
-# # Add a new model to the repository
-# @router.post("/trained_models",status_code=201)
-# async def add_trained_model(trained_model: CreateTrainedModel):
-#     try:
-#         # First validate input
-#         validated_model = TrainedModel.model_validate(trained_model)
-#         # Then invoke the service to save the model
-#         model.save_data(validated_model)
-#     except sqlalchemy.exc.StatementError:
-#         raise HTTPException(status_code=400,detail="Data passed is not correctly formatted. Check /docs to ensure"
-#                                                    " that the input is presented correctly")
-
-
 # Add a new model to the repository
 @router.get("/trained_models",status_code=201)
 async def get_all_trained_models():
