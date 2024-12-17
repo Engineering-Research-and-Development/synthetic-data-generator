@@ -1,169 +1,44 @@
-"""This module implements all the business logic that is offered by the model registry module. """
+"""The service layer should be responsible for implementing the business logic of our application by communicating
+with the model layer. """
+from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVersion, FeatureSchema, DataType
+from model_registry.database.model import engine,Session
+from sqlmodel import select, join, SQLModel
 
-import peewee
-from fastapi import HTTPException
-from peewee import Database
-
-from model_registry.database.model import database, tables, Algorithm, MlModel, Parameter, ModelParameter
-from model_registry.server.validation import MlModelIn, ModifyMlModel, AlgorithmIn, ParameterIn, ModelParameterIn, \
-    ModifyParameter, ModifyModelParameter
+from model_registry.server.validation import CreateFeatureSchema
 
 
-# Utils method for resetting the db
-@database.connection_context()
-def drop_all_tables() -> None:
-    database.drop_tables(tables)
+def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[SQLModel,dict]:
+    with Session(engine) as session:
+        if version_id is None:
+            statement = select(ModelVersion,TrainedModel,TrainingInfo).join(TrainedModel).join(TrainingInfo).where(TrainedModel.id == model_id)
+        else:
+            statement = select(ModelVersion,TrainedModel,TrainingInfo).join(TrainedModel).join(TrainingInfo).where(TrainedModel.id == model_id)\
+                .where(ModelVersion.id == version_id)
+        results = session.exec(statement).all()
 
-@database.connection_context()
-def create_all_tables() -> None:
-    database.create_tables(tables)
+    version_and_info = [{"version_info":elem[0],"training_info":elem[2]} for elem in results]
+    model_info = results[0][1]
+    # Returning model information and version paired with training information
+    return model_info,version_and_info
 
-@database.connection_context()
-def reset_database() -> None:
-    drop_all_tables()
-    create_all_tables()
-
-@database.connection_context()
-def is_database_empty() -> bool:
-    """
-    This function checks if all the tables of the database are empty. If so returns true otherwise returns false
-    :return: False if all tables have data, otherwise returns True
-    """
-    for table in tables:
-        if len(table.select()) == 0:
-            return True
-    return False
-
-
-# CRUD for models
-@database.connection_context()
-def create_model(model: MlModelIn,algorithm: Algorithm):
-    MlModel.create(
-        name=model.name,description=model.description,status = model.status,
-    version = model.version,image = model.image, input_shape = model.input_shape,
-    dtype = model.dtype,algorithm = algorithm
-    )
-
-@database.connection_context()
-def create_models(models: list[MlModel]) -> None:
-        MlModel.bulk_create(models)
-
-@database.connection_context()
-def get_all_models() -> list[MlModel]:
-    return list(MlModel.select())
-
-@database.connection_context()
-def get_model_by_id(id: int) -> MlModel:
-    return MlModel.get(MlModel.id == id)
-
-@database.connection_context()
-def update_model(model_id: int,update_data: ModifyMlModel):
-    # Getting all the fields that are not None and we want to update
-    # Why did we do this? Because in this way we can have any param that is valid to be update automatically
-    # without writing a bunch of if and else
-    x = {k: v for k, v in vars(update_data).items() if v is not None}
-    # For reference see: https://stackoverflow.com/questions/39310191/peewee-update-an-entry-with-a-dictionary
-    if MlModel.update(**x).where(MlModel.id == model_id).execute() == 0:
-        raise HTTPException(status_code=400,detail="Update data is the same as original data or no model exists with"
-                                                   " that id")
-
-@database.connection_context()
-def delete_model(model_id: int):
-    model = get_model_by_id(model_id)
-    model.delete_instance()
+def get_trained_model_feature_schema(trained_model_id: int) -> list[dict[str,SQLModel]]:
+    # The feature schema primary key is based as a ternary (trained_model_id,data_type_id,feature_pos)
+    # So for a given trained model, we just query the Feature Schema table for the trained_model_id
+    # A further join is done so that we get also the name of the feature
+    with Session(engine) as session:
+        statement = select(FeatureSchema, DataType).join(DataType).where(FeatureSchema.trained_model_id == trained_model_id)
+        results = session.exec(statement).all()
+    # Building payload as docs dictate
+    data_list = []
+    for feature,data_type in results:
+        data_list.append({"column_name":feature.feature_name,"categorical":feature.is_categorical,
+                          "column_datatype":data_type.type,"feature_position":feature.feature_position})
+    return data_list
 
 
-# CRUD for algorithms
-@database.connection_context()
-def create_algorithm(algorithm: AlgorithmIn) -> None:
-    Algorithm.create(name=algorithm.name)
-
-@database.connection_context()
-def create_algorithms(algorithms: list[Algorithm]) -> None:
-    Algorithm.bulk_create(algorithms)
-
-@database.connection_context()
-def get_algorithm_by_id(algorithm_id: int) -> Algorithm:
-    return Algorithm.get(Algorithm.id == algorithm_id)
-
-@database.connection_context()
-def get_all_algorithms() -> list[Algorithm]:
-    return list(Algorithm.select())
-
-@database.connection_context()
-def update_algorithm(algorithm_id: int,update_data: AlgorithmIn):
-    if Algorithm.update(name=update_data.name).where(Algorithm.id == algorithm_id).execute() == 0:
-        raise HTTPException(status_code=400,detail="Update data is the same as original data or no algorithm exists with"
-                                                   " that id")
-
-@database.connection_context()
-def delete_algorithm(algorithm_id: int):
-    algorithm = get_algorithm_by_id(algorithm_id)
-    algorithm.delete_instance()
-
-
-# CRUD for parameters
-@database.connection_context()
-def create_parameter(param: ParameterIn) -> None:
-    Parameter.create(param_name=param.param_name,param_description=param.param_description,dtype=param.dtype)
-
-@database.connection_context()
-def create_parameters(params: list[Parameter]) -> None:
-    Parameter.bulk_create(params)
-
-@database.connection_context()
-def get_parameter_by_id(param_id: int) -> Parameter:
-    return Parameter.get(Parameter.id == param_id)
-
-@database.connection_context()
-def get_all_parameters() -> list[Parameter]:
-    return list(Parameter.select())
-
-@database.connection_context()
-def update_parameter(param_id: int,update_data: ModifyParameter):
-    # See update_model for an explanation
-    x = {k: v for k, v in vars(update_data).items() if v is not None}
-    if Parameter.update(**x).where(Parameter.id == param_id).execute() == 0:
-        raise HTTPException(status_code=400,detail="Update data is the same as original data or no parameter exists with"
-                                                   " that id")
-
-@database.connection_context()
-def delete_parameter(param_id: int):
-    param = get_parameter_by_id(param_id)
-    param.delete_instance(recursive=True)
-
-
-# CRUD for model parameter
-@database.connection_context()
-def create_model_parameter(data_in: ModelParameterIn,model,param) -> None:
-    ModelParameter.create(model=model,parameter=param,parameter_value=data_in.parameter_value,
-                          max_threshold=data_in.max_threshold,min_threshold=data_in.min_threshold)
-
-@database.connection_context()
-def create_model_parameters(params: list[ModelParameter]) -> None:
-    ModelParameter.bulk_create(params)
-
-@database.connection_context()
-def get_model_parameter_by_id(param_id: int) -> Parameter:
-    return ModelParameter.get(ModelParameter.id == param_id)
-
-@database.connection_context()
-def get_all_model_parameters() -> list[ModelParameter]:
-    return list(ModelParameter.select())
-
-@database.connection_context()
-def update_model_parameter(param_id: int,update_data: ModifyModelParameter):
-    # See update_model for an explanation
-    x = {k: v for k, v in vars(update_data).items() if v is not None}
-    if ModelParameter.update(**x).where(ModelParameter.id == param_id).execute() == 0:
-        raise HTTPException(status_code=400,detail="Update data is the same as original data or no model parameter"
-                                                   " exists with that id")
-
-@database.connection_context()
-def delete_model_parameter(param_id: int):
-    param = get_model_parameter_by_id(param_id)
-    param.delete_instance()
-
-
-
+def validate_all_schemas(features: list[CreateFeatureSchema]) -> list[FeatureSchema]:
+    payload = []
+    for feature in features:
+        payload.append(FeatureSchema.model_validate(feature))
+    return payload
 

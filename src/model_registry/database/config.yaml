@@ -4,3 +4,9 @@ database_credentials:
   username: "postgres"
   password: "admin"
 ...
+#---
+#database_credentials:
+#  db_uri: "modelregistry"
+#  username: "postgres"
+#  password: "admin"
+#...
