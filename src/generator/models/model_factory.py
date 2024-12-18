@@ -28,16 +28,18 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
         "input_shape" [optional] -> contains a stringed tuple that identifies the input layer shape
     }
     :param input_shape:
-    :return:
+    :return: An instance of a BaseModel class or any subclass
+    :raises: ModelException
     """
-    try:
-        model_file, metadata, model_type, model_name, input_shape_model = parse_model_info(model_dict)
-        if input_shape is None:
-            input_shape = input_shape_model
+    model_file, metadata, model_type, model_name, input_shape_model = parse_model_info(model_dict)
+    if input_shape is None:
+        input_shape = input_shape_model
 
+    if model_type is None:
+        raise ModelException(f"Model algorithm not provided")
+    elif model_name is None:
+        raise ModelException(f"Model name not provided")
 
-    except ValueError as e:
-        raise ModelException(f"Model is missing useful information: {str(e)}")
 
     ModelClass = dynamic_import(model_type)
     model = ModelClass(metadata, model_name, model_file)

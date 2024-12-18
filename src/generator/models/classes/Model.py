@@ -1,5 +1,6 @@
 import os
 
+from exceptions.ModelException import ModelException
 from utils.model_utils import parse_stringed_input_shape
 from utils.structure import MODEL_FOLDER
 
@@ -20,15 +21,17 @@ class UnspecializedModel(ABC):
         try:
             tuple_shape = parse_stringed_input_shape(input_shape)
             self.input_shape = tuple_shape
-        except ValueError as e:
-            print("Cannot build the model, missing input shape: ", e)
-            return
+        except ValueError:
+            raise ModelException ("Cannot build the model, missing input shape")
 
 
     def initialize(self, input_shape:str=""):
         if self.model_filepath:
             print(f"Loading pre-trained model: {self.model_filepath}")
-            model, scaler = self.load()
+            try:
+                model, scaler = self.load()
+            except Exception:
+                raise ModelException("Model file not found")
             self.model = model
             self.scaler = scaler
             self.parse_shape(input_shape)
