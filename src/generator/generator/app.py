@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
+from exceptions.DataException import DataException
+from exceptions.InputException import InputException
 from exceptions.ModelException import ModelException
 from generate.infer import run_infer_job
 from generate.train import run_train_inference_job
@@ -26,7 +28,7 @@ def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
     behaviours = []
 
     if n_rows < 1:
-        raise ValueError("Cannot Request less than 1 row!")
+        raise InputException("Cannot Request less than 1 row!")
 
     return model, behaviours, dataset, n_rows
 
@@ -41,12 +43,16 @@ def train(request: dict):
     """
     try:
         results, metrics = run_train_inference_job(*elaborate_request(request))
-        print(results)
-        print(metrics)
         return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
-    except Exception as e:
-        print("Out:", e)
+    except InputException as e:
         return JSONResponse(status_code=400, content={"message": str(e)})
+    except ModelException as e:
+        return JSONResponse(status_code=400, content={"message": str(e)})
+    except DataException as e:
+        return JSONResponse(status_code=400, content={"message": str(e)})
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"message": "An error occurred while processing the output"})
 
 
 @generator.post("/infer")
@@ -58,12 +64,16 @@ def train(request: dict):
     """
     try:
         results, metrics = run_infer_job(*elaborate_request(request))
-        print(results)
-        print(metrics)
         return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
-    except Exception as e:
-        print("Out:", e)
+    except InputException as e:
         return JSONResponse(status_code=400, content={"message": str(e)})
+    except ModelException as e:
+        return JSONResponse(status_code=400, content={"message": str(e)})
+    except DataException as e:
+        return JSONResponse(status_code=400, content={"message": str(e)})
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"message": "An error occurred while processing the output"})
 
 
 

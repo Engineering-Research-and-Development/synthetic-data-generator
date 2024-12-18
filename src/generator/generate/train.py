@@ -1,3 +1,4 @@
+from exceptions.DataException import DataException
 from preprocess.scale import scale_input
 from models.model_factory import model_factory
 from utils.parsing import parse_tabular_data, parse_tabular_data_json
@@ -7,7 +8,7 @@ from evaluate.tabular_evaluate import TabularComparisonEvaluator
 
 def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
     if len(dataset) == 0:
-        raise ValueError("Training data missing")
+        raise DataException("To run a training instance it is necessary to pass training data")
 
     dataframe, columns, numerical_columns, categorical_columns =  parse_tabular_data(data=dataset)
     np_input = dataframe.to_numpy()
