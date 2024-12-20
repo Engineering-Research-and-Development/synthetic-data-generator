@@ -4,8 +4,8 @@ from fastapi import FastAPI,Header
 from typing import Annotated
 from contextlib import asynccontextmanager
 from model_registry.database.model import  check_all_database_tables, is_database_empty,populate_db_with_mock_data
-from .routers import system_models,trained_models,model_versions
-from .validation import ValidHeaders
+from model_registry.server.routers import system_models,trained_models,model_versions
+from model_registry.server.validation import ValidHeaders
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

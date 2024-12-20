@@ -1,5 +1,8 @@
 """The service layer should be responsible for implementing the business logic of our application by communicating
 with the model layer. """
+from fastapi import HTTPException
+from sqlalchemy.exc import NoResultFound
+
 from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVersion, FeatureSchema, DataType
 from model_registry.database.model import engine,Session
 from sqlmodel import select, join, SQLModel
@@ -15,7 +18,8 @@ def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[
             statement = select(ModelVersion,TrainedModel,TrainingInfo).join(TrainedModel).join(TrainingInfo).where(TrainedModel.id == model_id)\
                 .where(ModelVersion.id == version_id)
         results = session.exec(statement).all()
-
+    if len(results) ==0 :
+        raise HTTPException(status_code=404,detail="No trained model found with id: " + str(model_id))
     version_and_info = [{"version_info":elem[0],"training_info":elem[2]} for elem in results]
     model_info = results[0][1]
     # Returning model information and version paired with training information
@@ -31,14 +35,29 @@ def get_trained_model_feature_schema(trained_model_id: int) -> list[dict[str,SQL
     # Building payload as docs dictate
     data_list = []
     for feature,data_type in results:
-        data_list.append({"column_name":feature.feature_name,"categorical":feature.is_categorical,
-                          "column_datatype":data_type.type,"feature_position":feature.feature_position})
+        data_list.append({"column_name":feature.feature_name,"categorical":data_type.is_categorical,
+                          "column_datatype":data_type.type,"column_position":feature.feature_position})
     return data_list
-
 
 def validate_all_schemas(features: list[CreateFeatureSchema]) -> list[FeatureSchema]:
     payload = []
-    for feature in features:
-        payload.append(FeatureSchema.model_validate(feature))
+    with Session(engine) as session:
+        for feature in features:
+            # For each feature we need to search the id since it is not passed in input
+            statement = select(DataType.id).where(DataType.type == feature.datatype)
+            try:
+                result = session.exec(statement).one()
+            except NoResultFound:
+                raise HTTPException(status_code=400,detail="This kind of datatype is not supported. Please add it to use it")
+            validated_feature = FeatureSchema.model_validate(feature)
+            validated_feature.datatype_id = result
+            payload.append(validated_feature)
     return payload
 
+def delete_trained_model_schemas(trained_model: SQLModel):
+    with Session(engine) as session:
+        statement = select(FeatureSchema).where(FeatureSchema.trained_model_id == trained_model.id)
+        results = session.exec(statement).all()
+        for result in results:
+            session.delete(result)
+        session.commit()

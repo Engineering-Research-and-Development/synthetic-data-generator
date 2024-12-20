@@ -80,13 +80,18 @@ def select_all(data_class: Type[SQLModel]) -> Sequence[SQLModel]:
 def select_data_by_id(data_class: Type[SQLModel],data_id: int):
     with Session(engine) as session:
         statement = select(data_class).where(data_class.id == data_id)
-        results = session.exec(statement).all()
+        results = session.exec(statement).one()
         return results
 
-def delete_data(data_class: Type[SQLModel],data_id: int):
+def delete_data_by_id(data_class: Type[SQLModel],data_id: int):
     with Session(engine) as session:
         elem = select_data_by_id(data_class,data_id)
         session.delete(elem)
+        session.commit()
+
+def delete_instance(instance: SQLModel):
+    with Session(engine) as session:
+        session.delete(instance)
         session.commit()
 
 def save_data_from_dict(data_class: Type[SQLModel],values: list[dict]):
@@ -118,5 +123,4 @@ def populate_db_with_mock_data():
     save_data_from_dict(FeatureSchema,feature_schema)
     save_data_from_dict(TrainingInfo,training_info)
     save_data_from_dict(ModelVersion,model_version)
-
 

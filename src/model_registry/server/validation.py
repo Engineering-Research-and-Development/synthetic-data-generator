@@ -14,7 +14,7 @@ class ValidHeaders(BaseModel):
 class BaseSystemModel(SQLModel):
     name: str = Field(unique=True,primary_key=True)
     description: str
-    pretrained: bool
+    loss_function: str
 
 class CreateSystemModel(BaseSystemModel):
     pass
@@ -52,9 +52,7 @@ class CreateTrainingInfo(BaseTrainingInfo):
 class BaseFeatureSchema(SQLModel):
         feature_name: str
         feature_position: int = Field(primary_key=True)
-        is_categorical: bool
-        datatype: str = Field(foreign_key="datatype.type")
 
 
 class CreateFeatureSchema(BaseFeatureSchema):
-    pass
+    datatype: str
