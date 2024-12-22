@@ -15,8 +15,9 @@ class TrainedModel(BaseTrainedModel,table=True):
 class ModelVersion(BaseModelVersion,table=True):
     id: int | None = Field(default=None,primary_key=True)
     timestamp: datetime = Field(default_factory=datetime.now, nullable=False)
-    trained_model_id: int | None = Field(default=None,foreign_key="trainedmodel.id",ondelete="CASCADE")
-    training_info_id: int | None = Field(default=None,foreign_key="traininginfo.id")
+    trained_model_id: int | None = Field(default=None,foreign_key="trainedmodel.id")
+    # This basically assures that each version has a unique training info
+    training_info_id: int | None = Field(default=None,foreign_key="traininginfo.id",unique=True)
 
 
 # Represents the N-N relationship called in the diagram "Is Trained On".

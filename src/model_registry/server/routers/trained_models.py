@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from model_registry.server.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema, \
     BaseFeatureSchema
 from model_registry.server import service
-
+from model_registry.server.routers import training_info
 router = APIRouter()
 
 
@@ -70,13 +70,32 @@ async def create_model_and_version(trained_model:CreateTrainedModel,version: Cre
 
 @router.delete("/trained_models/{trained_model_id}",status_code=200)
 async def delete_train_model(trained_model_id: int):
-    # Deleting feature schema
     try:
         train_model = model.select_data_by_id(TrainedModel,trained_model_id)
     except NoResultFound:
         raise HTTPException(status_code=404,detail="No trained instance with id: " + str(trained_model_id) + " has been found")
     service.delete_trained_model_schemas(train_model)
-    # We know delete the model
+    # Now we get all versions and training info and delete them
+    _,versions_infos = service.get_trained_model_versions(trained_model_id)
+    print("Model had ",len(versions_infos)," versions")
+    for elem in versions_infos:
+        model.delete_instance(elem["version_info"])
+        model.delete_instance(elem["training_info"])
     model.delete_instance(train_model)
+
+
+@router.delete("/trained_models/{trained_model_id}/versions/",status_code=200)
+async def delete_train_model_version(trained_model_id: int,version_id: int | None = None):
+    """
+    This function given a trained model id deletes the passed version id. Otherwise, it deletes all versions associated
+    with the trained model
+    :param trained_model_id: The id of the trained model to delete from
+    :param version_id: Optional. The id of the particular version that wants to be deleted
+    :return:
+    """
+    _,version_info = service.get_trained_model_versions(trained_model_id,version_id)
+    for elem in version_info:
+        model.delete_instance(elem["version_info"])
+        model.delete_instance(elem["training_info"])
 
 

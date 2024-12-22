@@ -42,7 +42,7 @@ def check_all_database_tables() -> bool:
 
     with engine.connect() as conn:
         result = conn.execute(text("SELECT * FROM information_schema.tables WHERE table_schema = 'public'"))
-        print("Founded tables: ",result.all())
+        print("\033[93mDATABASE INFO\033[0m: Founded ",result.rowcount," tables")
         return True if result.rowcount == len(tables) else False
 
 def is_database_empty() -> bool:
@@ -53,7 +53,7 @@ def is_database_empty() -> bool:
     with engine.connect() as conn:
         for table in tables:
             result = conn.execute(text(f'SELECT * FROM "{table.__name__.lower()}"'))
-            print("For table ",table.__name__.lower(), "founded ",result.rowcount," records")
+            print("\033[93mDATABASE INFO\033[0m: For table ",table.__name__.lower(), "founded ",result.rowcount," records")
             if result.rowcount == 0:
                 return True
         return False

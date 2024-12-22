@@ -105,7 +105,7 @@ def create_training_info_data(batch_size: int = len(default_system_models)) -> l
                "val_loss_value":  random.randint(0,100),"n_train_samples":  random.randint(0,100),
                "n_validation_samples":  random.randint(0,100)} for i in range(batch_size)]
 
-def create_model_version_data(batch_size: int = len(default_system_models)) -> list[dict]:
+def create_model_version_data(batch_size: int = len(default_system_models),same_version: int = 2) -> list[dict]:
     """
     Creates a list model version data of dimension batch_size. The value of batch_size must be an integer non-negative and
     greater than 0
@@ -115,12 +115,14 @@ def create_model_version_data(batch_size: int = len(default_system_models)) -> l
     """
     if batch_size <= 0:
         raise ValueError('Batch_size must be greater than 0')
-    ids = [i for i in range(1, batch_size)]
+    # We establish that for testing purposes that a couple  of versions have the same training_id
+    upper = batch_size - same_version
+    ids = [i for i in range(1, upper)]
     data =  [{ "trained_model_id": id, "training_info_id": id,"version_name":"A name","model_image_path":"fC:\\foo\\bar",
               "timestamp":'{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())} for id in ids]
     # Creating for a single model more versions so that testing can be conducted
-    multiple_versions = [{ "trained_model_id": 1, "training_info_id": 1,"version_name":"A name " + str(x),"model_image_path":"fC:\\foo\\bar",
-              "timestamp":'{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())} for x in range(1,9)]
+    multiple_versions = [{ "trained_model_id": 1, "training_info_id": x,"version_name":"A name " + str(x),"model_image_path":"fC:\\foo\\bar",
+              "timestamp":'{:%Y-%m-%d %H:%M:%S}'.format(datetime.now())} for x in range(upper,upper + same_version + 1)]
     return data + multiple_versions
 
 

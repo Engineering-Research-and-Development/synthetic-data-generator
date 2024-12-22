@@ -4,7 +4,7 @@ from fastapi import FastAPI,Header
 from typing import Annotated
 from contextlib import asynccontextmanager
 from model_registry.database.model import  check_all_database_tables, is_database_empty,populate_db_with_mock_data
-from model_registry.server.routers import system_models,trained_models,model_versions
+from model_registry.server.routers import system_models,trained_models,model_versions,training_info
 from model_registry.server.validation import ValidHeaders
 
 @asynccontextmanager
@@ -17,9 +17,9 @@ async def lifespan(app: FastAPI):
     # Checking if database exists and has data in int
     if check_all_database_tables() is False or is_database_empty() :
         # The ANSI escape sequence are for coloring the text
-        print("\033[94mDATABASE\033[0m:\tDatabase is empty. Populating it with mock data")
+        print("\033[94mDATABASE\033[0m: Database is empty. Populating it with mock data")
         populate_db_with_mock_data()
-    else: print("\033[94mDATABASE\033[0m:\t Database found!")
+    else: print("\033[94mDATABASE\033[0m: Database ready!")
     yield
     #  This part is done after the FASTAPI application is run
 
@@ -31,6 +31,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(system_models.router)
 app.include_router(trained_models.router)
 app.include_router(model_versions.router)
+app.include_router(training_info.router)
 
 # The following functions will serve as the mains interfaces that clients will go to
 @app.get("/models")

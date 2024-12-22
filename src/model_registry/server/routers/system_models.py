@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
-from ...database import model
+from model_registry.database import model
 import sqlalchemy
-from ...database.schema import SystemModel
-from ..validation import CreateSystemModel
+from model_registry.database.schema import SystemModel
+from model_registry.server.validation import CreateSystemModel
 
 router = APIRouter()
 

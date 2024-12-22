@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVersion, FeatureSchema, DataType
 from model_registry.database.model import engine,Session
 from sqlmodel import select, join, SQLModel
-
+from model_registry.database import model
 from model_registry.server.validation import CreateFeatureSchema
 
 
@@ -18,7 +18,7 @@ def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[
             statement = select(ModelVersion,TrainedModel,TrainingInfo).join(TrainedModel).join(TrainingInfo).where(TrainedModel.id == model_id)\
                 .where(ModelVersion.id == version_id)
         results = session.exec(statement).all()
-    if len(results) ==0 :
+    if len(results) == 0 :
         raise HTTPException(status_code=404,detail="No trained model found with id: " + str(model_id))
     version_and_info = [{"version_info":elem[0],"training_info":elem[2]} for elem in results]
     model_info = results[0][1]
@@ -54,10 +54,22 @@ def validate_all_schemas(features: list[CreateFeatureSchema]) -> list[FeatureSch
             payload.append(validated_feature)
     return payload
 
-def delete_trained_model_schemas(trained_model: SQLModel):
+def delete_trained_model_schemas(trained_model: TrainedModel):
     with Session(engine) as session:
         statement = select(FeatureSchema).where(FeatureSchema.trained_model_id == trained_model.id)
         results = session.exec(statement).all()
         for result in results:
             session.delete(result)
         session.commit()
+
+
+def delete_trained_model_version(trained_model: TrainedModel,version_id: int | None = None):
+    with Session(engine) as session:
+        if version_id is None:
+            statement = select(ModelVersion,TrainingInfo).join(TrainingInfo).where(ModelVersion.trained_model_id == trained_model.id)
+        else:
+            statement = select(ModelVersion,TrainingInfo).join(TrainingInfo).where(ModelVersion.trained_model_id == trained_model.id)\
+                .where(ModelVersion.id == version_id)
+        results = session.exec(statement).all()
+        return results
+
