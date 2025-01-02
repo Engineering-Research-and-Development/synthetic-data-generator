@@ -1,7 +1,7 @@
 <script>
-	import { goto } from '$app/navigation';
+	import {goto} from '$app/navigation';
 
-	let csvContent = localStorage.getItem('csvFile');
+	let csvContent = sessionStorage.getItem('userFile');
 	let lines = csvContent.split('\n').slice(0, 10);
 	let headers = lines[0].split(',');
 	let selectedColumns = [];
