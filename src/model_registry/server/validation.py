@@ -10,9 +10,8 @@ class ValidHeaders(BaseModel):
 
 
 
-
 class BaseSystemModel(SQLModel):
-    name: str = Field(unique=True,primary_key=True)
+    name: str = Field(primary_key=True)
     description: str
     loss_function: str
 

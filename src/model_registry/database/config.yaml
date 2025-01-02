@@ -1,9 +1,9 @@
----
-database_credentials:
-  db_uri: "modelregistry"
-  username: "postgres"
-  password: "admin"
-...
+#---
+#database_credentials:
+#  db_uri: "docker-model_registry"
+#  username: "postgres"
+#  password: "admin"
+#...
 #---
 #database_credentials:
 #  db_uri: "modelregistry"

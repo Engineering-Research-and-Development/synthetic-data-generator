@@ -1,0 +1,4 @@
+fastapi[standard] == 0.115.6
+pydantic == 2.10.3
+sqlmodel == 0.0.22
+psycopg2

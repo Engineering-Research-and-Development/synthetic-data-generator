@@ -17,7 +17,7 @@ config = safe_load(config_file)
 credentials = config["database_credentials"]
 
 # Defining database engine and Dialect for connection
-engine = create_engine("postgresql://{username}:{password}@localhost/{database}"
+engine = create_engine("postgresql+psycopg2://{username}:{password}@localhost:5432/{database}"
                        .format(username=credentials["username"],password=credentials["password"],database=credentials["db_uri"]),echo=False)
 
 def create_database_tables():

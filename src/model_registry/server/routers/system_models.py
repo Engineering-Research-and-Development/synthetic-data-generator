@@ -3,6 +3,7 @@ from model_registry.database import model
 import sqlalchemy
 from model_registry.database.schema import SystemModel
 from model_registry.server.validation import CreateSystemModel
+from model_registry.server.service import sm_service
 
 router = APIRouter()
 
@@ -22,7 +23,11 @@ async def add_trained_model(create_model: CreateSystemModel):
 # Add a new model to the repository
 @router.get("/system_models",status_code=201)
 async def get_all_system_models():
-    return model.select_all(SystemModel)
+    models = sm_service.get_models_and_datatype()
+    # Creating a more structured payload
+    payload = [{"name":model.name,"description":model.description,"loss_function":model.loss_function
+                   ,"allowed_datatype":datatype,"categorical":categorical} for model,datatype,categorical in models]
+    return payload
 
 @router.get("/system_models/{system_model_id}",status_code=200)
 async def get_system_model_by_id(system_model_id: int):

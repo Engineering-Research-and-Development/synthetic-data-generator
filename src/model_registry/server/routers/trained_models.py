@@ -4,13 +4,13 @@ from model_registry.database import model
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from model_registry.server.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema, \
     BaseFeatureSchema
-from model_registry.server import service
+from model_registry.server.service import tm_service as service
 from model_registry.server.routers import training_info
 router = APIRouter()
 
 
 # Add a new model to the repository
-@router.get("/trained_models",status_code=201)
+@router.get("/trained_models",status_code=200)
 async def get_all_trained_models():
     return model.select_all(TrainedModel)
 
@@ -64,7 +64,7 @@ async def create_model_and_version(trained_model:CreateTrainedModel,version: Cre
     validated_version.training_info_id = validated_training_info.id
     validated_version.trained_model_id = validated_model.id
     model.save_data(validated_version)
-    return {"message":"Successfully saved model with id: " + str(validated_model.id)}
+    return {"message":"Successfully saved model with the following id","id": validated_model.id}
 
 
 

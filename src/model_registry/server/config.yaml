@@ -1,0 +1,4 @@
+---
+server_startup_configuration:
+  reset_database: True
+...
