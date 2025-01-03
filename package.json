@@ -27,6 +27,7 @@
     "@tailwindcss/typography": "^0.5.15",
     "flowbite": "^2.5.2",
     "flowbite-svelte": "^0.47.4",
+    "flowbite-svelte-icons": "^2.0.2",
     "papaparse": "^5.4.1",
     "svelte-heros": "^7.0.2",
     "svelte-local-storage-store": "^0.6.4",
