@@ -64,7 +64,9 @@ Download or pull the code, navigate to the code's folder and simply run
 
 This will build the model repository and latest postgres image and
 launch a compose stack with both the model repository and postgres
-containers
+containers. After the containers are launched, you can start sending
+request to the endpoints by navigating to http://127.0.0.1:80 and
+adding the endpoints name!
 ## OpenAPI Documentation
 As default, FASTApi will automatically create the documentation when 
-the server is launched at  http://0.0.0.0:80/docs.  
+the server is launched at http://127.0.0.1/docs.  
