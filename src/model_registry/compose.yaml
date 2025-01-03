@@ -1,0 +1,11 @@
+services:
+  web_app:
+    build: .
+    ports:
+      - "80:80"
+  postgres_database:
+    image: "postgres"
+    ports:
+      - "2022:5432"
+    environment:
+      POSTGRES_PASSWORD: "postgres"
