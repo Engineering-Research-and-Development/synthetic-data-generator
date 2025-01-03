@@ -1,4 +1,4 @@
-"""This module call all the testing functions"""
+"""This module calls all the testing functions"""
 import test_tmodels
 
 

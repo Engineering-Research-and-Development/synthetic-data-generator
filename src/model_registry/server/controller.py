@@ -1,5 +1,6 @@
-from fastapi import FastAPI,Header
-from typing import Annotated
+"""This module is the main entry point of FASTApi. It also defines the life-cycle of the application as well as
+the database initialization on startup"""
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from model_registry.database.model import  check_all_database_tables, is_database_empty,populate_db_with_mock_data
 from model_registry.server.routers import system_models,trained_models,model_versions,training_info
@@ -41,12 +42,16 @@ app.include_router(trained_models.router)
 app.include_router(model_versions.router)
 app.include_router(training_info.router)
 
-# The following functions will serve as the mains interfaces that clients will go to
+# The following functions will serve as the mains interface for the client layer
 @app.get("/models")
-async def controller_get_all_models():
-     sys_models = await system_models.get_all_system_models()
-     train_models = await trained_models.get_all_trained_models()
-     return {"system_models":sys_models , "trained_models":train_models}
+async def controller_get_all_models() -> dict:
+    """
+    This function represent the main interface for client layer and it returns all the models present in the repository.
+    :return: A dictionary containing a list of System Models and Trained Models present in the repository
+    """
+    sys_models = await system_models.get_all_system_models()
+    train_models = await trained_models.get_all_trained_models()
+    return {"system_models":sys_models , "trained_models":train_models}
 
 
 
