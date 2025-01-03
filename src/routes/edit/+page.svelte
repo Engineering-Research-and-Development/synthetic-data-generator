@@ -14,9 +14,9 @@
 	import {ExclamationCircleOutline} from "flowbite-svelte-icons";
 	import {goto} from "$app/navigation";
 
-	let tableData = [String];
-	let headers = [String];
-	let selectedColumns = [String];
+	let tableData = [];
+	let headers = [];
+	let selectedColumns = [];
 	let showCancelPopup = false;
 
 	onMount(() => {
@@ -32,17 +32,17 @@
 		}
 	});
 
-	function toggleColumn(column) {
-		if (selectedColumns.includes(column)) {
-			selectedColumns = selectedColumns.filter(name => name !== column); // Remove column
-		} else {
-			selectedColumns = [...selectedColumns, column]; // Add column
-		}
+	function toggleColumn(column= String) {
+		selectedColumns = selectedColumns.includes(column)
+				? selectedColumns.filter(name => name !== column) // Remove column
+				: [...selectedColumns, column]; // Add column
 	}
 
-	function submitForm(){
+	function submitColumns(){
 		sessionStorage.setItem('selectedColumns', JSON.stringify(selectedColumns))
+		goto("/features")
 	}
+
 	function cancelProcedure(){
 		sessionStorage.removeItem('csvFile')
 		goto("/")
@@ -52,7 +52,7 @@
 
 <h1 class="flex justify-center text-2xl font-bold my-4">Uploaded CSV Data</h1>
 <div class="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-	<form on:submit|preventDefault={submitForm}>
+	<form on:submit|preventDefault={submitColumns}>
 		<Table class="w-3/4 text-gray-500 dark:text-gray-400" shadow>
 			<TableHead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 				{#each headers as header}
