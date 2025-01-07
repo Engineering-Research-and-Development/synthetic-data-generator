@@ -2,6 +2,7 @@
     import { Img, Button, Modal, Fileupload, Spinner } from 'flowbite-svelte';
     import { goto } from "$app/navigation";
     import Papa from 'papaparse';
+    import CancelButton from "./components/CancelButton.svelte";
 
     const createEndpoint = '/create';
     let showPopup = false;
@@ -19,7 +20,7 @@
         uploadedFile = file;
     }
 
-    function submitForm(event) {
+    async function submitForm(event) {
         event.preventDefault();
         isSubmitting = true;
 
@@ -32,16 +33,14 @@
                 complete: (result) => {
                     sessionStorage.setItem('userFile', JSON.stringify(result.data));
                     isSubmitting = false;
-                    goto('/edit');
+                    goto('/feature');
                 },
             });
         };
 
         reader.readAsText(uploadedFile);
     }
-
 </script>
-
 
 <div class="h-screen w-screen bg-cover bg-center flex items-center justify-center relative"
      style="background-image: url('/pexels-markusspiske-1089438.jpg');">
@@ -94,13 +93,7 @@
                 />
             </div>
             <div class="flex justify-end">
-                <Button
-                        type="button"
-                        on:click={() => (showPopup = false)}
-                        class="text-gray-500 bg-white border border-gray-300 rounded-md px-4 py-2 mr-2 hover:bg-gray-100"
-                >
-                    Cancel
-                </Button>
+                <CancelButton/>
                 <Button
                         type="submit"
                         on:click={submitForm}
