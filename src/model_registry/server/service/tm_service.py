@@ -6,7 +6,6 @@ from sqlalchemy.exc import NoResultFound
 from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVersion, FeatureSchema, DataType
 from model_registry.database.model import engine,Session
 from sqlmodel import select, join, SQLModel
-from model_registry.database import model
 from model_registry.server.validation import CreateFeatureSchema
 
 
@@ -73,3 +72,21 @@ def delete_trained_model_version(trained_model: TrainedModel,version_id: int | N
         results = session.exec(statement).all()
         return results
 
+def get_models_and_versions() -> list:
+    with Session(engine) as session:
+        statement = select(TrainedModel,ModelVersion).join(ModelVersion)
+        results = session.exec(statement).all()
+    payload = {}
+    for result in results:
+        model = payload.get(result[0].id)
+        if model is None:
+            payload.update({result[0].id:{"name":result[0].name,
+                                          "id": result[0].id,
+                                          "dataset_name": result[0].dataset_name,
+                                          "input_shape":result[0].input_shape,
+                                          "algorithm_name":result[0].algorithm_name,
+                                          "size":result[0].size,
+                                          "version_ids":[result[1].id]}})
+        else:
+            model["version_ids"].append(result[1].id)
+    return list(payload.values())

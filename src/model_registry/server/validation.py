@@ -9,7 +9,6 @@ class ValidHeaders(BaseModel):
     x_client_type: Literal["frontend", "generator", "input_coherence"]
 
 
-
 class BaseSystemModel(SQLModel):
     name: str = Field(primary_key=True)
     description: str
@@ -31,7 +30,10 @@ class BaseTrainedModel(SQLModel):
     name: str
     dataset_name: str
     size: str
-    input_shape: str
+    # Workaround in order to use regex validation of pydantic. See issue here: https://github.com/fastapi/sqlmodel/discussions/735
+    # This regex matches any input that is in the form of (number,number,...,number). This first digit must not start
+    # with zero.
+    input_shape: str = Field(schema_extra={'pattern':r"^\([1-9]\d*(?:,[1-9]\d*)*\)$"})
     algorithm_name: str = Field(foreign_key="systemmodel.name",nullable=False)
 
 class CreateTrainedModel(BaseTrainedModel):

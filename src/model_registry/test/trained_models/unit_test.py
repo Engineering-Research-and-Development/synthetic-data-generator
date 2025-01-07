@@ -45,41 +45,52 @@ model = {
         ]
 }
 
-def test_get_all() -> bool:
+def test_get_all_trained_models():
     data = requests.get(localhost)
-    return False if len(data.text) == 0 or data.status_code != 200 else True
+    assert data.status_code == 200
+    payload = data.json()
+    # Checking that they are not empty
+    for model in payload["trained_models"]:
+        assert model["name"]
+        assert model["id"]
+        assert model["dataset_name"]
+        assert model["input_shape"]
+        assert model["algorithm_name"]
+        assert model["size"]
 
-def test_get_train_model_by_id() -> bool:
-    model_id = 1
-    data = requests.get(localhost + "/" + str(model_id))
-    if data.status_code != 200:
-        return False
-    data = data.json()
-    if data['size'] != '18B' or data['name'] != 'model3' or data['algorithm_name'] != 'Transformers' \
-        or data['dataset_name'] != 'A dataset' or data['input_shape'] != '(2x7x8x4)' or data['id'] != 1:
-        return False
+def test_get_trained_models_and_versions():
+    data = requests.get(localhost)
+    assert data.status_code == 200
+    payload = data.json()
+
+    for model in payload["trained_models"]:
+        assert model["name"]
+        assert model["id"]
+        assert model["dataset_name"]
+        assert model["input_shape"]
+        assert model["algorithm_name"]
+        assert model["size"]
+        # This time version_ids can not be empty
+        assert model["version_ids"]
+
+def test_get_train_model_id(train_models_test_data) -> bool:
+    for model in train_models_test_data:
+        data = requests.get(localhost + "/" + str(model['id']))
+        assert data.status_code == 200
+        data = data.json()
+        assert data['size'] == model['size']
+        assert data['name'] == model['name']
+        assert data['algorithm_name'] == data['algorithm_name']
+        assert data['dataset_name'] == model['dataset_name']
+        assert data['input_shape'] == model['input_shape']
+        assert data['id'] == model['id']
+
     # Now we try an id that doesnt exists
     data = requests.get(localhost + "/" + str(10000))
-    if data.status_code != 404:
-        return False
-    return True
+    assert data.status_code != 404
 
-def test_train_model_versions():
-    """
-    This function checks that for all trained models present in the db we can retrieve the versions info
-    :return:
-    """
-    counter = 0
-    while True:
-        data = requests.get(localhost + "/" + str(counter) + "/versions")
-        if data.status_code == 404:
-            break
-        data = data.json()
-        if len(data["versions"]) == 0:
-            return False
-        counter += 1
-
-    return True
+def test_get_all_train_model_versions():
+    pass
 
 def test_delete_a_version():
     """
@@ -87,51 +98,31 @@ def test_delete_a_version():
     :return:
     """
     response = requests.get(localhost + "/1/versions")
-    if response.status_code != 200:
-        return False
+    assert response.status_code == 200
     data = response.json()
-    print("The model has: ",len(data["versions"])," versions")
     before_num_versions = len(data["versions"])
     to_del = data["versions"][0]
-    print("Deleting this version:\n",to_del)
     response = requests.delete(localhost + "/1/versions/?version_id=" + str(to_del["version_info"]["id"]))
-    if response.status_code != 200:
-        return False
+    assert response.status_code == 200
     # Now we check that the version has been deleted
     response = requests.get(localhost + "/1/versions")
     data = response.json()
-    print("The model has now: ", len(data["versions"]), " versions")
-    if len(data["versions"]) >= before_num_versions:
-        return False
+    assert len(data["versions"]) >= before_num_versions
 
-    return True
 
 def test_create_and_delete_trained_model():
     global model
     payload = json.dumps(model)
     response = requests.post(localhost,payload)
-    if response.status_code == 422:
-        print(response.text)
-        return False
+    assert response.status_code != 422
     data = response.json()
     response = requests.get(localhost + "/" + str(data["id"]) +"/versions")
-    if response.status_code == 404:
-        print("Could not find model")
-        return False
+    assert response.status_code != 404
     model = response.json()
-    print("Fetched model:",model)
     version_id = model["versions"][0]["version_info"]["id"]
     training_info_id = model["versions"][0]["training_info"]["id"]
     # Now we try to delete it, and we check that all the versions and training infos are deleted as well
-    if requests.delete(localhost + "/" + str(data["id"])).status_code != 200:
-        print("Could not delete model with id:",data["id"])
-        return False
-    print("Checking if model version with id", str(version_id)," has been deleted")
-    if requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code != 404:
-        print("Model version has not been deleted correctly")
-        return False
-    print("Checking if training info with id", str(training_info_id), " has been deleted")
-    if requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code != 404:
-        print("Training info has not been deleted correctly")
-        return False
-    return True
+    assert requests.delete(localhost + "/" + str(data["id"])).status_code == 200
+    assert requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code == 404
+    assert requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code == 404
+

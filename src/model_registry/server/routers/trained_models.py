@@ -18,6 +18,17 @@ async def get_all_trained_models():
     """
     return model.select_all(TrainedModel)
 
+
+@router.get("/trained_models/versions",status_code=200)
+async def get_trained_models_and_versions():
+    """
+    This function returns all the trained model with their versions
+    :return: A trained model
+    """
+    models = service.get_models_and_versions()
+    return models
+
+
 # This function is usually called by the generator who wants to know for a given trained model all the version
 # and information about them
 @router.get("/trained_models/{trained_model_id}",status_code=200)
