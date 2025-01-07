@@ -22,13 +22,15 @@ async def lifespan(app: FastAPI):
     """
     # Checking if database exists and has data in int
     if check_all_database_tables() is False or is_database_empty() or server_config["reset_database"]:
-        # The ANSI escape sequence are for coloring the text
+        # The ANSI escape sequences are for coloring the text
         if server_config["reset_database"]:
-            print("\033[94mDATABASE\033[0m: Dataset is being reset due to server config file flag")
+            print("\033[94mDATABASE\033[0m: Database is being reset due to server config file flag")
         else:
             print("\033[94mDATABASE\033[0m: Database is empty. Populating it with mock data")
         populate_db_with_mock_data()
-    else: print("\033[94mDATABASE\033[0m: Database ready!")
+        print("\033[92mDATABASE\033[0m: Database filled with testing data and ready!")
+    else:
+        print("\033[92mDATABASE\033[0m: Database found and ready!")
     yield
     #  This part is done after the FASTAPI application is run
 
