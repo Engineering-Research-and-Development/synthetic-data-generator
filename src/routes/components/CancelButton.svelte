@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {Button, Modal} from "flowbite-svelte";
     import {ExclamationCircleOutline} from "flowbite-svelte-icons";
     import {goto} from "$app/navigation";

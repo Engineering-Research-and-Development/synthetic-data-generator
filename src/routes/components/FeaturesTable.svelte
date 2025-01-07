@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {
         Table,
         TableBody,
@@ -9,11 +9,14 @@
         Checkbox,
     } from 'flowbite-svelte';
 
-    let max_rows=10;
-    export let headers = [];
-    export let tableData = [];
-    export let selectedColumns = [];
-    export let onToggleColumn; // Callback function passed from the parent
+    type RowData = { [key: string]: any };
+    type OnToggleColumn = (header: string) => void;
+
+    let max_rows = 10; // Maximum number of rows to display
+    export let headers: string[] = []; // Array of table headers
+    export let tableData: RowData[] = []; // Array of table rows
+    export let selectedColumns: string[] = []; // Array of selected columns
+    export let onToggleColumn: OnToggleColumn; // Function to handle column toggle
 </script>
 
 <Table class="w-3/4 text-gray-500 dark:text-gray-400" shadow>
