@@ -5,21 +5,29 @@
 		Search,
 		Select
 	} from "flowbite-svelte";
-	import { ChevronDownOutline } from "flowbite-svelte-icons";
-	
-	let features: Array<{ id: number, name: string, featureType: string }> = [];
+	import { ChevronDownOutline, CircleMinusSolid } from "flowbite-svelte-icons";
+
+	let features: Array<{ id: number, name: string, featureType: string, subType: string}> = [];
 	let types = [
 		{ value: 'str', name: 'String' },
 		{ value: 'int', name: 'Integer' },
 		{ value: 'flt', name: 'Float' },
-		{ value: 'dbl', name: 'Double' }
+		{ value: 'dbl', name: 'Double' },
+	]
+	let subTypes= [
+		{value: 'cont', name: "Continuous"},
+		{value: 'cat', name: "Categorical"}
 	]
 
 	// Function to add a new product row
 	function addFeature() {
-		features = [...features, { id: features.length + 1, name: '', featureType: '' }];
+		features = [...features, { id: features.length + 1, name: '', featureType: '', subType: '' }];
 	}
 
+	// Function to remove a feature row by its index
+	function removeFeature(index: number) {
+		features = features.filter((_, i) => i !== index);
+	}
 </script>
 
 <Section name="tableheader" sectionClass="bg-gray-50 dark:bg-gray-900 h-80 flex pt-8">
@@ -39,7 +47,11 @@
 	<!-- Product Input Rows -->
 	<div class="w-full p-4">
 		{#each features as product, index}
-			<div class="flex gap-4 mb-4">
+			<div class="flex gap-4 mb-4 items-center">
+				<!-- Delete button with minus icon -->
+				<Button on:click={() => removeFeature(index)} color="red" class="p-2">
+					<CircleMinusSolid class="h-5 w-5" />
+				</Button>
 				<input
 						type="text"
 						class="w-1/2 p-2 border rounded"
@@ -49,8 +61,16 @@
 				<Select
 						bind:value={features[index].featureType}
 						class="w-1/2 p-2 border rounded"
-						>
+				>
 					{#each types as t}
+						<option value={t.value}>{t.name}</option>
+					{/each}
+				</Select>
+				<Select
+						bind:value={features[index].subType}
+						class="w-1/2 p-2 border rounded"
+				>
+					{#each subTypes as t}
 						<option value={t.value}>{t.name}</option>
 					{/each}
 				</Select>
