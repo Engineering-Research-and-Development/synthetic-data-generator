@@ -40,11 +40,15 @@
 
 <h1 class="flex justify-center text-2xl font-bold my-4">Behaviour Selection</h1>
 <div class="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-    <form on:submit|preventDefault={submitBehaviours}>
-        <BehaviourTable
-                featuresName={featuresName}
-                selectedBehaviours={selectedBehaviours}
-        />
+    <form on:submit|preventDefault={submitBehaviours}
+        class="w-full max-w-4xl p-6 bg-white rounded-lg shadow-md dark:bg-gray-800"
+          >
+        <div class="flex flex-col md:flex-row gap-6 mb-6">
+            <BehaviourTable
+                    featuresName={featuresName}
+                    selectedBehaviours={selectedBehaviours}
+            />
+        </div>
 
         <Label for="additional_rows" class="block mb-2">Additional number of rows to create</Label>
         <ButtonGroup class="w-full">
@@ -52,16 +56,18 @@
                 <PlusOutline class="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </InputAddon>
             <Input
-                    id="additional_rows"
-                    bind:value={additionalRows}
-                    placeholder="0"
-                    type="number"
-                    required
+                id="additional_rows"
+                bind:value={additionalRows}
+                placeholder="0"
+                type="number"
+                required
             />
         </ButtonGroup>
 
-        <NextButton />
-        <BackButton />
-        <CancelButton />
+        <div class="flex justify-end gap-4">
+            <BackButton />
+            <CancelButton />
+            <NextButton />
+        </div>
     </form>
 </div>
