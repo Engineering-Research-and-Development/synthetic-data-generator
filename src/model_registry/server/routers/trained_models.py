@@ -108,12 +108,17 @@ async def delete_train_model(trained_model_id: int):
         raise HTTPException(status_code=404,detail="No trained instance with id: " + str(trained_model_id) + " has been found")
     service.delete_trained_model_schemas(train_model)
     # Now we get all versions and training info and delete them
-    _,versions_infos = service.get_trained_model_versions(trained_model_id)
-    for elem in versions_infos:
-        model.delete_instance(elem["version_info"])
-        model.delete_instance(elem["training_info"])
-    model.delete_instance(train_model)
-
+    try:
+         _,versions_infos = service.get_trained_model_versions(trained_model_id)
+    except HTTPException:
+        # This exception is launched when a model has no versions. So we can ignore it
+        pass
+    else:
+        for elem in versions_infos:
+            model.delete_instance(elem["version_info"])
+            model.delete_instance(elem["training_info"])
+    finally:
+        model.delete_instance(train_model)
 
 @router.delete("/trained_models/{trained_model_id}/versions",status_code=200)
 async def delete_train_model_version(trained_model_id: int,version_id: int | None = None):

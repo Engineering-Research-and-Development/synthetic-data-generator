@@ -6,6 +6,8 @@ from model_registry.database.schema import SystemModel, AllowedDataType,DataType
 from model_registry.database.model import engine,Session
 from sqlmodel import select, join, SQLModel
 
+from model_registry.test.trained_models.tm_unit_test import model
+
 
 def get_models_and_datatype() -> list:
     with Session(engine) as session:
@@ -30,29 +32,40 @@ def get_models_and_datatype() -> list:
 
 def validate_all_data_types(datatypes: list[SQLModel]) -> list[SQLModel]:
     payload = []
-    for data in datatypes:
-        try:
-            payload.append(DataType.model_validate(data))
-        except StatementError:
-            raise HTTPException(status_code=400,
-                                detail="The passed datatype is not correct. Check /docs")
+    with Session(engine) as session:
+        for data in datatypes:
+            statement = select(DataType.id).where(DataType.type == data.type).where(DataType.is_categorical == data.is_categorical)
+            result = session.exec(statement).one()
+            try:
+                validated_data = DataType.model_validate(data)
+            except StatementError:
+                raise HTTPException(status_code=400,
+                                    detail="The passed datatype is not correct. Check /docs")
+            validated_data.id = result
+            payload.append(validated_data)
     return payload
 
-
-
-
-def save_allowed_datatype(data):
-
+def are_datatypes_allowed(datatypes):
     with Session(engine) as session:
-        for data in unique.values():
-            # Then we check if it is in the database
-            statement = select(DataType.id).where(DataType.type == data.type)
-            try:
-                result = session.exec(statement).one()
-            except NoResultFound:
-                raise HTTPException(status_code=400,
-                                    detail="This kind of datatype is not supported. Please add it to use it")
-            # We then add the datatype to the Allowed Data Type Relationship
+        for data in datatypes:
+            statement = select(DataType).where(DataType.type == data.type).where(DataType.is_categorical == data.is_categorical)
+            results = session.exec(statement).all()
+            if len(results) == 0:
+                return False
+    return True
 
+def get_model_allowed_datatypes(model_name):
+    with Session(engine) as session:
+            statement = select(AllowedDataType).where(SystemModel.name == model_name)
+            result = session.exec(statement).all()
+    if len(result) == 0:
+        raise HTTPException(status_code=404,detail="The system model with name:" + model_name + "has no allowed datatypes")
+    return result
 
-
+def get_model_by_name(model_name: str):
+    with Session(engine) as session:
+        statement = select(SystemModel).where(SystemModel.name == model_name)
+        result = session.exec(statement).all()
+        if len(result) == 0:
+            raise HTTPException(status_code=404,detail="No System Model has been found with this name!")
+    return result

@@ -25,8 +25,10 @@ def train_model_versions(train_models_test_data):
     """
     payload = []
     for model in train_models_test_data:
-        data = requests.get("http://127.0.0.1:8000/trained_models/"+ str(model["id"]) +"/versions").json()
-        print(data)
+        response = requests.get("http://127.0.0.1:8000/trained_models/"+ str(model["id"]) +"/versions")
+        if response.status_code == 404:
+            continue
+        data = response.json()
         payload.append({"id":model["id"],"versions":data["versions"],"feature_schema":data["feature_schema"]})
     return payload
 

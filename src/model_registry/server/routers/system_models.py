@@ -1,16 +1,18 @@
 from fastapi import APIRouter, HTTPException
+from pydantic.v1 import validate_model
+
 from model_registry.database import model
 import sqlalchemy
-from model_registry.database.schema import SystemModel
+from model_registry.database.schema import SystemModel, AllowedDataType
 from model_registry.server.validation import CreateSystemModel, CreateDataType
 from model_registry.server.service import sm_service as service
-from sqlalchemy.exc import  NoResultFound
+from sqlalchemy.exc import  NoResultFound,IntegrityError
 
 router = APIRouter()
 
 
 @router.post("/system_models",status_code=201)
-async def add_trained_model(system_model: CreateSystemModel,data_types: list[CreateDataType]):
+async def add_system_model_and_datatype(system_model: CreateSystemModel,data_types: list[CreateDataType]):
     """
     Given a System Model it saves it to the repository. A valid System Model must have a unique name, a description
     and a loss function
@@ -26,8 +28,20 @@ async def add_trained_model(system_model: CreateSystemModel,data_types: list[Cre
         raise HTTPException(status_code=400,detail="System model data passed is not correctly formatted. Check /docs to ensure"
                                                    " that the input is presented correctly")
     validated_data_types = service.validate_all_data_types(data_types)
-    model.save_data(validated_model,refresh_data=True)
+    # If the datatype passed by the user are valid then we save the model and we add them to the AllowedDatatypesTable
+    if service.are_datatypes_allowed(validated_data_types):
+        try:
+            model.save_data(validated_model, refresh_data=True)
+        except IntegrityError:
+            raise HTTPException(status_code=400,
+                                detail="System Model must be unique. The name passed is already present in the registry")
+        for datatype in validated_data_types:
+            model.save_data(AllowedDataType(algorithm_name=validated_model.name,datatype=datatype.id))
+    else:
+        raise HTTPException(status_code=400,detail="The provided datatypes are not currently allowed. You need to add them "\
+                                                   "explicitly with POST /data_types")
 
+    return {"message":"Created system model with name","name":str(validated_model.name)}
 
 
 # Add a new model to the repository
@@ -43,30 +57,30 @@ async def get_all_system_models():
                    ,"allowed_datatype":model["allowed_datatype"],"categorical":model["categorical"]} for model in models]
     return payload
 
-@router.get("/system_models/{system_model_id}",status_code=200)
-async def get_system_model_by_id(system_model_id: int):
+# TODO: Further test must be conducted here
+@router.get("/system_models/{system_model_name}",status_code=200)
+async def get_system_model_by_name(system_model_name: str):
     """
     This function given a system model id it returns it
     :param system_model_id: Integer. A System model it
     :return: A system model
     :raise: 404 if the system model is not found
     """
-    try:
-        system_model = model.select_data_by_id(SystemModel,system_model_id)
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="No system model with id: " + str(system_model_id) + " has been found")
+    system_model = service.get_model_by_name(system_model_name)
     return system_model
 
 
-@router.delete("/system_models/{system_model_id}",status_code=200)
-async def delete_system_model(system_model_id: int):
+@router.delete("/system_models/{system_model_name}",status_code=200)
+async def delete_system_model(system_model_name: str):
     """
     Given a system model id, it deletes it
     :param system_model_id: Integer. A system model id
     :return:
     """
-    try:
-        model.delete_data_by_id(SystemModel,system_model_id)
-    except NoResultFound:
-        raise HTTPException(status_code=404,
-                            detail="No system model with id: " + str(system_model_id) + " has been found")
+    # We get it so we check it exists
+    system_model = await get_system_model_by_name(system_model_name)
+    allowed_data_types = service.get_model_allowed_datatypes()
+    for data in allowed_data_types:
+        model.delete_instance(data)
+    model.delete_instance(system_model)
+

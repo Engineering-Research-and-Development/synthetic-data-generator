@@ -28,7 +28,7 @@ model = {
             "n_train_samples": 100,
             "n_validation_samples": 100
         },
-    "training_data_info":
+    "feature_schema":
         [
             {
                 "feature_name": "First feature added to model Testing",
@@ -104,15 +104,15 @@ def test_create_and_delete_trained_model():
     global model
     payload = json.dumps(model)
     response = requests.post(localhost,payload)
-    assert response.status_code != 422
+    assert response.status_code != 422, print(response.json())
     data = response.json()
     response = requests.get(localhost + "/" + str(data["id"]) +"/versions")
     assert response.status_code != 404
-    model = response.json()
-    version_id = model["versions"][0]["version_info"]["id"]
-    training_info_id = model["versions"][0]["training_info"]["id"]
+    data = response.json()
+    version_id = data["versions"][0]["version_info"]["id"]
+    training_info_id = data["versions"][0]["training_info"]["id"]
     # Now we try to delete it, and we check that all the versions and training infos are deleted as well
-    assert requests.delete(localhost + "/" + str(data["id"])).status_code == 200
+    assert requests.delete(localhost + "/" + str(data["model"]["id"])).status_code == 200
     assert requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code == 404
     assert requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code == 404
 

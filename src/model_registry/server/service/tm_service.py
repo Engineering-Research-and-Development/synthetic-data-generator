@@ -18,7 +18,7 @@ def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[
                 .where(ModelVersion.id == version_id)
         results = session.exec(statement).all()
     if len(results) == 0 :
-        raise HTTPException(status_code=404,detail="No trained model found with id: " + str(model_id))
+        raise HTTPException(status_code=404,detail="This trained model exists but has no versions!")
     version_and_info = [{"version_info":elem[0],"training_info":elem[2]} for elem in results]
     model_info = results[0][1]
     # Returning model information and version paired with training information
