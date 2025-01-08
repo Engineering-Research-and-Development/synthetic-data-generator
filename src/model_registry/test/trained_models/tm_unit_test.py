@@ -100,7 +100,23 @@ def test_get_all_train_model_versions(train_model_versions):
             assert test_version["training_info"]["id"] == model_version["training_info"]["id"]
         assert len(model["feature_schema"]) == len(model_and_versions["feature_schema"])
 
+def test_create_and_delete_trained_model():
+    global model
+    payload = json.dumps(model)
+    response = requests.post(localhost,payload)
+    assert response.status_code != 422
+    data = response.json()
+    response = requests.get(localhost + "/" + str(data["id"]) +"/versions")
+    assert response.status_code != 404
+    model = response.json()
+    version_id = model["versions"][0]["version_info"]["id"]
+    training_info_id = model["versions"][0]["training_info"]["id"]
+    # Now we try to delete it, and we check that all the versions and training infos are deleted as well
+    assert requests.delete(localhost + "/" + str(data["id"])).status_code == 200
+    assert requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code == 404
+    assert requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code == 404
 
+# TODO: Test for a model the endpoint deletes all the versions if an id is not passed
 def test_delete_a_version():
     """
     This function tests if a delete of a train model works
@@ -122,19 +138,5 @@ def test_delete_a_version():
     response = requests.get(localhost + "/"+str(model_id)+"/versions")
     assert response.status_code == 404
 
-def test_create_and_delete_trained_model():
-    global model
-    payload = json.dumps(model)
-    response = requests.post(localhost,payload)
-    assert response.status_code != 422
-    data = response.json()
-    response = requests.get(localhost + "/" + str(data["id"]) +"/versions")
-    assert response.status_code != 404
-    model = response.json()
-    version_id = model["versions"][0]["version_info"]["id"]
-    training_info_id = model["versions"][0]["training_info"]["id"]
-    # Now we try to delete it, and we check that all the versions and training infos are deleted as well
-    assert requests.delete(localhost + "/" + str(data["id"])).status_code == 200
-    assert requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code == 404
-    assert requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code == 404
+
 

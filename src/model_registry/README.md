@@ -48,7 +48,7 @@ This package is organized as the following:
 * `routers` is the module responsible for the definition
 of the model repository endpoints
 * `service` is the module responsible for the implementation of the 
-* business logic of the application
+business logic of the application
 * `config.yaml` contains variable that determines the behaviour of the 
 server on startup
 * `validation.py` defines the Pydantic models that the endpoint take in input and

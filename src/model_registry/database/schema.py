@@ -3,7 +3,8 @@ from datetime import datetime
 
 
 from sqlmodel import Field, SQLModel, Relationship
-from model_registry.server.validation import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, BaseFeatureSchema
+from model_registry.server.validation import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, \
+    BaseFeatureSchema, CreateDataType
 
 
 class SystemModel(BaseSystemModel,table=True):
@@ -30,10 +31,9 @@ class TrainingInfo(BaseTrainingInfo,table=True):
     id: int | None = Field(default=None, primary_key=True)
 
 # Note: Defines the data type that our registry accepts
-class DataType(SQLModel,table=True):
+class DataType(CreateDataType,table=True):
     id: int | None = Field(default=None, primary_key=True)
-    type: str = Field(unique=True)
-    is_categorical: bool
+
 
 # Represents the N-N relationship called in the diagram "Allows" that models what kind of data a model template allows
 class AllowedDataType(SQLModel,table=True):

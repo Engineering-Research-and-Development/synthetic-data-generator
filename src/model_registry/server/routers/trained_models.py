@@ -63,13 +63,13 @@ async def get_all_train_model_versions(trained_model_id: int,version_id: int | N
 
 @router.post("/trained_models",status_code=201)
 async def create_model_and_version(trained_model:CreateTrainedModel,version: CreateModelVersion,
-                                   training_info: CreateTrainingInfo,training_data_info: list[CreateFeatureSchema]):
+                                   training_info: CreateTrainingInfo,feature_schema: list[CreateFeatureSchema]):
     """
     This function creates a new trained model and if a version and training info are passed they create them as well
     :param trained_model: A new trained model to save
     :param version:  A version for the trained model passed
     :param training_info: The training info of a given version
-    :param training_data_info: How the features have been ordered in this model version
+    :param feature_schema: How the features have been ordered in this model version
     :return:
     """
 
@@ -79,7 +79,7 @@ async def create_model_and_version(trained_model:CreateTrainedModel,version: Cre
     except IntegrityError:
         raise HTTPException(status_code=400,detail="The value of algorithm_name must be a valid system model. No system model"
                                                    " with such value is present")
-    validated_features = service.validate_all_schemas(training_data_info)
+    validated_features = service.validate_all_schemas(feature_schema)
     # We add the validated schema to the new model created
     # The id of the model is known since it has been refreshed in the session
     for feature in validated_features:
@@ -115,7 +115,7 @@ async def delete_train_model(trained_model_id: int):
     model.delete_instance(train_model)
 
 
-@router.delete("/trained_models/{trained_model_id}/versions/",status_code=200)
+@router.delete("/trained_models/{trained_model_id}/versions",status_code=200)
 async def delete_train_model_version(trained_model_id: int,version_id: int | None = None):
     """
     This function given a trained model id deletes the passed version id. Otherwise, it deletes all versions associated
