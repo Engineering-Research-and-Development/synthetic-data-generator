@@ -23,17 +23,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
-        run: |
-          if [[ "$GITHUB_REF" == refs/heads/* ]]; then
-            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-          else
-            echo "BRANCH_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          fi
-
-      - name: Extract tag name
-        id: extract_tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -41,5 +33,4 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.BRANCH_NAME }}-${{ env.TAG_NAME }}
-            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.BRANCH_NAME }}-latest
+            ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ steps.extract_branch.outputs.branch }}-latest
