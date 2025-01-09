@@ -6,8 +6,7 @@
     let showCancelPopup = false;
 
     function cancelProcedure(){
-        sessionStorage.removeItem('csvFile')
-        sessionStorage.removeItem("selectedColumns");
+        sessionStorage.clear();
         goto("/")
     }
 
