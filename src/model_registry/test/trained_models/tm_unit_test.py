@@ -116,7 +116,7 @@ def test_create_and_delete_trained_model():
     assert requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code == 404
     assert requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code == 404
 
-# TODO: Test for a model the endpoint deletes all the versions if an id is not passed
+
 def test_delete_a_version():
     """
     This function tests if a delete of a train model works

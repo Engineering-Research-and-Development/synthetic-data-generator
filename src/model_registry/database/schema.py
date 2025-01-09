@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlmodel import Field, SQLModel, Relationship
 from model_registry.server.validation import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, \
-    BaseFeatureSchema, CreateDataType
+    BaseFeatureSchema, CreateDataType, BaseDataType
 
 
 class SystemModel(BaseSystemModel,table=True):
@@ -31,7 +31,7 @@ class TrainingInfo(BaseTrainingInfo,table=True):
     id: int | None = Field(default=None, primary_key=True)
 
 # Note: Defines the data type that our registry accepts
-class DataType(CreateDataType,table=True):
+class DataType(BaseDataType,table=True):
     id: int | None = Field(default=None, primary_key=True)
 
 

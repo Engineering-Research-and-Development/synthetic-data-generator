@@ -3,7 +3,7 @@ the database initialization on startup"""
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from model_registry.database.model import  check_all_database_tables, is_database_empty,populate_db_with_mock_data
-from model_registry.server.routers import system_models,trained_models,model_versions,training_info
+from model_registry.server.routers import system_models,trained_models,model_versions,training_info,datatypes
 from yaml import safe_load
 import pkgutil
 
@@ -43,6 +43,7 @@ app.include_router(system_models.router)
 app.include_router(trained_models.router)
 app.include_router(model_versions.router)
 app.include_router(training_info.router)
+app.include_router(datatypes.router)
 
 # The following functions will serve as the mains interface for the client layer
 @app.get("/models")

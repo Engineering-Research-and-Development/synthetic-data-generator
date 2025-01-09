@@ -58,6 +58,9 @@ class BaseFeatureSchema(SQLModel):
 class CreateFeatureSchema(BaseFeatureSchema):
     datatype: str
 
-class CreateDataType(SQLModel):
-    type: str = Field(unique=True)
+class BaseDataType(SQLModel):
+    type: str
     is_categorical: bool
+
+class CreateDataType(BaseDataType):
+    pass

@@ -71,8 +71,7 @@ def create_allowed_data_type_data(batch_size: int = len(default_system_models)) 
     """
     if batch_size <= 0:
         raise ValueError('Batch_size must be greater than 0')
-    ids = [i for i in range(1,batch_size)]
-    return [{"algorithm_name":random.choice(default_system_models),"datatype":1} for id in ids]
+    return [{"algorithm_name":random.choice(default_system_models),"datatype":1} for i in range(1,batch_size)]
 
 def create_feature_schema_data(batch_size: int = len(default_system_models)) -> list[dict]:
     """

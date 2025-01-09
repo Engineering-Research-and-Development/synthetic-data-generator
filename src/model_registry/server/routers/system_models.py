@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException
-from pydantic.v1 import validate_model
 
 from model_registry.database import model
 import sqlalchemy
@@ -7,6 +6,8 @@ from model_registry.database.schema import SystemModel, AllowedDataType
 from model_registry.server.validation import CreateSystemModel, CreateDataType
 from model_registry.server.service import sm_service as service
 from sqlalchemy.exc import  NoResultFound,IntegrityError
+
+
 
 router = APIRouter()
 
@@ -27,25 +28,24 @@ async def add_system_model_and_datatype(system_model: CreateSystemModel,data_typ
     except sqlalchemy.exc.StatementError:
         raise HTTPException(status_code=400,detail="System model data passed is not correctly formatted. Check /docs to ensure"
                                                    " that the input is presented correctly")
-    validated_data_types = service.validate_all_data_types(data_types)
-    # If the datatype passed by the user are valid then we save the model and we add them to the AllowedDatatypesTable
-    if service.are_datatypes_allowed(validated_data_types):
-        try:
-            model.save_data(validated_model, refresh_data=True)
-        except IntegrityError:
-            raise HTTPException(status_code=400,
-                                detail="System Model must be unique. The name passed is already present in the registry")
-        for datatype in validated_data_types:
-            model.save_data(AllowedDataType(algorithm_name=validated_model.name,datatype=datatype.id))
-    else:
+    try:
+        validated_data_types = service.validate_all_data_types(data_types)
+    except NoResultFound:
         raise HTTPException(status_code=400,detail="The provided datatypes are not currently allowed. You need to add them "\
                                                    "explicitly with POST /data_types")
+    try:
+        model.save_data(validated_model, refresh_data=True)
+    except IntegrityError:
+        raise HTTPException(status_code=400,
+                            detail="System Model must be unique. The name passed is already present in the registry")
+    for datatype in validated_data_types:
+        model.save_data(AllowedDataType(algorithm_name=validated_model.name,datatype=datatype.id))
 
     return {"message":"Created system model with name","name":str(validated_model.name)}
 
 
 # Add a new model to the repository
-@router.get("/system_models",status_code=201)
+@router.get("/system_models",status_code=200)
 async def get_all_system_models():
     """
     This function returns all system models as well as their allowed data type
@@ -57,7 +57,6 @@ async def get_all_system_models():
                    ,"allowed_datatype":model["allowed_datatype"],"categorical":model["categorical"]} for model in models]
     return payload
 
-# TODO: Further test must be conducted here
 @router.get("/system_models/{system_model_name}",status_code=200)
 async def get_system_model_by_name(system_model_name: str):
     """
@@ -66,8 +65,9 @@ async def get_system_model_by_name(system_model_name: str):
     :return: A system model
     :raise: 404 if the system model is not found
     """
-    system_model = service.get_model_by_name(system_model_name)
-    return system_model
+    system_model,types,is_categorical = service.get_model_by_name_and_datatypes(system_model_name)
+    return {"name":system_model.name,"description":system_model.description,"loss_function":system_model.loss_function
+        ,"allowed_datatype":types,"is_categorical":is_categorical}
 
 
 @router.delete("/system_models/{system_model_name}",status_code=200)
@@ -78,8 +78,7 @@ async def delete_system_model(system_model_name: str):
     :return:
     """
     # We get it so we check it exists
-    system_model = await get_system_model_by_name(system_model_name)
-    allowed_data_types = service.get_model_allowed_datatypes()
+    system_model,allowed_data_types = service.get_model_allowed_datatypes(system_model_name)
     for data in allowed_data_types:
         model.delete_instance(data)
     model.delete_instance(system_model)

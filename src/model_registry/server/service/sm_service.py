@@ -6,7 +6,6 @@ from model_registry.database.schema import SystemModel, AllowedDataType,DataType
 from model_registry.database.model import engine,Session
 from sqlmodel import select, join, SQLModel
 
-from model_registry.test.trained_models.tm_unit_test import model
 
 
 def get_models_and_datatype() -> list:
@@ -56,16 +55,24 @@ def are_datatypes_allowed(datatypes):
 
 def get_model_allowed_datatypes(model_name):
     with Session(engine) as session:
-            statement = select(AllowedDataType).where(SystemModel.name == model_name)
-            result = session.exec(statement).all()
-    if len(result) == 0:
-        raise HTTPException(status_code=404,detail="The system model with name:" + model_name + "has no allowed datatypes")
-    return result
+            statement = select(SystemModel,AllowedDataType).join(SystemModel).where(SystemModel.name == model_name)
+            results = session.exec(statement).all()
+    if len(results) == 0:
+        raise HTTPException(status_code=404,detail="The system model either it does not exist or has no allowed datatypes")
+    allowed_datatypes = [x[1] for x in results]
+    return results[0][0],allowed_datatypes
 
-def get_model_by_name(model_name: str):
+
+
+def get_model_by_name_and_datatypes(model_name: str):
     with Session(engine) as session:
-        statement = select(SystemModel).where(SystemModel.name == model_name)
-        result = session.exec(statement).all()
-        if len(result) == 0:
+        statement = select(SystemModel,AllowedDataType,DataType).join(AllowedDataType,onclause=SystemModel.name == AllowedDataType.algorithm_name)\
+            .join(DataType).where(SystemModel.name == model_name)
+        results = session.exec(statement).all()
+        if len(results) == 0:
             raise HTTPException(status_code=404,detail="No System Model has been found with this name!")
-    return result
+    types,is_categorical = [],[]
+    for result in results:
+        types.append(result[2].type)
+        is_categorical.append(result[2].is_categorical)
+    return results[0][0],types,is_categorical
