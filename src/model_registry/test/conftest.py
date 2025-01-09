@@ -36,3 +36,15 @@ def train_model_versions(train_models_test_data):
 @pytest.fixture
 def train_model_feature_schemas():
     return requests.get("http://127.0.0.1:8000/trained_models").json()
+
+@pytest.fixture
+def get_all_system_models():
+    return requests.get("http://127.0.0.1:8000/system_models").json()
+
+@pytest.fixture
+def get_all_versions():
+    return requests.get("http://127.0.0.1:8000/versions").json()
+
+@pytest.fixture
+def get_all_datatypes():
+    return requests.get("http://127.0.0.1:8000/datatypes").json()

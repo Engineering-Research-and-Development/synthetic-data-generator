@@ -54,7 +54,7 @@ async def get_all_system_models():
     models = service.get_models_and_datatype()
     # Creating a more structured payload
     payload = [{"name":model["name"],"description":model["description"],"loss_function":model["loss_function"]
-                   ,"allowed_datatype":model["allowed_datatype"],"categorical":model["categorical"]} for model in models]
+                   ,"allowed_datatype":model["allowed_datatype"],"is_categorical":model["categorical"]} for model in models]
     return payload
 
 @router.get("/system_models/{system_model_name}",status_code=200)
