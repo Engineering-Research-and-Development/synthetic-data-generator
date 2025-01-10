@@ -10,6 +10,6 @@ RUN pip install --no-cache-dir --upgrade -r model_registry/requirements.txt
 
 COPY . model_registry
 
-ENV PYTHONPATH="${PYTHONPATH}:/model_registry"
+#ENV PYTHONPATH="${PYTHONPATH}:model_registry"
 
 CMD ["fastapi", "run", "model_registry/server/controller.py", "--port", "8001"]
