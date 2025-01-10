@@ -1,8 +1,8 @@
 services:
   web_app:
-    build: .
+    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
     ports:
-      - "80:80"
+      - "80:8001"
   postgres_database:
     image: "postgres"
     ports:
