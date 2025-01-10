@@ -11,10 +11,15 @@ import pkgutil
 from sqlalchemy import text, Sequence
 from typing import Type
 
-# Loading config file
+# Loading config files
 config_file = pkgutil.get_data("model_registry.database","config.yaml")
 config = safe_load(config_file)
-credentials = config["database_credentials"]
+server_file = pkgutil.get_data("model_registry.server","config.yaml")
+server_config = safe_load(server_file)["server_startup_configuration"]
+if server_config["use_remote_database"]:
+    credentials = config["remote_database_credentials"]
+else:
+    credentials = config["local_database_credentials"]
 
 # Defining database engine and Dialect for connection
 engine = create_engine("postgresql+psycopg2://{username}:{password}@{host}:5432/{database}"
@@ -125,3 +130,7 @@ def populate_db_with_mock_data():
     save_data_from_dict(TrainingInfo,training_info)
     save_data_from_dict(ModelVersion,model_version)
 
+if __name__ == '__main__':
+    config_file = pkgutil.get_data("model_registry.database", "config.yaml")
+    config = safe_load(config_file)
+    print(config)

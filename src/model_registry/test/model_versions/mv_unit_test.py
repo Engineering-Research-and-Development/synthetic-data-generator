@@ -1,7 +1,7 @@
 import json
 import requests
-
-localhost = "http://127.0.0.1:8000/versions"
+from model_registry.test.conftest import port
+localhost = "http://127.0.0.1:{port}/versions".format(port=port)
 
 def test_get_all_versions():
     response = requests.get(localhost)

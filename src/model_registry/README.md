@@ -58,6 +58,12 @@ Contains automatic testing code with which the application has been
 tested. In order to replicate the testing that has been done, launch
 the `main.py` while the model repository server is running. The main 
 will then call all the testing functions present in `test_tmodel.py`
+## Configuration files
+The following configuration can be found inside the project:
+1. `model_registry/server/config.yaml`: Contains
+flags that determine the server behaviour on startup
+2. `model_registry/database/config.yaml`: Contains information needed for the database connection, like hostname,
+database name, and user credentials 
 ## Docker: How to run it
 Download or pull the code, navigate to the code's folder and simply run  
 > docker compose up  

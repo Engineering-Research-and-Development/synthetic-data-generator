@@ -2,8 +2,8 @@
 import json
 
 import requests
-
-localhost = "http://127.0.0.1:8000/trained_models"
+from model_registry.test.conftest import prefix
+localhost = prefix  + "/trained_models"
 
 # This is the dummy model we will use for testing purposes
 model = {
@@ -47,7 +47,7 @@ model = {
 
 def test_get_all_trained_models():
     data = requests.get(localhost)
-    assert data.status_code == 200
+    assert data.status_code == 200,print(data.json())
     payload = data.json()
     # Checking that they are not empty
     for model in payload:
@@ -113,8 +113,8 @@ def test_create_and_delete_trained_model():
     training_info_id = data["versions"][0]["training_info"]["id"]
     # Now we try to delete it, and we check that all the versions and training infos are deleted as well
     assert requests.delete(localhost + "/" + str(data["model"]["id"])).status_code == 200
-    assert requests.get("http://127.0.0.1:8000/versions/" + str(version_id)).status_code == 404
-    assert requests.get("http://127.0.0.1:8000/training_info/" + str(training_info_id)).status_code == 404
+    assert requests.get(prefix + "/versions/" + str(version_id)).status_code == 404
+    assert requests.get(prefix + "/training_info/" + str(training_info_id)).status_code == 404
 
 
 def test_delete_a_version():

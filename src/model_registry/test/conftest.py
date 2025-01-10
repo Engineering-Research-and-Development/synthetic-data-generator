@@ -3,6 +3,10 @@ For more information about why this module is needed, check:
 https://stackoverflow.com/questions/17801300/how-to-run-a-method-before-all-tests-in-all-classes"""
 import pytest
 import requests
+from model_registry.server.controller import server_config
+
+port = server_config["port"]
+prefix = "http://127.0.0.1:{port}/".format(port=port)
 
 def pytest_sessionstart(session):
     """
@@ -13,7 +17,7 @@ def pytest_sessionstart(session):
 
 @pytest.fixture
 def train_models_test_data():
-    return requests.get("http://127.0.0.1:8000/trained_models").json()
+    return requests.get(prefix + "/trained_models").json()
 
 
 @pytest.fixture
@@ -25,7 +29,7 @@ def train_model_versions(train_models_test_data):
     """
     payload = []
     for model in train_models_test_data:
-        response = requests.get("http://127.0.0.1:8000/trained_models/"+ str(model["id"]) +"/versions")
+        response = requests.get(prefix + "/trained_models/"+ str(model["id"]) +"/versions")
         if response.status_code == 404:
             continue
         data = response.json()
@@ -35,16 +39,16 @@ def train_model_versions(train_models_test_data):
 
 @pytest.fixture
 def train_model_feature_schemas():
-    return requests.get("http://127.0.0.1:8000/trained_models").json()
+    return requests.get(prefix + "/trained_models".format(port=port)).json()
 
 @pytest.fixture
 def get_all_system_models():
-    return requests.get("http://127.0.0.1:8000/system_models").json()
+    return requests.get(prefix + "/system_models".format(port=port)).json()
 
 @pytest.fixture
 def get_all_versions():
-    return requests.get("http://127.0.0.1:8000/versions").json()
+    return requests.get(prefix + "/versions".format(port=port)).json()
 
 @pytest.fixture
 def get_all_datatypes():
-    return requests.get("http://127.0.0.1:8000/datatypes").json()
+    return requests.get(prefix  + "/datatypes".format(port=port)).json()
