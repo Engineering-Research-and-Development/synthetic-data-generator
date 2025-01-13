@@ -2,7 +2,7 @@
 It is responsible for accessing and manipulating the application's data."""
 
 from sqlmodel import create_engine,Session,select
-
+import os
 from model_registry.database.data_generator import create_mock_data
 # This is needed since to create the table we need the models defined in the schema
 from model_registry.database.schema import *
@@ -11,20 +11,16 @@ import pkgutil
 from sqlalchemy import text, Sequence
 from typing import Type
 
-# Loading config files
-config_file = pkgutil.get_data("model_registry.database","config.yaml")
-config = safe_load(config_file)
-server_file = pkgutil.get_data("model_registry.server","config.yaml")
-server_config = safe_load(server_file)["server_startup_configuration"]
-if server_config["use_remote_database"]:
-    credentials = config["remote_database_credentials"]
-else:
-    credentials = config["local_database_credentials"]
+# Load env variables
+username = os.environ["db_username"]
+password = os.environ["db_password"]
+host = os.environ["db_host"]
+database = os.environ["db_name"]
+
 
 # Defining database engine and Dialect for connection
-engine = create_engine("postgresql+psycopg2://{username}:{password}@{host}:5432/{database}"
-                       .format(username=credentials["username"],password=credentials["password"],
-                               database=credentials["database"],host=credentials["host"]),echo=False)
+engine = create_engine(f"postgresql+psycopg2://{username}:{password}@{host}:5432/{database}",echo=False)
+
 
 def create_database_tables():
     SQLModel.metadata.create_all(engine)

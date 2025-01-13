@@ -4,13 +4,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from model_registry.database.model import  check_all_database_tables, is_database_empty,populate_db_with_mock_data
 from model_registry.server.routers import system_models,trained_models,model_versions,training_info,datatypes
-from yaml import safe_load
-import pkgutil
-
-# Loading config file
-config_file = pkgutil.get_data("model_registry.server","config.yaml")
-config = safe_load(config_file)
-server_config = config["server_startup_configuration"]
+import os
 
 
 @asynccontextmanager
@@ -20,10 +14,11 @@ async def lifespan(app: FastAPI):
     BEFORE the application is launched while the code after the yield is run AFTER the app execution. The code
     is run only once.
     """
+
     # Checking if database exists and has data in int
-    if check_all_database_tables() is False or is_database_empty() or server_config["reset_database"]:
-        # The ANSI escape sequences are for coloring the text
-        if server_config["reset_database"]:
+    if check_all_database_tables() is False or is_database_empty() or os.environ["RELOAD_DATABASE"]:
+       # The ANSI escape sequences are for coloring the text
+        if os.environ["RELOAD_DATABASE"]:
             print("\033[94mDATABASE\033[0m: Database is being reset due to server config file flag")
         else:
             print("\033[94mDATABASE\033[0m: Database is empty. Populating it with mock data")
