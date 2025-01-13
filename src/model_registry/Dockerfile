@@ -12,4 +12,4 @@ COPY . /model_registry
 
 ENV PYTHONPATH="${PYTHONPATH}:/model_registry"
 
-CMD ["fastapi", "run", "model_registry/server/controller.py:app", "--port", "8001"]
+CMD ["fastapi", "run", "server/controller.py:app", "--port", "8001"]
