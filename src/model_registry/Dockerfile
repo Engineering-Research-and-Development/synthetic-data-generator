@@ -8,7 +8,7 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install --no-cache-dir --upgrade -r model_registry/requirements.txt
 
-COPY . .
+COPY /model_registry .
 
 ENV PYTHONPATH="${PYTHONPATH}:/model_registry"
 
