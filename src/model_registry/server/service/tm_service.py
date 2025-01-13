@@ -5,8 +5,8 @@ from sqlalchemy.exc import NoResultFound
 
 from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVersion, FeatureSchema, DataType
 from model_registry.database.model import engine,Session
-from sqlmodel import select, join, SQLModel
-from model_registry.server.validation import CreateFeatureSchema
+from sqlmodel import select, SQLModel
+from model_registry.database.validation import CreateFeatureSchema
 
 
 def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[SQLModel,dict]:

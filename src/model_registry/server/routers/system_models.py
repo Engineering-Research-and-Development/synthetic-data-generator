@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from model_registry.database import model
 import sqlalchemy
 from model_registry.database.schema import SystemModel, AllowedDataType
-from model_registry.server.validation import CreateSystemModel, CreateDataType
+from model_registry.database.validation import CreateSystemModel, CreateDataType
 from model_registry.server.service import sm_service as service
 from sqlalchemy.exc import  NoResultFound,IntegrityError
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from model_registry.database.schema import TrainedModel, ModelVersion, TrainingInfo
 from model_registry.database import model
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from model_registry.server.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema
+from model_registry.database.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema
 from model_registry.server.service import tm_service as service
 
 # Needed for FASTApi

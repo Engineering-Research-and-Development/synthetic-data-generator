@@ -1,7 +1,6 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
 
 from sqlmodel import Field,SQLModel
-from datetime import datetime
 from pydantic import BaseModel
 from typing import Literal
 

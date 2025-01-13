@@ -2,9 +2,9 @@
 from datetime import datetime
 
 
-from sqlmodel import Field, SQLModel, Relationship
-from model_registry.server.validation import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, \
-    BaseFeatureSchema, CreateDataType, BaseDataType
+from sqlmodel import Field, SQLModel
+from model_registry.database.validation import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, \
+    BaseFeatureSchema, BaseDataType
 
 
 class SystemModel(BaseSystemModel,table=True):
