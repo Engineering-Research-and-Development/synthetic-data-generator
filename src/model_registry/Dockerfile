@@ -8,8 +8,9 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install --no-cache-dir --upgrade -r model_registry/requirements.txt
 
-COPY model_registry/ .
+COPY . .
 
 ENV PYTHONPATH="${PYTHONPATH}:/model_registry"
+RUN ls -la /model_registry/*
 
-CMD ["fastapi", "run", "server/controller.py:app", "--port", "8001"]
+CMD ["fastapi", "run", "server/controller.py", "--port", "8001"]
