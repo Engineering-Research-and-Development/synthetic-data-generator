@@ -1,6 +1,5 @@
 """ This module offers mock-data generating methods. This module should be called once before launching the FASTApi
 server in order to populate the db and to not waste any time in application startup"""
-from datetime import datetime
 from random import shuffle
 import random
 from model_registry.database.schema import *
