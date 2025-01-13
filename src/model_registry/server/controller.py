@@ -16,9 +16,9 @@ async def lifespan(app: FastAPI):
     """
 
     # Checking if database exists and has data in int
-    if check_all_database_tables() is False or is_database_empty() or os.environ["RELOAD_DATABASE"]:
+    if check_all_database_tables() is False or is_database_empty() or (os.environ["RELOAD_DATABASE"] == "true"):
        # The ANSI escape sequences are for coloring the text
-        if os.environ["RELOAD_DATABASE"]:
+        if (os.environ["RELOAD_DATABASE"] == "true"):
             print("\033[94mDATABASE\033[0m: Database is being reset due to server config file flag")
         else:
             print("\033[94mDATABASE\033[0m: Database is empty. Populating it with mock data")
