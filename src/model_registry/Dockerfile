@@ -2,13 +2,11 @@ FROM python:3.12-alpine
 
 WORKDIR /model_registry
 
-COPY requirements.txt model_registry/requirements.txt
+COPY . .
 # Needed for install pyscopg2
 RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev
 
 RUN pip install --no-cache-dir --upgrade -r model_registry/requirements.txt
-
-COPY . .
 
 ENV PYTHONPATH="${PYTHONPATH}:/model_registry/"
 #RUN ls -la /model_registry/*

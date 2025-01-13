@@ -1,11 +1,20 @@
 services:
-  web_app:
+  sdg-middleware:
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
     ports:
-      - "80:8001"
-  postgres_database:
-    image: "postgres"
+      - "8001:8001"
+    environment:
+      db_host: database
+      db_name: postgres
+      db_password: postgres
+      db_username: postgres
+    depends_on:
+      - database
+
+
+  database:
+    image: "postgres:latest"
     ports:
-      - "2022:5432"
+      - "5432:5432"
     environment:
       POSTGRES_PASSWORD: "postgres"
