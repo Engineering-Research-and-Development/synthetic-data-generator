@@ -10,20 +10,31 @@
 	import { Button } from 'flowbite-svelte';
 	import BackButton from "../components/BackButton.svelte";
 	import CancelButton from "../components/CancelButton.svelte";
+	import {onMount} from "svelte";
 
 	// Define types
 	type RowData = { [key: string]: any };
 	type SelectedBehaviours = { [feature: string]: string[] };
 	type FeaturesCreated = { id: number, name: string, featureType: string, subType: string }
 
+	let selectedColumns: string[] = []
+	let userFile: RowData[] = []
+	let additionalRows: number = 0
+	let selectedBehaviours: SelectedBehaviours = {}
+	let newModel: boolean = false
+	let selectedModel: string = ""
+	let featuresCreated: FeaturesCreated[] = []
+
 	// Variables initialized from sessionStorage
-	let selectedColumns: string[] = JSON.parse(sessionStorage.getItem("selectedColumns") || "[]");
-	let userFile: RowData[] = JSON.parse(sessionStorage.getItem("userFile") || "[]");
-	let additionalRows: number = Number(sessionStorage.getItem("additionalRows")) || 0;
-	let selectedBehaviours: SelectedBehaviours = JSON.parse(sessionStorage.getItem("selectedBehaviours") || "{}");
-	let newModel: boolean = JSON.parse(sessionStorage.getItem("newModel") || "false");
-	let selectedModel: string = sessionStorage.getItem("selectedModel") || "";
-	let featuresCreated: FeaturesCreated[] = JSON.parse(sessionStorage.getItem("featuresCreated") || "[]");
+	onMount(() => {
+		selectedColumns = JSON.parse(sessionStorage.getItem("selectedColumns") || "[]");
+		userFile = JSON.parse(sessionStorage.getItem("userFile") || "[]");
+		additionalRows= Number(sessionStorage.getItem("additionalRows")) || 0;
+		selectedBehaviours = JSON.parse(sessionStorage.getItem("selectedBehaviours") || "{}");
+		newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
+		selectedModel = sessionStorage.getItem("selectedModel") || "";
+		featuresCreated = JSON.parse(sessionStorage.getItem("featuresCreated") || "[]");
+	});
 
 	// Data to send
 	let postData = {
@@ -59,9 +70,16 @@
 	}
 
 	// Table-specific logic
-	let headers: string[] = Object.keys(userFile[0]); // Extract headers from the first row
-	let tableData: RowData[] = userFile; // Use userFile as table data
+
+	let headers: string[]
+	try {
+		headers = Object.keys(userFile[0]); // Extract headers from the first row
+	} catch (error) {
+		headers = [];
+	}
+	let tableData: RowData[] = userFile || null; // Use userFile as table data
 	let maxRowsToShow = 4; // Show only the first 4 rows
+
 </script>
 
 <h1 class="text-2xl font-bold text-center my-6">Review and Send Data</h1>
@@ -102,10 +120,9 @@
 			</TableBody>
 		</Table>
 	</div>
-	{/if}
 
+	{:else}
 	<!-- User File Table -->
-	{#if tableData}
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
 		<h2 class="text-center text-xl font-semibold mb-4">User File (First {maxRowsToShow} Rows)</h2>
 		<Table class="w-full text-gray-500 dark:text-gray-400" shadow>

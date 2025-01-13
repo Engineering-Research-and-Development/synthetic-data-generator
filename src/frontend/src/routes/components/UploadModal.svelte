@@ -2,7 +2,7 @@
     import { Modal, Fileupload, Button } from 'flowbite-svelte';
     import Papa from 'papaparse';
     import { goto } from "$app/navigation";
-    import CancelButton from "../components/CancelButton.svelte";
+    import CancelButton from "./CancelButton.svelte";
 
     export let showPopup: boolean;
     export let isSubmitting: boolean;
