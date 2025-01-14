@@ -1,6 +1,0 @@
----
-server_startup_configuration:
-  reset_database: True
-  use_remote_database: True
-  port: 8001
-...

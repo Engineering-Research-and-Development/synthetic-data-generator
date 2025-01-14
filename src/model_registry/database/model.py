@@ -6,8 +6,6 @@ import os
 from model_registry.database.data_generator import create_mock_data
 # This is needed since to create the table we need the models defined in the schema
 from model_registry.database.schema import *
-from yaml import safe_load
-import pkgutil
 from sqlalchemy import text, Sequence
 from typing import Type
 
@@ -126,7 +124,3 @@ def populate_db_with_mock_data():
     save_data_from_dict(TrainingInfo,training_info)
     save_data_from_dict(ModelVersion,model_version)
 
-if __name__ == '__main__':
-    config_file = pkgutil.get_data("model_registry.database", "config.yaml")
-    config = safe_load(config_file)
-    print(config)

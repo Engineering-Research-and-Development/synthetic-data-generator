@@ -1,7 +1,7 @@
 import json
 import requests
-from model_registry.test.conftest import port
-local_host = "http://127.0.0.1:{port}/datatypes".format(port=port)
+
+local_host = "http://127.0.0.1:8001/datatypes"
 
 test = {
           "type":"string",

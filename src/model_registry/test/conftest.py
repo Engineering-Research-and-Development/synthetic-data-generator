@@ -3,10 +3,9 @@ For more information about why this module is needed, check:
 https://stackoverflow.com/questions/17801300/how-to-run-a-method-before-all-tests-in-all-classes"""
 import pytest
 import requests
-from model_registry.server.controller import server_config
+import os
 
-port = server_config["port"]
-prefix = "http://127.0.0.1:{port}/".format(port=port)
+prefix = f"http://127.0.0.1:8001/"
 
 def pytest_sessionstart(session):
     """
@@ -39,16 +38,16 @@ def train_model_versions(train_models_test_data):
 
 @pytest.fixture
 def train_model_feature_schemas():
-    return requests.get(prefix + "/trained_models".format(port=port)).json()
+    return requests.get(prefix + "/trained_models").json()
 
 @pytest.fixture
 def get_all_system_models():
-    return requests.get(prefix + "/system_models".format(port=port)).json()
+    return requests.get(prefix + "/system_models").json()
 
 @pytest.fixture
 def get_all_versions():
-    return requests.get(prefix + "/versions".format(port=port)).json()
+    return requests.get(prefix + "/versions").json()
 
 @pytest.fixture
 def get_all_datatypes():
-    return requests.get(prefix  + "/datatypes".format(port=port)).json()
+    return requests.get(prefix  + "/datatypes").json()

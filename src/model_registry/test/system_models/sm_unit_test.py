@@ -21,8 +21,8 @@ test = {
   ]
 
 }
-from model_registry.test.conftest import port
-localhost = "http://127.0.0.1:{port}/system_models".format(port=port)
+
+localhost = "http://127.0.0.1:8001/system_models"
 
 def test_create_system_model():
     global test
