@@ -12,31 +12,45 @@
 	import CancelButton from "../components/CancelButton.svelte";
 	import {onMount} from "svelte";
 
+
 	// Define types
 	type RowData = { [key: string]: any };
 	type SelectedBehaviours = { [feature: string]: string[] };
 	type FeaturesCreated = { id: number, name: string, featureType: string, subType: string }
 
-	let selectedColumns: string[] = []
-	let userFile: RowData[] = []
-	let additionalRows: number = 0
-	let selectedBehaviours: SelectedBehaviours = {}
-	let newModel: boolean = false
-	let selectedModel: string = ""
-	let featuresCreated: FeaturesCreated[] = []
+	let selectedColumns: string[] = [];
+	let userFile: RowData[] = [];
+	let additionalRows: number = 0;
+	let selectedBehaviours: SelectedBehaviours = {} as SelectedBehaviours;
+	let newModel: boolean = false;
+	let selectedModel: string = "";
+	let featuresCreated: FeaturesCreated[] = [];
+	let headers: string[] = [];
+	let tableData: RowData[] = [];
+	let maxRowsToShow = 4;
 
-	// Variables initialized from sessionStorage
-	onMount(() => {
+	async function loadUserFile(): Promise<void> {
+		try {
+			const userFileData = sessionStorage.getItem("userFile");
+			userFile = userFileData ? JSON.parse(userFileData) : [];
+			headers = Object.keys(userFile[0]); // Extract headers from the first row
+			tableData = userFile
+		} catch (error) {
+			userFile = [];
+		}
+}
+
+	onMount(async () => {
+		await loadUserFile();
 		selectedColumns = JSON.parse(sessionStorage.getItem("selectedColumns") || "[]");
-		userFile = JSON.parse(sessionStorage.getItem("userFile") || "[]");
-		additionalRows= Number(sessionStorage.getItem("additionalRows")) || 0;
+		additionalRows = Number(sessionStorage.getItem("additionalRows")) || 0;
 		selectedBehaviours = JSON.parse(sessionStorage.getItem("selectedBehaviours") || "{}");
 		newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
 		selectedModel = sessionStorage.getItem("selectedModel") || "";
 		featuresCreated = JSON.parse(sessionStorage.getItem("featuresCreated") || "[]");
 	});
 
-	// Data to send
+
 	let postData = {
 		featuresCreated,
 		selectedColumns,
@@ -68,18 +82,6 @@
 			console.error("Error sending data:", error);
 		}
 	}
-
-	// Table-specific logic
-
-	let headers: string[]
-	try {
-		headers = Object.keys(userFile[0]); // Extract headers from the first row
-	} catch (error) {
-		headers = [];
-	}
-	let tableData: RowData[] = userFile || null; // Use userFile as table data
-	let maxRowsToShow = 4; // Show only the first 4 rows
-
 </script>
 
 <h1 class="text-2xl font-bold text-center my-6">Review and Send Data</h1>
@@ -96,14 +98,14 @@
 	</div>
 
 	<!-- Features Created -->
-	{#if featuresCreated}
+	{#if featuresCreated.length>0}
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
 		<h2 class="text-center text-xl font-semibold mb-4">Features to create</h2>
 		<Table class="w-full text-gray-500 dark:text-gray-400" shadow>
 			<TableHead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 				{#each featuresCreated as feature}
 					<TableHeadCell>
-						<span>{feature.name}</span>
+						{feature.name}
 					</TableHeadCell>
 				{/each}
 			</TableHead>

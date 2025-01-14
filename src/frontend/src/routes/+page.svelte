@@ -2,7 +2,6 @@
     import { Img, Button, Spinner } from 'flowbite-svelte';
     import UploadModal from "./components/UploadModal.svelte";
 
-
     const createEndpoint = '/create';
     let showPopup: boolean = false;
     let isSubmitting: boolean = false;

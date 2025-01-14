@@ -33,7 +33,7 @@
 
     function submitBehaviours(): void {
         sessionStorage.setItem('selectedBehaviours', JSON.stringify(selectedBehaviours));
-        sessionStorage.setItem('additional_rows', additionalRows.toString());
+        sessionStorage.setItem('additionalRows', additionalRows.toString());
         goto("/model");
     }
 </script>
