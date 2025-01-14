@@ -4,6 +4,7 @@ from model_registry.database import model
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from model_registry.database.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema
 from model_registry.server.service import tm_service as service
+from model_registry.server.errors import NoVersions
 
 # Needed for FASTApi
 router = APIRouter()
@@ -54,7 +55,10 @@ async def get_all_train_model_versions(trained_model_id: int,version_id: int | N
     :param version_id: Optional. Integer. The id of the version
     :return: A trained model with the associated versions
     """
-    model_info,version_and_train = service.get_trained_model_versions(trained_model_id,version_id)
+    try:
+        model_info,version_and_train = service.get_trained_model_versions(trained_model_id,version_id)
+    except NoVersions as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
     # Now we get the schema of how the features are disposed in input as well as their data type
     feature_schema = service.get_trained_model_feature_schema(trained_model_id)
     payload = {"model": model_info, "versions":version_and_train,"feature_schema":feature_schema}
@@ -79,7 +83,10 @@ async def create_model_and_version(trained_model:CreateTrainedModel,version: Cre
     except IntegrityError:
         raise HTTPException(status_code=400,detail="The value of algorithm_name must be a valid system model. No system model"
                                                    " with such value is present")
-    validated_features = service.validate_all_schemas(feature_schema)
+    try:
+        validated_features = service.validate_all_schemas(feature_schema)
+    except NoResultFound:
+        raise HTTPException(status_code=400, detail="This kind of datatype is not supported. Please add it to use it")
     # We add the validated schema to the new model created
     # The id of the model is known since it has been refreshed in the session
     for feature in validated_features:
@@ -110,7 +117,7 @@ async def delete_train_model(trained_model_id: int):
     # Now we get all versions and training info and delete them
     try:
          _,versions_infos = service.get_trained_model_versions(trained_model_id)
-    except HTTPException:
+    except NoVersions:
         # This exception is launched when a model has no versions. So we can ignore it
         pass
     else:
@@ -129,7 +136,10 @@ async def delete_train_model_version(trained_model_id: int,version_id: int | Non
     :param version_id: Optional. The id of the particular version that wants to be deleted
     :return:
     """
-    _,version_info = service.get_trained_model_versions(trained_model_id,version_id)
+    try:
+        _,version_info = service.get_trained_model_versions(trained_model_id,version_id)
+    except NoVersions as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
     for elem in version_info:
         model.delete_instance(elem["version_info"])
         model.delete_instance(elem["training_info"])

@@ -6,6 +6,7 @@ from model_registry.database.schema import SystemModel, AllowedDataType
 from model_registry.database.validation import CreateSystemModel, CreateDataType
 from model_registry.server.service import sm_service as service
 from sqlalchemy.exc import  NoResultFound,IntegrityError
+from model_registry.server.errors import ValidationError
 
 
 
@@ -33,6 +34,8 @@ async def add_system_model_and_datatype(system_model: CreateSystemModel,data_typ
     except NoResultFound:
         raise HTTPException(status_code=400,detail="The provided datatypes are not currently allowed. You need to add them "\
                                                    "explicitly with POST /data_types")
+    except ValidationError as e:
+        raise HTTPException(status_code=400,detail=f"{e}")
     try:
         model.save_data(validated_model, refresh_data=True)
     except IntegrityError:
@@ -65,7 +68,10 @@ async def get_system_model_by_name(system_model_name: str):
     :return: A system model
     :raise: 404 if the system model is not found
     """
-    system_model,types,is_categorical = service.get_model_by_name_and_datatypes(system_model_name)
+    try:
+        system_model,types,is_categorical = service.get_model_by_name_and_datatypes(system_model_name)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="No System Model has been found with this name!")
     return {"name":system_model.name,"description":system_model.description,"loss_function":system_model.loss_function
         ,"allowed_datatype":types,"is_categorical":is_categorical}
 
@@ -78,7 +84,10 @@ async def delete_system_model(system_model_name: str):
     :return:
     """
     # We get it so we check it exists
-    system_model,allowed_data_types = service.get_model_allowed_datatypes(system_model_name)
+    try:
+        system_model,allowed_data_types = service.get_model_allowed_datatypes(system_model_name)
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="The system model either it does not exist or has no allowed datatypes")
     for data in allowed_data_types:
         model.delete_instance(data)
     model.delete_instance(system_model)

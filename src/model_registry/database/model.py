@@ -1,6 +1,7 @@
 """In the MCS architectural style, the Model represents the core data or business logic of the application.
 It is responsible for accessing and manipulating the application's data."""
-
+from psycopg2 import OperationalError
+from sqlalchemy.exc import DatabaseError
 from sqlmodel import create_engine,Session,select
 import os
 from model_registry.database.data_generator import create_mock_data

@@ -5,7 +5,16 @@ from contextlib import asynccontextmanager
 from model_registry.database.model import  check_all_database_tables, is_database_empty,populate_db_with_mock_data
 from model_registry.server.routers import system_models,trained_models,model_versions,training_info,datatypes
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
+# Fetching allowed origins passed as env variables
+# More checks should be done here
+# if os.environ.get('allowed_origins') == '*':
+#     allowed_origins = ["*"]
+# else:
+#     allowed_origins = os.environ.get('allowed_origins').split(',')
+#
+#
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,6 +41,15 @@ async def lifespan(app: FastAPI):
 
 # Program entry point
 app = FastAPI(lifespan=lifespan)
+# Authorizing all CORS
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=allowed_origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
 # Adding routers for model specific request
 # i.e A client asks for a specific trained/system model this endpoints will serve that
 app.include_router(system_models.router)
@@ -49,7 +67,7 @@ async def controller_get_all_models() -> dict:
     """
     sys_models = await system_models.get_all_system_models()
     train_models = await trained_models.get_trained_models_and_versions()
-    return {"system_models":sys_models , "trained_models":train_models}
+    return {"built_in":sys_models , "trained_models":train_models}
 
 
 

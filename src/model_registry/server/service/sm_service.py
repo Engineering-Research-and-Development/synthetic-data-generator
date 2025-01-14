@@ -1,6 +1,7 @@
 """This module implements the business logic for system models"""
 from fastapi import HTTPException
 from sqlalchemy.exc import NoResultFound,StatementError
+from model_registry.server.errors import ValidationError
 
 from model_registry.database.schema import SystemModel, AllowedDataType,DataType
 from model_registry.database.model import engine,Session
@@ -38,8 +39,7 @@ def validate_all_data_types(datatypes: list[SQLModel]) -> list[SQLModel]:
             try:
                 validated_data = DataType.model_validate(data)
             except StatementError:
-                raise HTTPException(status_code=400,
-                                    detail="The passed datatype is not correct. Check /docs")
+                raise ValidationError("The passed datatype is not correct. Check /docs")
             validated_data.id = result
             payload.append(validated_data)
     return payload
@@ -58,7 +58,7 @@ def get_model_allowed_datatypes(model_name):
             statement = select(SystemModel,AllowedDataType).join(SystemModel).where(SystemModel.name == model_name)
             results = session.exec(statement).all()
     if len(results) == 0:
-        raise HTTPException(status_code=404,detail="The system model either it does not exist or has no allowed datatypes")
+        raise NoResultFound
     allowed_datatypes = [x[1] for x in results]
     return results[0][0],allowed_datatypes
 
@@ -70,7 +70,7 @@ def get_model_by_name_and_datatypes(model_name: str):
             .join(DataType).where(SystemModel.name == model_name)
         results = session.exec(statement).all()
         if len(results) == 0:
-            raise HTTPException(status_code=404,detail="No System Model has been found with this name!")
+            raise NoResultFound
     types,is_categorical = [],[]
     for result in results:
         types.append(result[2].type)

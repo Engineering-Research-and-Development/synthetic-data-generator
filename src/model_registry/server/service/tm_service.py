@@ -7,6 +7,7 @@ from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVers
 from model_registry.database.model import engine,Session
 from sqlmodel import select, SQLModel
 from model_registry.database.validation import CreateFeatureSchema
+from model_registry.server.errors import NoVersions
 
 
 def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[SQLModel,dict]:
@@ -18,7 +19,7 @@ def get_trained_model_versions(model_id,version_id: int | None = None) -> tuple[
                 .where(ModelVersion.id == version_id)
         results = session.exec(statement).all()
     if len(results) == 0 :
-        raise HTTPException(status_code=404,detail="This trained model exists but has no versions!")
+        raise NoVersions("This trained model exists but has no versions!")
     version_and_info = [{"version_info":elem[0],"training_info":elem[2]} for elem in results]
     model_info = results[0][1]
     # Returning model information and version paired with training information
@@ -44,10 +45,7 @@ def validate_all_schemas(features: list[CreateFeatureSchema]) -> list[FeatureSch
         for feature in features:
             # For each feature we need to search the id since it is not passed in input
             statement = select(DataType.id).where(DataType.type == feature.datatype)
-            try:
-                result = session.exec(statement).one()
-            except NoResultFound:
-                raise HTTPException(status_code=400,detail="This kind of datatype is not supported. Please add it to use it")
+            result = session.exec(statement).one()
             validated_feature = FeatureSchema.model_validate(feature)
             validated_feature.datatype_id = result
             payload.append(validated_feature)

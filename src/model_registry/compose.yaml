@@ -9,6 +9,7 @@ services:
       db_password: "postgres"
       db_username: "postgres"
       RELOAD_DATABASE: True
+      allowed_origins: '*'
     depends_on:
       - database
   database:
