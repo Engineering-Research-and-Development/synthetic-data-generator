@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 var db = make(map[string]interface{}) // Temporary in-memory NoSQL database
@@ -25,12 +27,55 @@ func main() {
 		})
 	})
 
+	// Define the /behaviours endpoint
+	r.GET("/behaviours", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"behaviours": db["behaviours"],
+		})
+	})
+
+	// Define the /behaviours/{id} endpoint
+	r.GET("/behaviours/:id", func(c *gin.Context) {
+		// Extract the ID from the URL parameter
+		idStr := c.Param("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+			return
+		}
+
+		// Find the behaviour with the given ID
+		behaviours, ok := db["behaviours"].([]map[string]interface{})
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid data format"})
+			return
+		}
+
+		var behaviour map[string]interface{}
+		for _, b := range behaviours {
+			if b["id"] == id { // JSON numbers are unmarshaled as float64
+				behaviour = b
+				break
+			}
+		}
+
+		// If no behaviour is found, return a 404 error
+		if behaviour == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Behaviour not found"})
+			return
+		}
+
+		// Return the behaviour details
+		c.JSON(http.StatusOK, behaviour)
+	})
+
 	// Start the server
 	r.Run(":8090")
 }
 
 // Load JSON data into the in-memory database
 func loadData() {
+	// Built-in models data
 	db["built_in"] = []map[string]interface{}{
 		{
 			"name":             "Diffusion Models",
@@ -69,6 +114,7 @@ func loadData() {
 		},
 	}
 
+	// Trained models data
 	db["trained_models"] = []map[string]interface{}{
 		{
 			"name":           "model7",
@@ -141,6 +187,46 @@ func loadData() {
 			"algorithm_name": "Generative Adversarial Networks (GAN)",
 			"size":           "18B",
 			"version_ids":    []int{8},
+		},
+	}
+
+	// Behaviours data
+	db["behaviours"] = []map[string]interface{}{
+		{
+			"id":                 1,
+			"name":               "Threshold",
+			"description":        "Defines upper and lower limits for a metric",
+			"function_reference": "threshold_function",
+			"function_parameters": []map[string]interface{}{
+				{
+					"name": "min",
+					"type": "float",
+				},
+				{
+					"name": "max",
+					"type": "float",
+				},
+			},
+		},
+		{
+			"id":                 2,
+			"name":               "Normalization",
+			"description":        "Scales data to a specific range",
+			"function_reference": "normalization_function",
+			"function_parameters": []map[string]interface{}{
+				{
+					"name": "min",
+					"type": "float",
+				},
+				{
+					"name": "max",
+					"type": "float",
+				},
+				{
+					"name": "avg",
+					"type": "float",
+				},
+			},
 		},
 	}
 }

@@ -9,43 +9,48 @@
         TableHeadCell,
         MultiSelect,
     } from "flowbite-svelte";
+    import { BACKEND_URL } from "../../stores/sharedVars";
 
-    type Behaviour = { value: string; name: string };
+    type Behaviour = {
+        id: number;
+        name: string;
+        description: string;
+        function_reference: string;
+        function_parameters: { name: string; type: string }[];
+    };
+
     type SelectedBehaviours = { [feature: string]: string[] };
 
     export let featuresName: string[] = [];
     export let selectedBehaviours: SelectedBehaviours = {};
 
     let fetchedBehaviours: Behaviour[] = [];
-    let behaviours: Behaviour[] = [
-        { value: "Distribution", name: "Distribution" },
-        { value: "Threshold", name: "Threshold" },
-        { value: "Formula", name: "Formula" },
-        { value: "Randomization", name: "Randomization" },
-        { value: "Aggregation", name: "Aggregation" },
-        { value: "Normalization", name: "Normalization" },
-        { value: "Optimization", name: "Optimization" },
-        { value: "Validation", name: "Validation" },
-        { value: "Transformation", name: "Transformation" },
-        { value: "Segmentation", name: "Segmentation" },
-        { value: "Clustering", name: "Clustering" },
-        { value: "Prediction", name: "Prediction" },
-        { value: "Classification", name: "Classification" },
-    ];
+    let behaviours: { value: string; name: string }[] = [];
 
     onMount(async () => {
         try {
-            const response = await fetch('/api/behaviours');
+            const response = await fetch(BACKEND_URL +'/behaviours');
             if (response.ok) {
-                const data: Behaviour[] = await response.json();
-                fetchedBehaviours = data;
-                behaviours = fetchedBehaviours.length ? fetchedBehaviours : behaviours;
+                const data = await response.json();
+
+                fetchedBehaviours = data.behaviours.map((behaviour: Behaviour) => ({
+                    id: behaviour.id,
+                    name: behaviour.name,
+                    description: behaviour.description,
+                    function_reference: behaviour.function_reference,
+                    function_parameters: behaviour.function_parameters,
+                }));
+
+                behaviours = fetchedBehaviours.map((behaviour) => ({
+                    value: behaviour.name,
+                    name: behaviour.name,
+                }));
             }
         } catch (error) {
             console.error("Error fetching behaviours:", error);
         }
     });
-
+    
     export function updateBehaviours(feature: string, behaviours: string[]) {
         selectedBehaviours[feature] = behaviours;
     }

@@ -4,7 +4,6 @@
 
     const createEndpoint = '/create';
     let showPopup: boolean = false;
-    let isSubmitting: boolean = false;
     let uploadedFile: File | null = null;
 </script>
 
@@ -27,14 +26,7 @@
         </div>
     </div>
 
-    {#if isSubmitting}
-        <div class="absolute inset-0 bg-black opacity-90 flex items-center justify-center z-50">
-            <div class="flex flex-col items-center">
-                <Spinner size="xl"/>
-                <span class="text-white mt-4">Uploading...</span>
-            </div>
-        </div>
-    {/if}
+
 </div>
 
-<UploadModal bind:showPopup bind:isSubmitting bind:uploadedFile />
+<UploadModal bind:showPopup bind:uploadedFile />
