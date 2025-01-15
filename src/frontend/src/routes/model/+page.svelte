@@ -75,7 +75,7 @@
             >
                 <h2 class="text-xl font-semibold mb-4 text-center">Pre-Trained Model</h2>
                 {#if !isLoading}
-                    <ModelPreTrained trainedModels={data.trained_models} bind:selected={selectedModel} />
+                    <ModelPreTrained trainedModels={data.trained_models} bind:selectedModel bind:selectedVersion/>
                 {:else}
                     <p>Loading...</p>
                 {/if}

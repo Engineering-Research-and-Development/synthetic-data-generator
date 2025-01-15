@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { Label, Select, Table, TableHead, TableBody, TableBodyCell, TableBodyRow } from 'flowbite-svelte';
+    import { Label, Select, Table, TableHead, TableBody, TableBodyCell, TableBodyRow, TableHeadCell } from 'flowbite-svelte';
     import { onMount } from 'svelte';
 
     export let trainedModels;
-    export let selected: string;
+    export let selectedModel: string;
+    export let selectedVersion: number;
 
-    let fetchedTrainedModels: {
+    let fetchedModels: {
         name: string;
         id: number;
         dataset_name: string;
@@ -14,14 +15,15 @@
         size: string;
         version_ids: number[];
     }[] = [];
-    let selectedModel: typeof fetchedTrainedModels[number] | null = null;
-    let selectedVersionLabel: string = '';
+    let models: typeof fetchedModels[number] | null = null;
+    let selectedVersionLabel: { value: number; name: string }[] = [];
     let newModels: { value: string; name: string }[] = [];
+    let selectedModelVersions: string = "";
 
     onMount(async () => {
         try {
-                fetchedTrainedModels = trainedModels || [];
-                newModels = fetchedTrainedModels.map((model) => ({
+                fetchedModels = trainedModels || [];
+                newModels = fetchedModels.map((model) => ({
                     value: model.name,
                     name: model.name
                 }));
@@ -30,70 +32,65 @@
         }
     });
 
-    $: selectedModel = fetchedTrainedModels.find((model) => model.name === selected) || null;
-    $: selectedVersionLabel = selectedModel?.version_ids.join(', ') || '';
+    $: models = fetchedModels.find((model) => model.name === selectedModel) || null;
+    $: selectedVersionLabel = models ? models.version_ids.map((id) => ({ value: id, name: `Version ${id}` })): [];
+    $: selectedModelVersions = models? models.version_ids.join(", "): "";
 </script>
 
 <div class="w-full">
     <!-- Dropdown for model selection -->
-    <div class="w-1/2">
+    <div class="w-full">
         <Label>
             Select a model
-            <Select class="mt-2" items={newModels} bind:value={selected} />
+            <Select class="mt-2" items={newModels} bind:value={selectedModel} />
         </Label>
     </div>
 
     <!-- Label list for selecting version_id -->
-    <div class="w-1/2 mt-4">
-        {#if selectedModel}
+    <div class="w-full">
             <Label>
                 Available Version IDs:
-                <span class="ml-2 font-medium text-gray-700">{selectedVersionLabel}</span>
+                <Select class="mt-2" items={selectedVersionLabel} bind:value={selectedVersion}/>
             </Label>
-        {:else}
-            <p class="text-gray-500">No model selected. Please select a model from the dropdown.</p>
-        {/if}
     </div>
 
     <!-- Table to display selected model details -->
     <div class="w-full mt-8">
-        {#if selectedModel}
+        {#if models}
             <Table>
                 <TableHead>
-                    <TableBodyRow>
-                        <TableBodyCell class="font-bold">Property</TableBodyCell>
-                        <TableBodyCell class="font-bold">Value</TableBodyCell>
-                    </TableBodyRow>
+                    <TableHeadCell class="font-bold">Property</TableHeadCell>
+                    <TableHeadCell class="font-bold">Value</TableHeadCell>
                 </TableHead>
                 <TableBody>
                     <TableBodyRow>
                         <TableBodyCell>Name</TableBodyCell>
-                        <TableBodyCell>{selectedModel.name}</TableBodyCell>
+                        <TableBodyCell>{models.name}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Dataset Name</TableBodyCell>
-                        <TableBodyCell>{selectedModel.dataset_name}</TableBodyCell>
+                        <TableBodyCell>{models.dataset_name}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Input Shape</TableBodyCell>
-                        <TableBodyCell>{selectedModel.input_shape}</TableBodyCell>
+                        <TableBodyCell>{models.input_shape}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Algorithm</TableBodyCell>
-                        <TableBodyCell>{selectedModel.algorithm_name}</TableBodyCell>
+                        <TableBodyCell>{models.algorithm_name}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Size</TableBodyCell>
-                        <TableBodyCell>{selectedModel.size}</TableBodyCell>
+                        <TableBodyCell>{models.size}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Version ID</TableBodyCell>
-                        <TableBodyCell>{selectedVersionLabel}</TableBodyCell>
+                        <TableBodyCell>{selectedModelVersions}</TableBodyCell>
                     </TableBodyRow>
                 </TableBody>
             </Table>
         {:else}
-            <p class="text-gray-500">No model selected. Please select a model from the dropdown.</p>
+            <p class="text-gray-500">Please select a model from the dropdown.</p>
         {/if}
     </div>
 </div>

@@ -24,6 +24,7 @@
 	let selectedBehaviours: SelectedBehaviours = {} as SelectedBehaviours;
 	let newModel: boolean = false;
 	let selectedModel: string = "";
+	let selectedVersion: number = 0;
 	let featuresCreated: FeaturesCreated[] = [];
 	let headers: string[] = [];
 	let tableData: RowData[] = [];
@@ -47,6 +48,7 @@
 		selectedBehaviours = JSON.parse(sessionStorage.getItem("selectedBehaviours") || "{}");
 		newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
 		selectedModel = sessionStorage.getItem("selectedModel") || "";
+		selectedVersion = Number(sessionStorage.getItem("selectedVersion")) || 0;
 		featuresCreated = JSON.parse(sessionStorage.getItem("featuresCreated") || "[]");
 	});
 
@@ -58,6 +60,7 @@
 		additionalRows,
 		selectedBehaviours,
 		newModel,
+		selectedVersion,
 		selectedModel,
 	};
 
@@ -182,7 +185,11 @@
 	<!-- Selected Model -->
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
 		<h2 class="text-center text-xl font-semibold mb-4">Selected Model</h2>
-		<p>{selectedModel}</p>
+		<p>{selectedModel}
+		{#if (!newModel)}
+			Version {selectedVersion}
+		{/if}
+		</p>
 	</div>
 
 	<!-- Send Button -->

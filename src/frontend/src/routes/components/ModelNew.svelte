@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {Label, Select, Table, TableHead, TableBody, TableBodyCell, TableBodyRow} from 'flowbite-svelte';
+    import {Label,Select,Table,TableHead,TableBody,TableBodyCell,TableBodyRow,TableHeadCell} from 'flowbite-svelte';
     import { onMount } from 'svelte';
 
     export let builtInModels;
@@ -38,12 +38,10 @@
         {#if selectedModel}
             <Table>
                 <TableHead>
-                    <TableBodyRow>
-                        <TableBodyCell class="font-bold">Property</TableBodyCell>
-                        <TableBodyCell class="font-bold">Value</TableBodyCell>
-                    </TableBodyRow>
+                    <TableHeadCell class="font-bold">Property</TableHeadCell>
+                    <TableHeadCell class="font-bold">Value</TableHeadCell>
                 </TableHead>
-                <TableBody>
+                <TableBody tableBodyClass="divide-y">
                     <TableBodyRow>
                         <TableBodyCell>Name</TableBodyCell>
                         <TableBodyCell>{selectedModel.name}</TableBodyCell>
@@ -69,7 +67,7 @@
                 </TableBody>
             </Table>
         {:else}
-            <p class="text-gray-500">No model selected. Please select a model from the dropdown.</p>
+            <p class="text-gray-500">Please select a model from the dropdown.</p>
         {/if}
     </div>
 </div>
