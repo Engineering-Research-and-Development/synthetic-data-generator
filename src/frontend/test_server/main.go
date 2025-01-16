@@ -53,7 +53,7 @@ func main() {
 
 		var behaviour map[string]interface{}
 		for _, b := range behaviours {
-			if b["id"] == id { // JSON numbers are unmarshaled as float64
+			if b["id"] == float64(id) { // JSON numbers are unmarshaled as float64
 				behaviour = b
 				break
 			}

@@ -1,0 +1,17 @@
+type Behaviour {
+  id: Int!
+  name: String!
+  description: String!
+  function_reference: String!
+  function_parameters: [FunctionParameter!]!
+}
+
+type FunctionParameter {
+  name: String!
+  type: String!
+}
+
+type Query {
+  behaviours: [Behaviour!]!
+  behaviour(id: Int!): Behaviour
+}
