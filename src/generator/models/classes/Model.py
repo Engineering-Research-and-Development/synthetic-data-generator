@@ -41,7 +41,7 @@ class UnspecializedModel(ABC):
             self.model = self.build(self.input_shape)
 
 
-    def _check_folder_latest_version(self):
+    def check_folder_latest_version(self):
         my_folders_versions = [int(fold.split(":")[1]) for fold in os.listdir(MODEL_FOLDER) if self.model_name in fold]
         if len(my_folders_versions) > 0:
             return max(my_folders_versions)
@@ -78,5 +78,9 @@ class UnspecializedModel(ABC):
 
     @abstractmethod
     def save(self, **kwargs):
-        """Run inference."""
+        """Save Model."""
+        pass
+
+    @classmethod
+    def self_describe(cls):
         pass

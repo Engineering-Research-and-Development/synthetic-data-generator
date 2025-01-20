@@ -7,11 +7,67 @@ config_file = pkgutil.get_data("services", "config.yaml")
 config = safe_load(config_file)
 model_registry = config["model_registry"]
 
-def get_model_by_id(model_id: int) -> dict:
 
+def get_trained_model_version_by_id(model_id: int, version_id: int) -> dict:
+    """
+    Get a specific trained model from repository using both the Model and Version IDs
+    :param model_id: the unique identifier of the trained model
+    :param version_id: the unique identifier of the version
+    :return:
+    """
     try:
-        api = model_registry["url"] + model_registry["apis"]["get_model_by_id"] + str(model_id)
+        api = model_registry["url"] + model_registry["apis"]["trained_model_version_by_id"].format(str(model_id),
+                                                                                                    str(version_id))
         response = requests.get(api)
         return response.json()
     except NewConnectionError:
         return {}
+
+
+def get_trained_model_by_id(model_id: int) -> dict:
+    """
+    Get a trained model from repository using its ID
+    :param model_id: the unique identifier of the model
+    :return: a dictionary containing model information
+    """
+    try:
+        api = model_registry["url"] + model_registry["apis"]["trained_model_by_id"].format(str(model_id))
+        response = requests.get(api)
+        return response.json()
+    except NewConnectionError:
+        return {}
+
+
+def get_all_system_models() -> dict:
+    """
+    Returns the list of system models
+    :return: the list of models
+    """
+
+    try:
+        api = model_registry["url"] + model_registry["apis"]["system_models"]
+        response = requests.get(api)
+        return response.json()
+    except NewConnectionError:
+        return {}
+
+
+def save_trained_model(model_to_send: dict):
+    """
+    Saves a system model, useful when adding a new feature or to initialize the system
+    Must be called after "parse_model_to_registry"
+    :param model_to_send: a dictionary containing the model ready to be sent
+    :return: None
+    """
+
+    # Use parsing function  before calling this function to send model
+    pass
+
+
+def save_system_model(model: dict):
+    """
+    Saves a system model, useful when adding a new feature or to initialize the system
+    :param model: a dictionary containing the model
+    :return: None
+    """
+    pass

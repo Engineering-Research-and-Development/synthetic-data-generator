@@ -40,7 +40,6 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
     elif model_name is None:
         raise ModelException(f"Model name not provided")
 
-
     ModelClass = dynamic_import(model_type)
     model = ModelClass(metadata, model_name, model_file)
     model.initialize(input_shape)

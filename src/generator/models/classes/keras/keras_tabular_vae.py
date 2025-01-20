@@ -1,3 +1,4 @@
+import datetime
 import pickle
 
 import numpy as np
@@ -96,6 +97,7 @@ class KerasTabularVAE(UnspecializedModel):
         vae.summary()
         return vae
 
+
     def load(self):
         encoder_filename = os.path.join(self.model_filepath, "encoder.keras")
         decoder_filename = os.path.join(self.model_filepath, "decoder.keras")
@@ -106,6 +108,7 @@ class KerasTabularVAE(UnspecializedModel):
         with open(scaler_filename, "rb") as f:
             scaler = pickle.load(f)
         return model, scaler
+
 
     def train(self, data: np.array, **kwargs):
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
@@ -118,8 +121,10 @@ class KerasTabularVAE(UnspecializedModel):
             "validation_samples": 0
         }
 
+
     def fine_tune(self, data: np.array, **kwargs):
         pass
+
 
     def infer(self, n_rows:int, **kwargs):
         z_random = np.random.normal(size=(n_rows, self.latent_dim))
@@ -128,7 +133,7 @@ class KerasTabularVAE(UnspecializedModel):
 
 
     def save(self, **kwargs):
-        new_version = self._check_folder_latest_version() + 1
+        new_version = self.check_folder_latest_version() + 1
         model_folder = f"{self.model_name}:{new_version}"
         save_folder = os.path.join(MODEL_FOLDER, model_folder)
 
@@ -152,6 +157,29 @@ class KerasTabularVAE(UnspecializedModel):
             return
 
         self.model_filepath = save_folder
+
+
+    @classmethod
+    def self_describe(cls):
+        # Returns a dictionary with model info, useful for initializing model
+
+        system_model_info = {
+            "name": f"{cls.__module__}.{cls.__qualname__}",
+            "default_loss_function": "ELBO Loss",
+            "description": "A Tabular Variational Autoencoder for continuous numerical data generation",
+            "data_types":  [
+                {
+                    "data_type": "float",
+                    "is_categorical": False
+                },
+                {
+                    "data_type": "int",
+                    "is_categorical": False
+                },
+            ]
+        }
+
+        return system_model_info
 
 
 
