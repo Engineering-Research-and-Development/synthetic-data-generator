@@ -11,21 +11,11 @@
     } from "flowbite-svelte";
     import { BACKEND_URL } from "../../stores/sharedVars";
 
-    type Behaviour = {
-        id: number;
-        name: string;
-        description: string;
-        function_reference: string;
-        function_parameters: { name: string; type: string }[];
-    };
-
-    type SelectedBehaviours = { [feature: string]: string[] };
-
     export let featuresName: string[] = [];
-    export let selectedBehaviours: SelectedBehaviours = {};
+    export let selectedFeatureBehaviour: FeatureBehaviour = {};
 
     let fetchedBehaviours: Behaviour[] = [];
-    let behaviours: { value: string; name: string }[] = [];
+    let shownBehaviours: { value: string; name: string;}[] = [];
 
     onMount(async () => {
         try {
@@ -41,7 +31,7 @@
                     function_parameters: behaviour.function_parameters,
                 }));
 
-                behaviours = fetchedBehaviours.map((behaviour) => ({
+                shownBehaviours = fetchedBehaviours.map((behaviour) => ({
                     value: behaviour.name,
                     name: behaviour.name,
                 }));
@@ -52,7 +42,7 @@
     });
     
     export function updateBehaviours(feature: string, behaviours: string[]) {
-        selectedBehaviours[feature] = behaviours;
+        selectedFeatureBehaviour[feature] = behaviours;
     }
 </script>
 
@@ -67,11 +57,11 @@
             {#each featuresName as feature}
                 <TableBodyCell>
                     <MultiSelect
-                            items={behaviours}
-                            bind:value={selectedBehaviours[feature]}
+                            items={shownBehaviours}
+                            bind:value={selectedFeatureBehaviour[feature]}
                             placeholder="Select behaviours"
                             class="text-gray-700 self-start"
-                            on:change={() => updateBehaviours(feature, selectedBehaviours[feature])}
+                            on:change={() => updateBehaviours(feature, selectedFeatureBehaviour[feature])}
                     />
                 </TableBodyCell>
             {/each}

@@ -6,24 +6,16 @@
     export let selectedModel: string;
     export let selectedVersion: number;
 
-    let fetchedModels: {
-        name: string;
-        id: number;
-        dataset_name: string;
-        input_shape: string;
-        algorithm_name: string;
-        size: string;
-        version_ids: number[];
-    }[] = [];
-    let models: typeof fetchedModels[number] | null = null;
+    let fetchedPreTrainedModels: PreTrainedModel[];
+    let models: typeof fetchedPreTrainedModels[number] | null = null;
     let selectedVersionLabel: { value: number; name: string }[] = [];
     let newModels: { value: string; name: string }[] = [];
     let selectedModelVersions: string = "";
 
     onMount(async () => {
         try {
-                fetchedModels = trainedModels || [];
-                newModels = fetchedModels.map((model) => ({
+                fetchedPreTrainedModels = trainedModels || [];
+                newModels = fetchedPreTrainedModels.map((model) => ({
                     value: model.name,
                     name: model.name
                 }));
@@ -32,7 +24,7 @@
         }
     });
 
-    $: models = fetchedModels.find((model) => model.name === selectedModel) || null;
+    $: models = fetchedPreTrainedModels.find((model) => model.name === selectedModel) || null;
     $: selectedVersionLabel = models ? models.version_ids.map((id) => ({ value: id, name: `Version ${id}` })): [];
     $: selectedModelVersions = models? models.version_ids.join(", "): "";
 </script>

@@ -8,11 +8,8 @@
     import { PlusOutline } from 'flowbite-svelte-icons';
     import { goto } from "$app/navigation";
 
-    // Define types for features and selected behaviours
-    type SelectedBehaviours = { [feature: string]: string[] };
-
     let featuresName: string[] = []; // Array of feature names
-    let selectedBehaviours: SelectedBehaviours = {}; // Mapping feature -> selected behaviours
+    let selectedFeatureBehaviour: FeatureBehaviour = {}; // Mapping feature -> selected behaviours
     let additionalRows: number = 0; // Number of additional rows to create
 
     onMount(() => {
@@ -21,8 +18,8 @@
             try {
                 featuresName = JSON.parse(features);
                 featuresName.forEach((feature) => {
-                    if (!selectedBehaviours[feature]) {
-                        selectedBehaviours[feature] = [];
+                    if (!selectedFeatureBehaviour[feature]) {
+                        selectedFeatureBehaviour[feature] = [];
                     }
                 });
             } catch (error) {
@@ -32,9 +29,9 @@
     });
 
     function submitBehaviours(): void {
-        sessionStorage.setItem('selectedBehaviours', JSON.stringify(selectedBehaviours));
+        sessionStorage.setItem('selectedBehaviours', JSON.stringify(selectedFeatureBehaviour));
         sessionStorage.setItem('additionalRows', additionalRows.toString());
-        goto("/model");
+        goto("/rule");
     }
 </script>
 
@@ -46,7 +43,7 @@
         <div class="flex flex-col md:flex-row gap-6 mb-6">
             <BehaviourTable
                     featuresName={featuresName}
-                    selectedBehaviours={selectedBehaviours}
+                    selectedFeatureBehaviour={selectedFeatureBehaviour}
             />
         </div>
 

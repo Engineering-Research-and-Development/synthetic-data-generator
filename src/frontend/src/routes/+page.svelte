@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Img, Button, Spinner } from 'flowbite-svelte';
+    import { Img, Button } from 'flowbite-svelte';
     import UploadModal from "./components/UploadModal.svelte";
 
     const createEndpoint = '/create';

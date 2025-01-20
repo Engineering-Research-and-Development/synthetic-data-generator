@@ -15,13 +15,11 @@
 
 	// Define types
 	type RowData = { [key: string]: any };
-	type SelectedBehaviours = { [feature: string]: string[] };
-	type FeaturesCreated = { id: number, name: string, featureType: string, subType: string }
 
 	let selectedColumns: string[] = [];
 	let userFile: RowData[] = [];
 	let additionalRows: number = 0;
-	let selectedBehaviours: SelectedBehaviours = {} as SelectedBehaviours;
+	let selectedBehaviours: FeatureBehaviour = {};
 	let newModel: boolean = false;
 	let selectedModel: string = "";
 	let selectedVersion: number = 0;

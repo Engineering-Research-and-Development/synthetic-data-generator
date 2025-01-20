@@ -5,13 +5,7 @@
     export let builtInModels;
     export let selected: string;
 
-    let fetchedBuiltInModels: {
-        name: string;
-        description: string;
-        loss_function: string;
-        allowed_datatype: string[];
-        is_categorical: boolean[];
-    }[] = [];
+    let fetchedBuiltInModels: BuiltInModel[];
     let selectedModel: typeof fetchedBuiltInModels[number] | null = null;
     let newModels: { value: string; name: string }[] = [];
 
