@@ -6,7 +6,7 @@
     export let selectedModel: string;
     export let selectedVersion: number;
 
-    let fetchedPreTrainedModels: PreTrainedModel[];
+    let fetchedPreTrainedModels: PreTrainedModel[] = [];
     let models: typeof fetchedPreTrainedModels[number] | null = null;
     let selectedVersionLabel: { value: number; name: string }[] = [];
     let newModels: { value: string; name: string }[] = [];

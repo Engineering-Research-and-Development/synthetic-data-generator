@@ -53,7 +53,7 @@ func main() {
 
 		var behaviour map[string]interface{}
 		for _, b := range behaviours {
-			if b["id"] == float64(id) { // JSON numbers are unmarshaled as float64
+			if b["id"] == id {
 				behaviour = b
 				break
 			}
@@ -199,12 +199,14 @@ func loadData() {
 			"function_reference": "threshold_function",
 			"function_parameters": []map[string]interface{}{
 				{
-					"name": "min",
-					"type": "float",
+					"name":  "min",
+					"type":  "float",
+					"value": 0,
 				},
 				{
-					"name": "max",
-					"type": "float",
+					"name":  "max",
+					"type":  "float",
+					"value": 100,
 				},
 			},
 		},
@@ -215,16 +217,19 @@ func loadData() {
 			"function_reference": "normalization_function",
 			"function_parameters": []map[string]interface{}{
 				{
-					"name": "min",
-					"type": "float",
+					"name":  "min",
+					"type":  "float",
+					"value": 0,
 				},
 				{
-					"name": "max",
-					"type": "float",
+					"name":  "max",
+					"type":  "float",
+					"value": 100,
 				},
 				{
-					"name": "avg",
-					"type": "float",
+					"name":  "avg",
+					"type":  "float",
+					"value": 50,
 				},
 			},
 		},

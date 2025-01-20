@@ -32,7 +32,7 @@
                 }));
 
                 shownBehaviours = fetchedBehaviours.map((behaviour) => ({
-                    value: behaviour.name,
+                    value: behaviour.id.toString(),
                     name: behaviour.name,
                 }));
             }

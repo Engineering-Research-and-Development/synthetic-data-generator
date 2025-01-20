@@ -5,7 +5,7 @@
     export let builtInModels;
     export let selected: string;
 
-    let fetchedBuiltInModels: BuiltInModel[];
+    let fetchedBuiltInModels: BuiltInModel[] = [];
     let selectedModel: typeof fetchedBuiltInModels[number] | null = null;
     let newModels: { value: string; name: string }[] = [];
 

@@ -1,6 +1,7 @@
-type FunctionParameters = {
+type FunctionParameter = {
     name: string;
-    type: string
+    type: string;
+    value: number;
 };
 
 type Behaviour = {
@@ -8,7 +9,7 @@ type Behaviour = {
     name: string;
     description: string;
     function_reference: string;
-    function_parameters: FunctionParameters[];
+    function_parameters: FunctionParameter[];
 };
 
 type FeatureBehaviour = {

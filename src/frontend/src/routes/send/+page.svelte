@@ -11,15 +11,16 @@
 	import BackButton from "../components/BackButton.svelte";
 	import CancelButton from "../components/CancelButton.svelte";
 	import {onMount} from "svelte";
-
-
-	// Define types
+	import {BACKEND_URL} from "../../stores/sharedVars";
 	type RowData = { [key: string]: any };
 
 	let selectedColumns: string[] = [];
 	let userFile: RowData[] = [];
 	let additionalRows: number = 0;
-	let selectedBehaviours: FeatureBehaviour = {};
+	let rulesData: Record<string, Array<{
+		behaviourName: string;
+		parameters: Array<{ name: string; value: number }>
+	}>> = {};
 	let newModel: boolean = false;
 	let selectedModel: string = "";
 	let selectedVersion: number = 0;
@@ -43,7 +44,7 @@
 		await loadUserFile();
 		selectedColumns = JSON.parse(sessionStorage.getItem("selectedColumns") || "[]");
 		additionalRows = Number(sessionStorage.getItem("additionalRows")) || 0;
-		selectedBehaviours = JSON.parse(sessionStorage.getItem("selectedBehaviours") || "{}");
+		rulesData = JSON.parse(sessionStorage.getItem("rulesData") || "{}");
 		newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
 		selectedModel = sessionStorage.getItem("selectedModel") || "";
 		selectedVersion = Number(sessionStorage.getItem("selectedVersion")) || 0;
@@ -51,22 +52,20 @@
 	});
 
 
-	let postData = {
-		featuresCreated,
-		selectedColumns,
-		userFile,
-		additionalRows,
-		selectedBehaviours,
-		newModel,
-		selectedVersion,
-		selectedModel,
-	};
-
-	// Function to send data with POST
 	async function sendData() {
+		let postData = {
+			featuresCreated,
+			userFile,
+			additionalRows,
+			rulesData,
+			newModel,
+			selectedVersion,
+			selectedModel,
+		};
+
 		console.log(JSON.stringify(postData));
 		try {
-			const response = await fetch("https://example.com/endpoint", {
+			const response = await fetch(`${BACKEND_URL}/userData`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -88,15 +87,6 @@
 <h1 class="text-2xl font-bold text-center my-6">Review and Send Data</h1>
 
 <div class="flex flex-col gap-6 w-3/4 mx-auto">
-	<!-- Selected Columns -->
-	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
-		<h2 class="text-center text-xl font-semibold mb-4">Selected Columns</h2>
-		<ul class="list-disc pl-6">
-			{#each selectedColumns as column}
-				<li>{column}</li>
-			{/each}
-		</ul>
-	</div>
 
 	<!-- Features Created -->
 	{#if featuresCreated.length>0}
@@ -160,18 +150,38 @@
 	<!-- Selected Behaviours -->
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
 		<h2 class="text-center text-xl font-semibold mb-4">Selected Behaviours</h2>
-		<ul class="list-disc pl-6">
-			{#each Object.entries(selectedBehaviours) as [feature, behaviours]}
-				<li>
-					<strong>{feature}:</strong>
-					<ul class="list-circle pl-6">
-						{#each behaviours as behaviour}
-							<li>{behaviour}</li>
+		{#if Object.keys(rulesData).length > 0}
+			<Table class="w-full text-gray-500 dark:text-gray-400" shadow>
+				<TableHead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+					<TableHeadCell>Feature</TableHeadCell>
+					<TableHeadCell>Behaviour Name</TableHeadCell>
+					<TableHeadCell>Parameters</TableHeadCell>
+				</TableHead>
+				<TableBody tableBodyClass="divide-y">
+					{#each Object.entries(rulesData) as [feature, behaviours]}
+						{#each behaviours as behaviour, index}
+							<TableBodyRow class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+								{#if index === 0}
+									<TableBodyCell rowspan={behaviours.length}>{feature}</TableBodyCell>
+								{/if}
+								<TableBodyCell>{behaviour.behaviourName}</TableBodyCell>
+								<TableBodyCell>
+									<ul class="list-disc pl-6">
+										{#each behaviour.parameters as param}
+											<li>
+												<strong>{param.name}:</strong> {param.value}
+											</li>
+										{/each}
+									</ul>
+								</TableBodyCell>
+							</TableBodyRow>
 						{/each}
-					</ul>
-				</li>
-			{/each}
-		</ul>
+					{/each}
+				</TableBody>
+			</Table>
+		{:else}
+			<p class="text-center text-gray-700 dark:text-gray-300">No behaviours selected or data available.</p>
+		{/if}
 	</div>
 
 	<!-- New Model -->
