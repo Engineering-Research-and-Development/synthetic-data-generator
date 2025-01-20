@@ -5,7 +5,9 @@ from pydantic import BaseModel
 from typing import Literal
 
 class ValidHeaders(BaseModel):
+    model_config = {"extra":"forbid"}
     x_client_type: Literal["frontend", "generator", "input_coherence"]
+    content_type: Literal["application/json"]
 
 
 class BaseSystemModel(SQLModel):

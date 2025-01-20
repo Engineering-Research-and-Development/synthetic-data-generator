@@ -1,6 +1,7 @@
 services:
   sdg-middleware:
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
+    #build: .
     ports:
       - "8001:8001"
     environment:

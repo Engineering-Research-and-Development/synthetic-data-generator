@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from model_registry.database.validation import CreateDataType
+from fastapi import APIRouter, HTTPException,Depends
+from model_registry.database.validation import CreateDataType,ValidHeaders
 from model_registry.database.schema import DataType
 from model_registry.database import model
 from model_registry.server.service import dt_service as service

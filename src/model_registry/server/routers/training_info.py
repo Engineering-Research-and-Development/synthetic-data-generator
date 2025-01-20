@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.params import Depends
 from model_registry.database import model
 from model_registry.database.schema import TrainingInfo
 from sqlalchemy.exc import NoResultFound
+from model_registry.database.validation import ValidHeaders
 
 router = APIRouter()
 

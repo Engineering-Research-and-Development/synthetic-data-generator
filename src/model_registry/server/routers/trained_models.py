@@ -1,16 +1,28 @@
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException,Depends
+from fastapi.params import Header
+
 from model_registry.database.schema import TrainedModel, ModelVersion, TrainingInfo
 from model_registry.database import model
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from model_registry.database.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema
+from model_registry.database.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema,ValidHeaders
 from model_registry.server.service import tm_service as service
 from model_registry.server.errors import NoVersions
 
 # Needed for FASTApi
 router = APIRouter()
 
-
+# TODO: Only this works so it should be replicated, maybe by passing a function with depends to the router should work too
 # Add a new model to the repository
+# @router.get("/trained_models",status_code=200)
+# async def get_all_trained_models(headers: Annotated[ValidHeaders,Header()]):
+#     """
+#     This function return all the trained models present in the model registry
+#     :return:
+#     """
+#     return model.select_all(TrainedModel)
+
 @router.get("/trained_models",status_code=200)
 async def get_all_trained_models():
     """
