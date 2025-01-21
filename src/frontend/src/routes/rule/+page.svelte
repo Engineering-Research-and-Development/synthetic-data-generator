@@ -45,6 +45,7 @@
 
     function saveRulesData() {
         const rulesData: Record<string, Array<{
+            behaviourId: number;
             behaviourName: string;
             parameters: Array<{ name: string; value: number }>
         }>> = {};
@@ -54,6 +55,7 @@
 
             for (const behaviour of behaviours) {
                 const behaviourEntry = {
+                    behaviourId: behaviour.id,
                     behaviourName: behaviour.name,
                     parameters: [] as Array<{ name: string; value: number }>
                 };
@@ -79,7 +81,7 @@
 
 
 <h1 class="flex justify-center text-2xl font-bold my-4">Rules composition</h1>
-<div class="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
+<div class="flex items-center justify-center bg-gray-100 dark:bg-gray-900">
     <form on:submit|preventDefault={saveRulesData}>
 
     {#if Object.keys(behaviourData).length > 0}

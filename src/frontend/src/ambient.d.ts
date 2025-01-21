@@ -24,6 +24,7 @@ type FeaturesCreated = {
 };
 
 type BuiltInModel = {
+    id: number;
     name: string;
     description: string;
     loss_function: string;
@@ -40,3 +41,9 @@ type PreTrainedModel = {
     size: string;
     version_ids: number[];
 };
+
+type SelectedModel ={
+    id: number;
+    name: string;
+    version: number;
+}

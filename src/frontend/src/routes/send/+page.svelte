@@ -14,7 +14,6 @@
 	import {BACKEND_URL} from "../../stores/sharedVars";
 	type RowData = { [key: string]: any };
 
-	let selectedColumns: string[] = [];
 	let userFile: RowData[] = [];
 	let additionalRows: number = 0;
 	let rulesData: Record<string, Array<{
@@ -42,7 +41,6 @@
 
 	onMount(async () => {
 		await loadUserFile();
-		selectedColumns = JSON.parse(sessionStorage.getItem("selectedColumns") || "[]");
 		additionalRows = Number(sessionStorage.getItem("additionalRows")) || 0;
 		rulesData = JSON.parse(sessionStorage.getItem("rulesData") || "{}");
 		newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
