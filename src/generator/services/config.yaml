@@ -1,7 +1,7 @@
 model_registry:
   url: "http://localhost:8888/"
   apis:
-    - trained_model_by_id: "trained_models/{}"
-    - trained_model__version_by_id: "trained_models/{}/version/{}"
-    - trained_models: "trained_models/"
-    - system_models: "system_models/"
+    trained_model_by_id: "trained_models/{}"
+    trained_model_version_by_id: "trained_models/{}/version/{}"
+    trained_models: "trained_models/"
+    system_models: "system_models/"

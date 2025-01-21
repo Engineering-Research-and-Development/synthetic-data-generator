@@ -6,7 +6,6 @@ from exceptions.InputException import InputException
 from exceptions.ModelException import ModelException
 from generate.infer import run_infer_job
 from generate.train import run_train_inference_job
-from services.model_services import get_model_by_id
 
 generator = FastAPI()
 

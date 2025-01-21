@@ -1,7 +1,9 @@
 from exceptions.DataException import DataException
+from exceptions.ModelException import ModelException
 from preprocess.scale import scale_input
 from models.model_factory import model_factory
-from utils.parsing import parse_tabular_data, parse_tabular_data_json
+from services.model_services import save_trained_model
+from utils.parsing import parse_tabular_data, parse_tabular_data_json, parse_model_to_registry
 import pandas as pd
 from evaluate.tabular_evaluate import TabularComparisonEvaluator
 
@@ -18,6 +20,13 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     m.scaler = scaler
     m.train(data=np_input_scaled)
     m.save()
+    model_to_save = parse_model_to_registry(model, m, dataset)
+    try:
+        save_trained_model(model_to_save)
+    except ModelException as e:
+        m.rollback_latest_version()
+        raise ModelException(e)
+
     predicted_data = m.infer(n_rows)
     predicted_data = scaler.inverse_transform(predicted_data)
     df_predict = pd.DataFrame(data=predicted_data,

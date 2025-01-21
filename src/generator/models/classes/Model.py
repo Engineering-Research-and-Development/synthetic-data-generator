@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from exceptions.ModelException import ModelException
 from utils.model_utils import parse_stringed_input_shape
@@ -49,6 +50,14 @@ class UnspecializedModel(ABC):
             return 0
 
 
+    def rollback_latest_version(self):
+        max_version = self.check_folder_latest_version()
+        model_folder = f"{self.model_name}:{max_version}"
+        last_folder = os.path.join(MODEL_FOLDER, model_folder)
+        if os.path.isdir(last_folder):
+            shutil.rmtree(last_folder)
+
+
     @abstractmethod
     def build(self, input_shape):
         """Build the model.
@@ -84,3 +93,5 @@ class UnspecializedModel(ABC):
     @classmethod
     def self_describe(cls):
         pass
+
+
