@@ -10,7 +10,7 @@
         Label,
         Input
     } from 'flowbite-svelte';
-    import {BACKEND_URL} from "../../stores/sharedVars";
+    import {BACKEND_URL} from "../../stores/shared";
     import NextButton from "../components/NextButton.svelte";
     import BackButton from "../components/BackButton.svelte";
     import CancelButton from "../components/CancelButton.svelte";
@@ -21,27 +21,50 @@
 
     onMount(async () => {
         selectedBehaviours = JSON.parse(sessionStorage.getItem("selectedBehaviours") || "{}");
+
         try {
-            const fetchedData: Record<string, Behaviour[]> = {};
-            for (const [feature, ids] of Object.entries(selectedBehaviours)) {
-                fetchedData[feature] = await Promise.all(
-                    ids.map(async (id) => {
-                        const response = await fetch(`${BACKEND_URL}/behaviours/${id}`);
-
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-
-                        return (await response.json()) as Behaviour;
-                    })
-                );
+            // Collect all unique IDs from selectedBehaviours
+            const allRulesId = new Set<string>();
+            for (const ids of Object.values(selectedBehaviours)) {
+                ids.forEach(id => allRulesId.add(id));
             }
+
+            // Fetch data for all unique IDs
+            const fetchedData: Record<string, Behaviour[]> = {};
+            const uniqueIds = Array.from(allRulesId);
+
+            // Fetch data for all unique IDs
+            const responses = await Promise.all(
+                uniqueIds.map(async (id) => {
+                    const response = await fetch(`${BACKEND_URL}/behaviours/${id}`);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    return response.json();
+                })
+            );
+
+            // Associate the fetched data with the corresponding feature
+            uniqueIds.forEach((id, index) => {
+                const behaviour = responses[index] as Behaviour;
+                for (const [feature, ids] of Object.entries(selectedBehaviours)) {
+                    if (ids.includes(id)) {
+                        if (!fetchedData[feature]) {
+                            fetchedData[feature] = [];
+                        }
+                        fetchedData[feature].push(behaviour);
+                    }
+                }
+            });
 
             behaviourData = fetchedData;
         } catch (error) {
             console.error("Error fetching data:", error);
         }
     });
+
 
     function saveRulesData() {
         const rulesData: Record<string, Array<{
@@ -105,7 +128,7 @@
                                     </Label>
                                     <Input
                                             id={`param-${behaviour.id}-${index}`}
-                                            type="number"
+                                            type="number" step="0.01"
                                             placeholder={param.value.toString()}
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                     />

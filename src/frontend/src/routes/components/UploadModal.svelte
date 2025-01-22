@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {Modal, Fileupload, Button, Spinner} from 'flowbite-svelte';
-    import Papa from 'papaparse';
+    import { Modal, Fileupload, Button, Spinner } from 'flowbite-svelte';
     import { goto } from "$app/navigation";
     import CancelButton from "./CancelButton.svelte";
+    import {csvParse} from "d3";
 
     export let showPopup: boolean;
     export let uploadedFile: File | null;
@@ -39,18 +39,14 @@
 
             reader.onloadend = () => {
                 if (reader.result) {
-                    Papa.parse(reader.result.toString(), {
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: (result) => {
-                            sessionStorage.setItem('userFile', JSON.stringify(result.data));
-                            goto('/feature');
-                        },
-                        error: (error: Error) => {
-                            console.error('Parsing failed:', error);
-                            alert('Parsing failed. Please check your file and try again.');
-                        },
-                    });
+                    try {
+                        const csvData = csvParse(reader.result.toString());
+                        sessionStorage.setItem('userFile', JSON.stringify(csvData));
+                        goto('/feature');
+                    } catch (error) {
+                        console.error('Parsing failed:', error);
+                        alert('Parsing failed. Please check your file and try again.');
+                    }
                 } else {
                     alert('Failed to read file. Please try again.');
                 }
@@ -69,36 +65,35 @@
 {#if isSubmitting}
     <div class="absolute inset-0 bg-black opacity-90 flex items-center justify-center z-50">
         <div class="flex flex-col items-center">
-            <Spinner size="xl"/>
+            <Spinner size="xl" />
             <span class="text-white mt-4">Uploading...</span>
         </div>
     </div>
 {/if}
 
-
 <Modal bind:open={showPopup} size="md" autoclose outsideclose>
     <div slot="header">Upload CSV</div>
 
     <div class="p-4">
-        <form>
+        <form on:submit|preventDefault={submitForm}>
             <div class="mb-4">
                 <label
-                    for="csvFile"
-                    class="block text-sm font-medium text-gray-700 mb-2"
+                        for="csvFile"
+                        class="block text-sm font-medium text-gray-700 mb-2"
                 >
                     Choose a CSV file
                 </label>
                 <Fileupload
-                    id="csvFile"
-                    type="file"
-                    accept=".csv"
-                    on:change={handleFileUpload}
-                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring focus:border-blue-300"
-                    required
+                        id="csvFile"
+                        type="file"
+                        accept=".csv"
+                        on:change={handleFileUpload}
+                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring focus:border-blue-300"
+                        required
                 />
             </div>
             <div class="flex justify-end">
-                <CancelButton/>
+                <CancelButton />
                 <Button
                         type="submit"
                         on:click={submitForm}

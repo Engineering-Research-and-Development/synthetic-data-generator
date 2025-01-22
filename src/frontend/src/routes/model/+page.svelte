@@ -7,7 +7,7 @@
     import BackButton from "../components/BackButton.svelte";
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
-    import { BACKEND_URL } from "../../stores/sharedVars";
+    import { BACKEND_URL } from "../../stores/shared";
 
     let useNewModel = true;
     let selectedModel: string = "";

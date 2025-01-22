@@ -9,7 +9,7 @@
         TableHeadCell,
         MultiSelect,
     } from "flowbite-svelte";
-    import { BACKEND_URL } from "../../stores/sharedVars";
+    import { BACKEND_URL } from "../../stores/shared";
 
     export let featuresName: string[] = [];
     export let selectedFeatureBehaviour: FeatureBehaviour = {};

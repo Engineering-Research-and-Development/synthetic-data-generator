@@ -11,7 +11,7 @@
 	import BackButton from "../components/BackButton.svelte";
 	import CancelButton from "../components/CancelButton.svelte";
 	import {onMount} from "svelte";
-	import {BACKEND_URL} from "../../stores/sharedVars";
+	import {BACKEND_URL} from "../../stores/shared";
 	type RowData = { [key: string]: any };
 
 	let userFile: RowData[] = [];
