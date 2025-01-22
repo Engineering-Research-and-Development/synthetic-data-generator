@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException,Depends
-from model_registry.database.validation import CreateDataType,ValidHeaders
-from model_registry.database.schema import DataType
+from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import NoResultFound
+
 from model_registry.database import model
+from model_registry.database.schema import DataType
+from model_registry.database.validation import CreateDataType
 from model_registry.server.service import dt_service as service
-from sqlalchemy.exc import  NoResultFound
 
 router = APIRouter()
 
