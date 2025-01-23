@@ -5,14 +5,15 @@ import random
 with open('config.yml', 'r') as file:
     config = yaml.safe_load(file)
     server = config["server"]
-endpoint= "/datatypes"
+endpoint = "/datatypes"
+
 
 def test_get_all_datatypes():
-    response = requests.get(server+endpoint)
+    response = requests.get(server + endpoint)
     data = response.json()
 
     # Check something is returned
-    assert len(data)>0
+    assert len(data) > 0
 
     # Check all keys are present
     random_type = data[random.randint(0, len(data))]
@@ -29,8 +30,8 @@ def test_get_all_datatypes():
 
 
 def test_get_datatype_id():
-    payload= "/1"
-    response = requests.get(server+endpoint+payload)
+    payload = "/1"
+    response = requests.get(server + endpoint + payload)
     data = response.json()
 
     assert data["is_categorical"] == True
@@ -44,14 +45,16 @@ def test_get_datatype_id():
 
     assert len(data) == 0
 
+
 def test_no_datatype_id():
-    payload="/0"
-    response = requests.get(server+endpoint+payload)
+    payload = "/0"
+    response = requests.get(server + endpoint + payload)
 
     assert response.status_code == 404
 
+
 def test_wrong_datatype_payload():
-    payload="/wrong_payload"
-    response = requests.get(server+endpoint+payload)
+    payload = "/wrong_payload"
+    response = requests.get(server + endpoint + payload)
 
     assert response.status_code == 422

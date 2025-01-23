@@ -1,36 +1,22 @@
 from fastapi import APIRouter, HTTPException
-from fastapi.params import Depends
-from model_registry.database import model
-from model_registry.database.schema import TrainingInfo
 from sqlalchemy.exc import NoResultFound
-from model_registry.database.validation import ValidHeaders
+from sqlmodel import select
+from model_registry.database.schema import TrainingInfo
+from ..dependencies import SessionDep
 
-router = APIRouter()
+router = APIRouter(prefix="/training_info")
 
-
-
-@router.get("/training_info/{training_info_id}",status_code=200)
-async def get_trained_info(training_info_id: int):
-    """
-    Given a training info id, it returns it
-    :param training_info_id: Integer. The training info id
-    :return: The training info
-    """
+@router.get("/{training_info_id}", status_code=200)
+async def get_trained_info(training_info_id: int, session: SessionDep):
     try:
-        train_info = model.select_data_by_id(TrainingInfo,training_info_id)
+        statement = select(TrainingInfo).where(TrainingInfo.id == training_info_id)
+        train_info = session.exec(statement).one()
     except NoResultFound:
-        raise HTTPException(status_code=404,detail="No training info with id: " +
-                                                   str(training_info_id) + " has been found")
+        raise HTTPException(status_code=404, detail="No training info with id: " + str(training_info_id) + " has been found")
     return train_info
 
-
-
-@router.delete("/training_info/{training_info_id}",status_code=200)
-async def delete_training_info(training_info_id: int):
-    """
-    Given the training info id, it deletes it
-    :param training_info_id: Integer. The training info id
-    :return:
-    """
+@router.delete("/{training_info_id}", status_code=200)
+async def delete_training_info(training_info_id: int, session: SessionDep):
     train_info = await get_trained_info(training_info_id)
-    model.delete_instance(train_info)
+    session.delete(train_info)
+    session.commit()

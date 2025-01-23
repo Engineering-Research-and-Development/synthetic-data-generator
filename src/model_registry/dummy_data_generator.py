@@ -1,8 +1,45 @@
-""" This module offers mock-data generating methods. This module should be called once before launching the FASTApi
-server in order to populate the db and to not waste any time in application startup"""
-from random import shuffle
+"""In the MCS architectural style, the Model represents the core data or business logic of the application.
+It is responsible for accessing and manipulating the application's data."""
 import random
-from model_registry.database.schema import *
+from datetime import datetime
+from random import shuffle
+from typing import Type
+
+from sqlmodel import Session, SQLModel
+
+from model_registry.database.schema import SystemModel, TrainedModel, DataType, AllowedDataType, FeatureSchema, \
+    TrainingInfo, ModelVersion
+
+
+def save_data_from_dict(engine, data_class: Type[SQLModel],values: list[dict]):
+    """
+    This function creates and commits to the database instance of SQLModel class filled with data passed from values
+    :param data_class: The class of the data that this function wants to create and commit
+    :param values: the data to fill the instances with
+    :return:
+    """
+    # First let's create all the instances of the class
+    instances = [data_class(**data) for data in values]
+    # Then we add them to the session
+    with Session(engine) as session:
+        for instance in instances:
+            session.add(instance)
+        session.commit()
+
+def populate_db_with_mock_data(engine):
+    """
+    This function populates the database with mock data
+    :return: None
+    """
+    systems,trained_models,data_type,allowed_type,feature_schema,training_info,model_version = create_mock_data()
+    save_data_from_dict(engine, SystemModel,systems)
+    save_data_from_dict(engine, TrainedModel,trained_models)
+    save_data_from_dict(engine, DataType,data_type)
+    save_data_from_dict(engine, AllowedDataType,allowed_type)
+    save_data_from_dict(engine, FeatureSchema,feature_schema)
+    save_data_from_dict(engine, TrainingInfo,training_info)
+    save_data_from_dict(engine, ModelVersion,model_version)
+
 
 default_system_models = [
 'Multilayer Perceptron (MLP)',
@@ -18,7 +55,7 @@ default_system_models = [
 
 def create_system_models_data(batch_size: int = len(default_system_models)) -> list[dict]:
     """
-    This function create batch_size mock system_models' data. Batch_size default value is defined in data_generator.py
+    This function create batch_size mock system_models' data.
     module but this function can handle any batch_size value.
     :param: batch_size.
     :return: A list of system models' information in a form of a dictionary
@@ -35,6 +72,7 @@ def create_system_models_data(batch_size: int = len(default_system_models)) -> l
         rand_nums = random.sample(range(1, 100), N)
         # Construct a new list by picking a random algo name and concat with random value
         return system_models + [{"name" : (random.choice(system_models)['name'] + str(i)),"description":"A default description","loss_function":"A loss function"} for i in rand_nums]
+
 
 def create_trained_models_data(batch_size: int = len(default_system_models)) -> list[dict]:
     """
@@ -56,9 +94,11 @@ def create_trained_models_data(batch_size: int = len(default_system_models)) -> 
                 ,"input_shape" : random_shape, "algorithm_name":random.choice(default_system_models)})
     return models
 
+
 def create_data_type_data() -> list[dict]:
     return[{"type":'string',"is_categorical":True},{"type":'int',"is_categorical":True},{
         "type":'float',"is_categorical":True},{"type":'long_int',"is_categorical":True},{"type":'long_float',"is_categorical":True}]
+
 
 def create_allowed_data_type_data(batch_size: int = len(default_system_models)) -> list[dict]:
     """
@@ -71,6 +111,7 @@ def create_allowed_data_type_data(batch_size: int = len(default_system_models)) 
     if batch_size <= 0:
         raise ValueError('Batch_size must be greater than 0')
     return [{"algorithm_name":random.choice(default_system_models),"datatype":1} for i in range(1,batch_size)]
+
 
 def create_feature_schema_data(batch_size: int = len(default_system_models)) -> list[dict]:
     """
@@ -89,6 +130,7 @@ def create_feature_schema_data(batch_size: int = len(default_system_models)) -> 
     single_feature_schema = [{  "feature_name": "A name","feature_position": x,"is_categorical": False,"trained_model_id": 1, "datatype_id": 1} for x in range(1,9)]
     return data + single_feature_schema
 
+
 def create_training_info_data(batch_size: int = len(default_system_models)) -> list[dict]:
     """
     Creates a list of training info  data of dimension batch_size. The value of batch_size must be an integer non-negative and
@@ -102,6 +144,7 @@ def create_training_info_data(batch_size: int = len(default_system_models)) -> l
     return [{  "loss_function": "A loss function","train_loss_value": random.randint(0,100),
                "val_loss_value":  random.randint(0,100),"n_train_samples":  random.randint(0,100),
                "n_validation_samples":  random.randint(0,100)} for i in range(batch_size)]
+
 
 def create_model_version_data(batch_size: int = len(default_system_models),nums_multiple_versions: int = 2,
                               num_versions: int = 2):
@@ -139,4 +182,3 @@ def create_mock_data(batch_size: int = len(default_system_models)):
     return create_system_models_data(batch_size),create_trained_models_data(batch_size),\
             create_data_type_data(),create_allowed_data_type_data(batch_size),\
             create_feature_schema_data(batch_size),training_info, versions
-
