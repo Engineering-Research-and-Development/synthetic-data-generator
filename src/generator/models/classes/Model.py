@@ -43,11 +43,45 @@ class UnspecializedModel(ABC):
 
 
     def check_folder_latest_version(self):
-        my_folders_versions = [int(fold.split(":")[1]) for fold in os.listdir(MODEL_FOLDER) if self.model_name in fold]
+        root_folder = self._get_model_root_folder()
+        my_folders_versions = [int(fold.split(":")[1]) for fold in os.listdir(MODEL_FOLDER) if root_folder in fold]
         if len(my_folders_versions) > 0:
             return max(my_folders_versions)
         else:
             return 0
+
+
+    def _get_model_root_folder(self):
+        """
+        Returns the basename of the folder, formed with Class Name + Model Name
+        :return:
+        """
+        class_name = type(self).__name__
+        root_folder = f"{class_name}__{self.model_name}"
+        return root_folder
+
+
+    def get_last_folder(self):
+        """
+        Returns the name of the latest version image of the model
+        :return:
+        """
+        root_folder = self._get_model_root_folder()
+        version = self.check_folder_latest_version()
+        latest_version_folder = f"{root_folder}:{version}"
+        return latest_version_folder
+
+
+    def _create_new_version_folder(self):
+        new_version = self.check_folder_latest_version() + 1
+        root_folder = self._get_model_root_folder()
+        new_version_folder = f"{root_folder}:{new_version}"
+        save_folder = os.path.join(MODEL_FOLDER, new_version_folder)
+
+        if not os.path.isdir(save_folder):
+            os.makedirs(save_folder)
+
+        return save_folder
 
 
     def rollback_latest_version(self):

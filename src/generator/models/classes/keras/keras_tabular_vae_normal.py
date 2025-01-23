@@ -25,7 +25,7 @@ class Sampling(layers.Layer):
         z_mean, z_log_var = inputs
         batch = ops.shape(z_mean)[0]
         dim = ops.shape(z_mean)[1]
-        epsilon = keras.random.uniform(shape=(batch, dim), seed=self.seed_generator)
+        epsilon = keras.random.normal(shape=(batch, dim), seed=self.seed_generator)
         return z_mean + ops.exp(0.5 * z_log_var) * epsilon
 
 
@@ -69,7 +69,7 @@ class VAE(keras.Model):
 
 
 
-class KerasTabularVAE(UnspecializedModel):
+class NormalPriorKerasTabularVAE(UnspecializedModel):
 
     def __init__(self, metadata:dict, model_name:str, model_filepath:str=None):
         super().__init__(metadata, model_name, model_filepath)
@@ -134,6 +134,7 @@ class KerasTabularVAE(UnspecializedModel):
 
     def save(self, **kwargs):
         save_folder = self._create_new_version_folder()
+
         try:
             encoder_filename = os.path.join(save_folder, "encoder.keras")
             decoder_filename = os.path.join(save_folder, "decoder.keras")

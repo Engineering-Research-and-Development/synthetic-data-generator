@@ -3,6 +3,7 @@ from exceptions.ModelException import ModelException
 from models.model_factory import model_factory
 import pandas as pd
 
+from utils.file_utils import store_files
 from utils.parsing import parse_tabular_data, parse_tabular_data_json
 
 def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
@@ -33,4 +34,9 @@ def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int
     results = parse_tabular_data_json(dataset=df_predict,
                                       numerical_columns=numerical_columns,
                                       categorical_columns=categorical_columns)
+
+    # Remove after debug
+    store_files(m.get_last_folder(), df_predict, report)
+    ######
+
     return results, report

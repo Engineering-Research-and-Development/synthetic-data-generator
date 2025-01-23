@@ -3,6 +3,7 @@ from exceptions.ModelException import ModelException
 from preprocess.scale import scale_input
 from models.model_factory import model_factory
 from services.model_services import save_trained_model
+from utils.file_utils import store_files
 from utils.parsing import parse_tabular_data, parse_tabular_data_json, parse_model_to_registry
 import pandas as pd
 from evaluate.tabular_evaluate import TabularComparisonEvaluator
@@ -21,11 +22,14 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     m.train(data=np_input_scaled)
     m.save()
     model_to_save = parse_model_to_registry(model, m, dataset)
+
+    """
     try:
         save_trained_model(model_to_save)
     except ModelException as e:
         m.rollback_latest_version()
         raise ModelException(e)
+    """
 
     predicted_data = m.infer(n_rows)
     predicted_data = scaler.inverse_transform(predicted_data)
@@ -39,5 +43,10 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     results = parse_tabular_data_json(dataset=df_predict,
                                       numerical_columns=numerical_columns,
                                       categorical_columns=categorical_columns)
+
+    # Remove after debug
+    store_files(m.get_last_folder(), df_predict, report)
+    ######
+
     return results, report
 
