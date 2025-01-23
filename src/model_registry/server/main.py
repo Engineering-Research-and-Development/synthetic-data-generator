@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel
+from starlette.responses import RedirectResponse
 
 from model_registry.dummy_data_generator import populate_db_with_mock_data
 from model_registry.server.dependencies import engine
@@ -56,3 +57,7 @@ app.include_router(model_versions.router)
 app.include_router(training_info.router)
 app.include_router(datatypes.router)
 app.include_router(models.router)
+
+@app.get("/")
+async def home_to_docs():
+    return RedirectResponse(url="/docs")
