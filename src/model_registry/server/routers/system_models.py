@@ -39,8 +39,14 @@ async def add_system_model_and_datatype(system_model: CreateSystemModel, data_ty
 @router.get("/", status_code=200)
 async def get_all_system_models(session: SessionDep):
     models = service.get_models_and_datatype(session)
-    payload = [{"name": model["name"], "description": model["description"], "loss_function": model["loss_function"], "allowed_datatype": model["allowed_datatype"], "is_categorical": model["categorical"]} for model in models]
-
+    payload = []
+    for model in models:
+        if not model["allowed_datatype"][0]:
+            payload.append({"name": model["name"], "description": model["description"],
+                            "loss_function": model["loss_function"],"allowed_datatype": [], "is_categorical": []})
+        else:
+            payload.append({"name": model["name"], "description": model["description"], "loss_function": model["loss_function"],
+                            "allowed_datatype": model["allowed_datatype"], "is_categorical": model["categorical"]})
     return payload
 
 @router.get("/{system_model_name}", status_code=200)

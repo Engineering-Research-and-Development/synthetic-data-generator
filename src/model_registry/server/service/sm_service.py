@@ -1,6 +1,6 @@
 """This module implements the business logic for system models"""
 from sqlalchemy.exc import NoResultFound, StatementError
-from sqlmodel import select, SQLModel
+from sqlmodel import select, SQLModel,outerjoin
 
 from model_registry.database.schema import SystemModel, AllowedDataType, DataType
 from model_registry.server.dependencies import SessionDep
@@ -9,8 +9,8 @@ from model_registry.server.errors import ValidationError
 
 def get_models_and_datatype(session: SessionDep) -> list:
     statement = select(SystemModel,DataType.type,DataType.is_categorical).\
-        join(AllowedDataType,onclause=SystemModel.name == AllowedDataType.algorithm_name).\
-        join(DataType)
+        outerjoin(AllowedDataType,onclause=SystemModel.name == AllowedDataType.algorithm_name).\
+        outerjoin(DataType)
     results = session.exec(statement).all()
     payload = {}
     for result in results:

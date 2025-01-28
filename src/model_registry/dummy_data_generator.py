@@ -61,7 +61,8 @@ def create_system_models_data(batch_size: int = len(default_system_models)) -> l
     :return: A list of system models' information in a form of a dictionary
     """
     if batch_size <= len(default_system_models):
-        return  [{"name" : default_system_models[i],"description":"A default description","loss_function":"A loss function"} for i in range(batch_size)]
+        systems = [{"name" : elem,"description":"A default description","loss_function":"A loss function"} for elem in default_system_models]
+        return systems
     else:
         # This is the case when the batch size is bigger than the algorithms names
         # Since the name must be unique we create a name with a random value
@@ -179,6 +180,7 @@ def create_model_version_data(batch_size: int = len(default_system_models),nums_
 
 def create_mock_data(batch_size: int = len(default_system_models)):
     versions, training_info = create_model_version_data(batch_size)
-    return create_system_models_data(batch_size),create_trained_models_data(batch_size),\
+    systems = create_system_models_data(batch_size)
+    return systems,create_trained_models_data(batch_size),\
             create_data_type_data(),create_allowed_data_type_data(batch_size),\
             create_feature_schema_data(batch_size),training_info, versions

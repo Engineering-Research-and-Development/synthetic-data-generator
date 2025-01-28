@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlmodel import select
 from model_registry.database.schema import TrainedModel, ModelVersion, TrainingInfo
 from model_registry.database.validation import CreateTrainedModel, CreateModelVersion, CreateTrainingInfo, CreateFeatureSchema
-from model_registry.server.errors import NoVersions
+from model_registry.server.errors import NoVersions, NoModelFound, VersionNotFound
 from ..dependencies import SessionDep
 from model_registry.server.service import tm_service as service
 
@@ -30,9 +30,11 @@ async def get_trained_model_id(trained_model_id: int, session: SessionDep):
     return train_model
 
 @router.get("/{trained_model_id}/versions", status_code=200)
-async def get_all_train_model_versions(trained_model_id: int, version_id: int, session: SessionDep):
+async def get_all_train_model_versions(trained_model_id: int, session: SessionDep,version_id: int | None = None):
     try:
         model_info, version_and_train = service.get_trained_model_versions(trained_model_id, version_id, session)
+    except NoModelFound as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
     except NoVersions as e:
         raise HTTPException(status_code=404, detail=f"{e}")
 
@@ -57,8 +59,6 @@ async def create_model_and_version(trained_model: CreateTrainedModel, version: C
 
     for feature in validated_features:
         feature.trained_model_id = validated_model.id
-
-
     for feature in validated_features:
         session.add(feature)
     session.commit()
@@ -83,9 +83,10 @@ async def delete_train_model(trained_model_id: int, session: SessionDep):
     except NoResultFound:
         raise HTTPException(status_code=404, detail="No trained instance with id: " + str(trained_model_id) + " has been found")
     service.delete_trained_model_schemas(train_model, session)
-
     try:
         _, versions_infos = service.get_trained_model_versions(model_id=trained_model_id, session=session, version_id=None)
+    except NoModelFound as e:
+        raise HTTPException(status_code=404, detail=f"{e}")
     except NoVersions:
         pass
     else:
@@ -98,10 +99,10 @@ async def delete_train_model(trained_model_id: int, session: SessionDep):
     session.commit()
 
 @router.delete("/{trained_model_id}/versions", status_code=200)
-async def delete_train_model_version(trained_model_id: int, version_id: int, session: SessionDep):
+async def delete_train_model_version(trained_model_id: int,session: SessionDep, version_id: int | None = None):
     try:
         _, version_info = service.get_trained_model_versions(trained_model_id, version_id, session)
-    except NoVersions as e:
+    except (NoModelFound,NoVersions,VersionNotFound) as e:
         raise HTTPException(status_code=404, detail=f"{e}")
 
     for elem in version_info:

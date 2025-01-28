@@ -55,9 +55,10 @@ class BaseFeatureSchema(SQLModel):
         feature_name: str
         feature_position: int = Field(primary_key=True)
 
-
+# It was easier to put feature: BaseDataType but I want it to keep it simple for the generator's request
 class CreateFeatureSchema(BaseFeatureSchema):
     datatype: str
+    is_categorical: bool
 
 class BaseDataType(SQLModel):
     type: str
