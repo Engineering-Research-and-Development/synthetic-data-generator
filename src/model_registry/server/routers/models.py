@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from model_registry.server.dependencies import SessionDep
 from model_registry.server.routers import system_models, trained_models
 

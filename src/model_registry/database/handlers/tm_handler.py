@@ -1,13 +1,8 @@
-"""The service layer should be responsible for implementing the business logic of our application by communicating
-with the model layer. """
-
-from sqlmodel import select, SQLModel
 
 from model_registry.database.schema import TrainedModel, TrainingInfo, ModelVersion, FeatureSchema, DataType
-from model_registry.database.validation import CreateFeatureSchema
-from model_registry.server.dependencies import SessionDep
 from model_registry.server.errors import NoVersions, NoModelFound, VersionNotFound
-
+from model_registry.server.dependencies import SessionDep
+from sqlmodel import select, SQLModel
 
 def get_trained_model_versions(model_id, version_id, session: SessionDep) -> tuple:
     statement = select(TrainedModel,ModelVersion,TrainingInfo).outerjoin(ModelVersion,onclause=ModelVersion.trained_model_id == TrainedModel.id)\
@@ -29,6 +24,7 @@ def get_trained_model_versions(model_id, version_id, session: SessionDep) -> tup
     # Returning model information and version paired with training information
     return model_info,versions_and_info
 
+
 def get_trained_model_feature_schema(trained_model_id: int, session: SessionDep) -> list[dict[str,SQLModel]]:
     # The feature schema primary key is based as a ternary (trained_model_id,data_type_id,feature_pos)
     # So for a given trained model, we just query the Feature Schema table for the trained_model_id
@@ -41,19 +37,6 @@ def get_trained_model_feature_schema(trained_model_id: int, session: SessionDep)
         data_list.append({"column_name":feature.feature_name,"categorical":data_type.is_categorical,
                           "column_datatype":data_type.type,"column_position":feature.feature_position})
     return data_list
-
-def validate_all_schemas(features: list[CreateFeatureSchema], session: SessionDep) -> list[FeatureSchema]:
-    payload = []
-    for feature in features:
-        # For each feature we need to search the id since it is not passed in input
-        # And we need to check that is present in the db (it means we allow it)
-        statement = select(DataType.id).where(DataType.type == feature.datatype)\
-            .where(DataType.is_categorical == feature.is_categorical)
-        result = session.exec(statement).one()
-        validated_feature = FeatureSchema.model_validate(feature)
-        validated_feature.datatype_id = result
-        payload.append(validated_feature)
-    return payload
 
 def delete_trained_model_schemas(trained_model: TrainedModel, session: SessionDep):
 
@@ -98,3 +81,20 @@ def get_models_and_versions(session: SessionDep) -> list:
         else:
             model["version_ids"].append(result[1].id)
     return list(payload.values())
+
+def get_all(session: SessionDep) -> list[TrainedModel]:
+    statement = select(TrainedModel)
+    results = session.exec(statement)
+    return results.all()
+
+def get_by_id(model_id: int,session: SessionDep):
+    statement = select(TrainedModel).where(TrainedModel.id == model_id)
+    train_model = session.exec(statement).one()
+    return train_model
+
+def save_model(model: TrainedModel,session: SessionDep, refresh: bool = False) -> None:
+    session.add(model)
+    session.commit()
+    if refresh:
+        session.refresh(model)
+

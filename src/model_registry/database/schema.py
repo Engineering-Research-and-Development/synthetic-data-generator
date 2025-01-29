@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 from sqlmodel import Field, SQLModel
-from model_registry.database.validation import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, \
+from model_registry.validation.valschema import BaseSystemModel, BaseModelVersion, BaseTrainedModel, BaseTrainingInfo, \
     BaseFeatureSchema, BaseDataType
 
 
