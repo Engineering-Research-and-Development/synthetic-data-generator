@@ -1,5 +1,3 @@
-from enum import CONTINUOUS
-
 import numpy as np
 import pandas as pd
 
@@ -114,9 +112,9 @@ def parse_model_to_registry(model_dict: dict, model: UnspecializedModel, data: l
     version_info = {"version_name": model_version, "model_image_path": model_image}
     trained_model_misc = {
         "name": model.model_name,
-        "size": "None",
+        "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm_name": model.self_describe().get("name", model_type)
+        "algorithm_name": model.self_describe().get("algorithm_name", model_type)
     }
 
     model_to_save = {

@@ -71,9 +71,10 @@ class VAE(keras.Model):
 
 class KerasTabularVAE(UnspecializedModel):
 
-    def __init__(self, metadata:dict, model_name:str, model_filepath:str=None):
-        super().__init__(metadata, model_name, model_filepath)
+    def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
+        super().__init__(metadata, model_name, input_shape, model_filepath)
         self.latent_dim = 2
+        self._initialize()
 
 
     def build(self, input_shape:tuple[int,...]):
@@ -108,6 +109,10 @@ class KerasTabularVAE(UnspecializedModel):
         with open(scaler_filename, "rb") as f:
             scaler = pickle.load(f)
         return model, scaler
+
+
+    def pre_process(self, data, **kwargs):
+        pass
 
 
     def train(self, data: np.array, **kwargs):
@@ -159,10 +164,10 @@ class KerasTabularVAE(UnspecializedModel):
         # Returns a dictionary with model info, useful for initializing model
 
         system_model_info = {
-            "name": f"{cls.__module__}.{cls.__qualname__}",
+            "algorithm_name": f"{cls.__module__}.{cls.__qualname__}",
             "default_loss_function": "ELBO Loss",
             "description": "A Tabular Variational Autoencoder for continuous numerical data generation",
-            "data_types":  [
+            "allowed_data":  [
                 {
                     "data_type": "float",
                     "is_categorical": False

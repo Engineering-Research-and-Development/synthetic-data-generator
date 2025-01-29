@@ -1,8 +1,6 @@
 from exceptions.DataException import DataException
-from exceptions.ModelException import ModelException
 from preprocess.scale import scale_input
 from models.model_factory import model_factory
-from services.model_services import save_trained_model
 from utils.file_utils import store_files
 from utils.parsing import parse_tabular_data, parse_tabular_data_json, parse_model_to_registry
 import pandas as pd

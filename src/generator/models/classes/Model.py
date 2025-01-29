@@ -9,37 +9,22 @@ from abc import ABC, abstractmethod
 from traceback import print_tb
 
 class UnspecializedModel(ABC):
-    def __init__(self, metadata:dict, model_name:str, model_filepath:str=None):
+    def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
         self.metadata = metadata
         self.model_name = model_name
         self.model_filepath = model_filepath
         self.input_shape = None
         self.model = None  # Placeholder for the model instance
         self.scaler = None # Placeholder for model scaler
+        self._parse_shape(input_shape)
 
 
-    def parse_shape(self, input_shape:str):
-        try:
-            tuple_shape = parse_stringed_input_shape(input_shape)
-            self.input_shape = tuple_shape
-        except ValueError:
-            raise ModelException ("Cannot build the model, missing input shape")
-
-
-    def initialize(self, input_shape:str=""):
-        if self.model_filepath:
-            print(f"Loading pre-trained model: {self.model_filepath}")
-            try:
-                model, scaler = self.load()
-            except Exception:
-                raise ModelException("Model file not found")
-            self.model = model
-            self.scaler = scaler
-            self.parse_shape(input_shape)
-        else:
-            print(f"Building model from scratch: {self.model_name}")
-            self.parse_shape(input_shape)
-            self.model = self.build(self.input_shape)
+    def rollback_latest_version(self):
+        max_version = self.check_folder_latest_version()
+        model_folder = f"{self.model_name}:{max_version}"
+        last_folder = os.path.join(MODEL_FOLDER, model_folder)
+        if os.path.isdir(last_folder):
+            shutil.rmtree(last_folder)
 
 
     def check_folder_latest_version(self):
@@ -51,16 +36,6 @@ class UnspecializedModel(ABC):
             return 0
 
 
-    def _get_model_root_folder(self):
-        """
-        Returns the basename of the folder, formed with Class Name + Model Name
-        :return:
-        """
-        class_name = type(self).__name__
-        root_folder = f"{class_name}__{self.model_name}"
-        return root_folder
-
-
     def get_last_folder(self):
         """
         Returns the name of the latest version image of the model
@@ -70,6 +45,64 @@ class UnspecializedModel(ABC):
         version = self.check_folder_latest_version()
         latest_version_folder = f"{root_folder}:{version}"
         return latest_version_folder
+
+
+    @abstractmethod
+    def build(self, input_shape):
+        """Build the model.
+        :param input_shape:
+        """
+        pass
+
+
+    @abstractmethod
+    def load(self):
+        """Load pre-trained weights."""
+        pass
+
+
+    @abstractmethod
+    def pre_process(self, data, **kwargs):
+        """Pre-process data"""
+
+
+    @abstractmethod
+    def train(self, data, **kwargs):
+        """Train the model."""
+        pass
+
+
+    @abstractmethod
+    def fine_tune(self, data, **kwargs):
+        """Fine-tune the model."""
+        pass
+
+
+    @abstractmethod
+    def infer(self, n_rows:int, **kwargs):
+        """Run inference."""
+        pass
+
+
+    @abstractmethod
+    def save(self, **kwargs):
+        """Save Model."""
+        pass
+
+
+    @classmethod
+    def self_describe(cls):
+        pass
+
+
+    def _get_model_root_folder(self):
+        """
+        Returns the basename of the folder, formed with Class Name + Model Name
+        :return:
+        """
+        class_name = type(self).__name__
+        root_folder = f"{class_name}__{self.model_name}"
+        return root_folder
 
 
     def _create_new_version_folder(self):
@@ -84,48 +117,31 @@ class UnspecializedModel(ABC):
         return save_folder
 
 
-    def rollback_latest_version(self):
-        max_version = self.check_folder_latest_version()
-        model_folder = f"{self.model_name}:{max_version}"
-        last_folder = os.path.join(MODEL_FOLDER, model_folder)
-        if os.path.isdir(last_folder):
-            shutil.rmtree(last_folder)
+    def _parse_shape(self, input_shape:str):
+        try:
+            tuple_shape = parse_stringed_input_shape(input_shape)
+            self.input_shape = tuple_shape
+        except ValueError:
+            raise ModelException ("Cannot build the model, missing input shape")
 
 
-    @abstractmethod
-    def build(self, input_shape):
-        """Build the model.
-        :param input_shape:
-        """
-        pass
+    def _initialize(self):
+        if self.model_filepath:
+            print(f"Loading pre-trained model: {self.model_filepath}")
+            try:
+                model, scaler = self.load()
+            except Exception:
+                raise ModelException("Model file not found")
+            self.model = model
+            self.scaler = scaler
+        else:
+            print(f"Building model from scratch: {self.model_name}")
+            self.model = self.build(self.input_shape)
 
-    @abstractmethod
-    def load(self):
-        """Load pre-trained weights."""
-        pass
 
-    @abstractmethod
-    def train(self, data, **kwargs):
-        """Train the model."""
-        pass
 
-    @abstractmethod
-    def fine_tune(self, data, **kwargs):
-        """Fine-tune the model."""
-        pass
 
-    @abstractmethod
-    def infer(self, n_rows:int, **kwargs):
-        """Run inference."""
-        pass
 
-    @abstractmethod
-    def save(self, **kwargs):
-        """Save Model."""
-        pass
 
-    @classmethod
-    def self_describe(cls):
-        pass
 
 
