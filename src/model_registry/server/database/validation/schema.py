@@ -1,9 +1,7 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
 from datetime import datetime
 
-from pydantic import BaseModel, Field
-
-from pydantic.v1 import validator
+from pydantic import BaseModel
 
 class SystemModel(BaseModel):
     name: str

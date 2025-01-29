@@ -3,23 +3,20 @@ the database initialization on startup"""
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from requests import Request
 from starlette.responses import RedirectResponse
 
 from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     db
 from dummy_data_generator import insert_data
-from routers import datatypes#, system_models, trained_models, model_versions, training_info, models
-
+from routers import datatypes  #, system_models, trained_models, model_versions, training_info, models
 
 allowed_origins = os.environ.get('allowed_origins', '*').split(',')
 allow_credentials = os.environ.get("allow_credentials", True)
 allow_methods = os.environ.get("allow_methods", '*').split(',')
 allow_headers = os.environ.get("allow_headers", '*').split(',')
 init_db = os.environ.get("INIT_DB", False)
-
 
 
 @asynccontextmanager
@@ -59,11 +56,3 @@ app.include_router(datatypes.router)
 @app.get("/", include_in_schema=False)
 async def home_to_docs():
     return RedirectResponse(url="/docs")
-
-@app.middleware("http")
-async def validate_content_type(request: Request, call_next):
-    if request.headers.get("content-type") != "application/json":
-        return Response(status_code=415, content="Content-type not supported")
-
-    response = await call_next(request)
-    return response
