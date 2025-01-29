@@ -3,8 +3,9 @@ the database initialization on startup"""
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+from requests import Request
 from starlette.responses import RedirectResponse
 
 from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
@@ -48,8 +49,6 @@ app.add_middleware(
     allow_headers=allow_headers,
 )
 
-# Adding routers for model specific request
-# i.e A client asks for a specific trained/system model this endpoints will serve that
 app.include_router(datatypes.router)
 #app.include_router(system_models.router)
 #app.include_router(trained_models.router)
@@ -60,3 +59,11 @@ app.include_router(datatypes.router)
 @app.get("/", include_in_schema=False)
 async def home_to_docs():
     return RedirectResponse(url="/docs")
+
+@app.middleware("http")
+async def validate_content_type(request: Request, call_next):
+    if request.headers.get("content-type") != "application/json":
+        return Response(status_code=415, content="Content-type not supported")
+
+    response = await call_next(request)
+    return response

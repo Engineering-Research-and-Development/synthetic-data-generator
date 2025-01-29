@@ -5,17 +5,6 @@ from pydantic import BaseModel, Field
 
 from pydantic.v1 import validator
 
-
-class ApplicationHeader(BaseModel):
-    headers: dict[str, str] = Field(..., description="Request headers")
-
-    @validator("headers")
-    def validate_content_type(cls, value):
-        content_type = value.get("Content-Type", "").lower()
-        if content_type != "application/json":
-            raise ValueError("Content-Type must be 'application/json'")
-        return value
-
 class SystemModel(BaseModel):
     name: str
     description: str
