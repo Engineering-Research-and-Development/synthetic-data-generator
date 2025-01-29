@@ -5,13 +5,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel
 from starlette.responses import RedirectResponse
 
-from model_registry.dummy_data_generator import populate_db_with_mock_data
-from model_registry.server.dependencies import engine
-from model_registry.server.routers import system_models, trained_models, model_versions, training_info, datatypes, \
-    models
+from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
+    db
+from dummy_data_generator import insert_data
+from routers import datatypes#, system_models, trained_models, model_versions, training_info, models
 
 
 allowed_origins = os.environ.get('allowed_origins', '*').split(',')
@@ -29,10 +28,10 @@ async def lifespan(app: FastAPI):
     BEFORE the application is launched while the code after the yield is run AFTER the app execution. The code
     is run only once.
     """
-    SQLModel.metadata.create_all(engine)
+    db.create_tables([SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion])
 
     if init_db:
-            populate_db_with_mock_data(engine)
+        insert_data()
 
     yield
     #  This part is done after the FASTAPI application is run
@@ -51,13 +50,13 @@ app.add_middleware(
 
 # Adding routers for model specific request
 # i.e A client asks for a specific trained/system model this endpoints will serve that
-app.include_router(system_models.router)
-app.include_router(trained_models.router)
-app.include_router(model_versions.router)
-app.include_router(training_info.router)
 app.include_router(datatypes.router)
-app.include_router(models.router)
+#app.include_router(system_models.router)
+#app.include_router(trained_models.router)
+#app.include_router(model_versions.router)
+#app.include_router(training_info.router)
+#app.include_router(models.router)
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def home_to_docs():
     return RedirectResponse(url="/docs")
