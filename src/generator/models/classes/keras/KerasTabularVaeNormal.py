@@ -25,7 +25,7 @@ class Sampling(layers.Layer):
         z_mean, z_log_var = inputs
         batch = ops.shape(z_mean)[0]
         dim = ops.shape(z_mean)[1]
-        epsilon = keras.random.uniform(shape=(batch, dim), seed=self.seed_generator)
+        epsilon = keras.random.normal(shape=(batch, dim), seed=self.seed_generator)
         return z_mean + ops.exp(0.5 * z_log_var) * epsilon
 
 
@@ -69,7 +69,7 @@ class VAE(keras.Model):
 
 
 
-class KerasTabularVAE(UnspecializedModel):
+class NormalPriorKerasTabularVAE(UnspecializedModel):
 
     def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
         super().__init__(metadata, model_name, input_shape, model_filepath)
@@ -111,10 +111,6 @@ class KerasTabularVAE(UnspecializedModel):
         return model, scaler
 
 
-    def pre_process(self, data, **kwargs):
-        pass
-
-
     def train(self, data: np.array, **kwargs):
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
         history = self.model.fit(data, epochs=200, batch_size=8)
@@ -125,6 +121,10 @@ class KerasTabularVAE(UnspecializedModel):
             "train_samples": data.shape[0],
             "validation_samples": 0
         }
+
+
+    def pre_process(self, data, **kwargs):
+        pass
 
 
     def fine_tune(self, data: np.array, **kwargs):
@@ -139,6 +139,7 @@ class KerasTabularVAE(UnspecializedModel):
 
     def save(self, **kwargs):
         save_folder = self._create_new_version_folder()
+
         try:
             encoder_filename = os.path.join(save_folder, "encoder.keras")
             decoder_filename = os.path.join(save_folder, "decoder.keras")
@@ -164,7 +165,7 @@ class KerasTabularVAE(UnspecializedModel):
         # Returns a dictionary with model info, useful for initializing model
 
         system_model_info = {
-            "algorithm_name": f"{cls.__module__}.{cls.__qualname__}",
+            "name": f"{cls.__module__}.{cls.__qualname__}",
             "default_loss_function": "ELBO Loss",
             "description": "A Tabular Variational Autoencoder for continuous numerical data generation",
             "allowed_data":  [

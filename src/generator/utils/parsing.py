@@ -114,7 +114,7 @@ def parse_model_to_registry(model_dict: dict, model: UnspecializedModel, data: l
         "name": model.model_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm_name": model.self_describe().get("algorithm_name", model_type)
+        "algorithm_name": model.self_describe().get("name", model_type)
     }
 
     model_to_save = {
