@@ -2,11 +2,9 @@ import os
 import shutil
 
 from exceptions.ModelException import ModelException
-from utils.model_utils import parse_stringed_input_shape
 from utils.structure import MODEL_FOLDER
 
 from abc import ABC, abstractmethod
-from traceback import print_tb
 
 
 class UnspecializedModel(ABC):
@@ -118,6 +116,20 @@ class UnspecializedModel(ABC):
             os.makedirs(save_folder)
 
         return save_folder
+
+
+    @staticmethod
+    def parse_stringed_input_shape(stringed_shape:str) -> tuple[int, ...]:
+        """
+        Parses a stringed list of numbers into a tuple
+
+        :param stringed_shape: a stringed list of number in format "[x,y,z]"
+        :return: a tuple of numbers, in format (x, y, z)
+        """
+        brackets = ["(", ")", "[", "]", "{", "}"]
+        for b in brackets:
+            stringed_shape = stringed_shape.replace(b, "")
+        return tuple([int(n) for n in stringed_shape.split(",") if n != ""])
 
 
     def _parse_shape(self, input_shape:str):

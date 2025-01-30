@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from exceptions.DataException import DataException
@@ -43,11 +43,9 @@ def train(request: dict):
     """
     try:
         model_dict, behaviours, dataset, n_rows = elaborate_request(request)
-        results, metrics, model = run_train_inference_job(model_dict, behaviours, dataset, n_rows)
-        model_to_save = parse_model_to_registry(model, dataset)
-
+        results, metrics, model, data = run_train_inference_job(model_dict, behaviours, dataset, n_rows)
         try:
-            print(model_to_save)
+            model_to_save = parse_model_to_registry(model, data)
             save_trained_model(model_to_save)
         except ModelException as e:
             model.rollback_latest_version()

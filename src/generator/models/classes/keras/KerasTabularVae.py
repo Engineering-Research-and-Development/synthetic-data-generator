@@ -11,7 +11,8 @@ import tensorflow as tf
 from models.classes.Model import UnspecializedModel
 from models.classes.ModelInfo import ModelInfo, AllowedData
 from models.classes.TrainingInfo import TrainingInfo
-from utils.structure import MODEL_FOLDER
+from models.dataset.Dataset import Dataset
+from models.preprocess.scale import standardize_input
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
@@ -27,7 +28,7 @@ class Sampling(layers.Layer):
         z_mean, z_log_var = inputs
         batch = ops.shape(z_mean)[0]
         dim = ops.shape(z_mean)[1]
-        epsilon = keras.random.uniform(shape=(batch, dim), seed=self.seed_generator)
+        epsilon = keras.random.normal(shape=(batch, dim), seed=self.seed_generator)
         return z_mean + ops.exp(0.5 * z_log_var) * epsilon
 
 
@@ -113,11 +114,19 @@ class KerasTabularVAE(UnspecializedModel):
         return model, scaler
 
 
-    def pre_process(self, data, **kwargs):
-        pass
+    def pre_process(self, data: Dataset, **kwargs):
+        cont_np_data = data.continuous_data.to_numpy()
+        if not self.scaler:
+            scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
+            self.scaler = scaler
+        else:
+            np_input_scaled = self.scaler.transform(cont_np_data)
+        return np_input_scaled
 
 
-    def train(self, data: np.array, **kwargs):
+    def train(self, data: Dataset, **kwargs):
+        data  = self.pre_process(data)
+
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
         history = self.model.fit(data, epochs=200, batch_size=8)
         self.training_info = TrainingInfo(

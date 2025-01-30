@@ -1,44 +1,48 @@
+import copy
+
 from exceptions.DataException import DataException
 from models.classes.Model import UnspecializedModel
-from preprocess.scale import scale_input
+from models.dataset.Dataset import Dataset
 from models.model_factory import model_factory
 from utils.file_utils import store_files
-from utils.parsing import parse_tabular_data, parse_tabular_data_json
 import pandas as pd
 from evaluate.tabular_evaluate import TabularComparisonEvaluator
+from copy import deepcopy
+
 
 
 def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) \
-        -> tuple[list[dict], dict, UnspecializedModel]:
+        -> tuple[list[dict], dict, UnspecializedModel, Dataset]:
 
     if len(dataset) == 0:
         raise DataException("To run a training instance it is necessary to pass training data")
 
-    dataframe, columns, numerical_columns, categorical_columns =  parse_tabular_data(data=dataset)
-    np_input = dataframe.to_numpy()
-    input_shape = str(np_input.shape[1:])
+    data = Dataset(dataset=dataset)
+    input_shape = data.input_shape
     m = model_factory(model, input_shape)
-    scaler, np_input_scaled, _ = scale_input(train_data=np_input)
-    m.scaler = scaler
-    m.train(data=np_input_scaled)
+
+    m.train(data=data)
     m.save()
 
     predicted_data = m.infer(n_rows)
-    predicted_data = scaler.inverse_transform(predicted_data)
+    predicted_data = m.scaler.inverse_transform(predicted_data)
+
     df_predict = pd.DataFrame(data=predicted_data,
-                              columns=columns)
-    evaluator = TabularComparisonEvaluator(real_data=dataframe,
+                              columns=data.columns)
+
+    evaluator = TabularComparisonEvaluator(real_data=data.dataframe,
                                            synthetic_data=df_predict,
-                                           numerical_columns=numerical_columns,
-                                           categorical_columns=categorical_columns)
+                                           numerical_columns=data.continuous_columns,
+                                           categorical_columns=data.categorical_columns)
     report = evaluator.compute()
-    results = parse_tabular_data_json(dataset=df_predict,
-                                      numerical_columns=numerical_columns,
-                                      categorical_columns=categorical_columns)
+
+    generated_data = copy.deepcopy(data)
+    generated_data.dataframe = df_predict
+    results = generated_data.parse_tabular_data_json()
 
     # Remove after debug
     store_files(m.get_last_folder(), df_predict, report)
     ######
 
-    return results, report, m
+    return results, report, m, data
 
