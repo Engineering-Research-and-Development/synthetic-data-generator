@@ -102,11 +102,10 @@ def parse_model_info(model_dict :dict):
     return model_file, metadata, model_type, model_name, input_shape
 
 
-def parse_model_to_registry(model_dict: dict, model: UnspecializedModel, data: list[dict]):
+def parse_model_to_registry(model: UnspecializedModel, data: list[dict]):
 
-    model_file, metadata, model_type, model_name, input_shape = parse_model_info(model_dict)
     feature_list = parse_data_to_registry(data)
-    training_info = model.metadata.get("training_info", {})
+    training_info = model.training_info.__dict__
     model_image = model.model_filepath
     model_version = model.check_folder_latest_version()
     version_info = {"version_name": model_version, "model_image_path": model_image}
@@ -114,7 +113,7 @@ def parse_model_to_registry(model_dict: dict, model: UnspecializedModel, data: l
         "name": model.model_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm_name": model.self_describe().get("name", model_type)
+        "algorithm_name": model.self_describe().get("name", None)
     }
 
     model_to_save = {

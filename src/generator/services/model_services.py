@@ -84,4 +84,12 @@ def save_system_model(model: dict):
     :param model: a dictionary containing the model
     :return: None
     """
-    pass
+    headers = {"Content-Type": "application/json"}
+    body = json.dumps(model)
+    api = model_registry["url"] + model_registry["apis"]["system_models"]
+    try:
+        response = requests.post(api, headers=headers, data=body)
+        if response.status_code > 300:
+            raise ModelException("Something went wrong in initializing the the system")
+    except RequestException:
+        raise ModelException("Impossible to reach Model Repository")

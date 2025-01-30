@@ -1,13 +1,16 @@
 from exceptions.DataException import DataException
+from models.classes.Model import UnspecializedModel
 from preprocess.scale import scale_input
 from models.model_factory import model_factory
 from utils.file_utils import store_files
-from utils.parsing import parse_tabular_data, parse_tabular_data_json, parse_model_to_registry
+from utils.parsing import parse_tabular_data, parse_tabular_data_json
 import pandas as pd
 from evaluate.tabular_evaluate import TabularComparisonEvaluator
 
 
-def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
+def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) \
+        -> tuple[list[dict], dict, UnspecializedModel]:
+
     if len(dataset) == 0:
         raise DataException("To run a training instance it is necessary to pass training data")
 
@@ -19,15 +22,6 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     m.scaler = scaler
     m.train(data=np_input_scaled)
     m.save()
-    model_to_save = parse_model_to_registry(model, m, dataset)
-
-    """
-    try:
-        save_trained_model(model_to_save)
-    except ModelException as e:
-        m.rollback_latest_version()
-        raise ModelException(e)
-    """
 
     predicted_data = m.infer(n_rows)
     predicted_data = scaler.inverse_transform(predicted_data)
@@ -46,5 +40,5 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     store_files(m.get_last_folder(), df_predict, report)
     ######
 
-    return results, report
+    return results, report, m
 

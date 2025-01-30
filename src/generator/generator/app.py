@@ -6,6 +6,8 @@ from exceptions.InputException import InputException
 from exceptions.ModelException import ModelException
 from generate.infer import run_infer_job
 from generate.train import run_train_inference_job
+from services.model_services import save_trained_model
+from utils.parsing import parse_model_to_registry
 
 generator = FastAPI()
 
@@ -36,28 +38,37 @@ def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
 @generator.post("/train")
 def train(request: dict):
     """
-
     :param request: a request for train and infer
     :return:
     """
     try:
-        results, metrics = run_train_inference_job(*elaborate_request(request))
+        model_dict, behaviours, dataset, n_rows = elaborate_request(request)
+        results, metrics, model = run_train_inference_job(model_dict, behaviours, dataset, n_rows)
+        model_to_save = parse_model_to_registry(model, dataset)
+
+        try:
+            print(model_to_save)
+            save_trained_model(model_to_save)
+        except ModelException as e:
+            model.rollback_latest_version()
+            raise ModelException(e)
+
         return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
     except InputException as e:
-        return JSONResponse(status_code=400, content={"message": str(e)})
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except ModelException as e:
-        return JSONResponse(status_code=400, content={"message": str(e)})
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except DataException as e:
-        return JSONResponse(status_code=400, content={"message": str(e)})
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except Exception as e:
         print(e)
-        return JSONResponse(status_code=500, content={"message": "An error occurred while processing the output"})
+        return JSONResponse(status_code=500, content={"error": "An error occurred while processing the output"})
+
 
 
 @generator.post("/infer")
 def train(request: dict):
     """
-
     :param request: a request for train and infer
     :return:
     """
@@ -65,14 +76,14 @@ def train(request: dict):
         results, metrics = run_infer_job(*elaborate_request(request))
         return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
     except InputException as e:
-        return JSONResponse(status_code=400, content={"message": str(e)})
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except ModelException as e:
-        return JSONResponse(status_code=400, content={"message": str(e)})
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except DataException as e:
-        return JSONResponse(status_code=400, content={"message": str(e)})
+        return JSONResponse(status_code=400, content={"error": str(e)})
     except Exception as e:
         print(e)
-        return JSONResponse(status_code=500, content={"message": "An error occurred while processing the output"})
+        return JSONResponse(status_code=500, content={"error": "An error occurred while processing the output"})
 
 
 

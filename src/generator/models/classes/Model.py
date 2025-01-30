@@ -8,6 +8,7 @@ from utils.structure import MODEL_FOLDER
 from abc import ABC, abstractmethod
 from traceback import print_tb
 
+
 class UnspecializedModel(ABC):
     def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
         self.metadata = metadata
@@ -16,15 +17,17 @@ class UnspecializedModel(ABC):
         self.input_shape = None
         self.model = None  # Placeholder for the model instance
         self.scaler = None # Placeholder for model scaler
+        self.training_info = None # Placeholder for training info
+        self.model_misc = None # Placeholder for model miscellaneous info
         self._parse_shape(input_shape)
 
 
     def rollback_latest_version(self):
-        max_version = self.check_folder_latest_version()
-        model_folder = f"{self.model_name}:{max_version}"
-        last_folder = os.path.join(MODEL_FOLDER, model_folder)
+        last_folder = os.path.join(MODEL_FOLDER, self.get_last_folder())
+        print(last_folder)
         if os.path.isdir(last_folder):
             shutil.rmtree(last_folder)
+            print("Deleted")
 
 
     def check_folder_latest_version(self):

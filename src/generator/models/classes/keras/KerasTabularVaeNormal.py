@@ -9,6 +9,8 @@ from keras import initializers
 import tensorflow as tf
 
 from models.classes.Model import UnspecializedModel
+from models.classes.ModelInfo import ModelInfo, AllowedData
+from models.classes.TrainingInfo import TrainingInfo
 from utils.structure import MODEL_FOLDER
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
@@ -114,13 +116,14 @@ class NormalPriorKerasTabularVAE(UnspecializedModel):
     def train(self, data: np.array, **kwargs):
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
         history = self.model.fit(data, epochs=200, batch_size=8)
-        self.metadata["training_info"] = {
-            "loss_name": "ELBO",
-            "train_loss": history.history["loss"][-1].numpy().item(),
-            "val_loss": -1,
-            "train_samples": data.shape[0],
-            "validation_samples": 0
-        }
+        self.training_info = TrainingInfo(
+            loss_fn="ELBO",
+            train_loss=history.history["loss"][-1].numpy().item(),
+            train_samples=data.shape[0],
+            validation_loss=-1,
+            validation_samples=0
+
+        )
 
 
     def pre_process(self, data, **kwargs):
@@ -164,21 +167,16 @@ class NormalPriorKerasTabularVAE(UnspecializedModel):
     def self_describe(cls):
         # Returns a dictionary with model info, useful for initializing model
 
-        system_model_info = {
-            "name": f"{cls.__module__}.{cls.__qualname__}",
-            "default_loss_function": "ELBO Loss",
-            "description": "A Tabular Variational Autoencoder for continuous numerical data generation",
-            "allowed_data":  [
-                {
-                    "data_type": "float",
-                    "is_categorical": False
-                },
-                {
-                    "data_type": "int",
-                    "is_categorical": False
-                },
+        system_model_info = ModelInfo(
+            name=f"{cls.__module__}.{cls.__qualname__}",
+            default_loss_function="ELBO LOSS",
+            description="A Tabular Variational Autoencoder for continuous numerical data generation",
+            allowed_data=[
+                AllowedData("float32", False),
+                AllowedData("int32", False),
+                AllowedData("int64", False),
             ]
-        }
+        ).get_model_info()
 
         return system_model_info
 
