@@ -1,5 +1,6 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
 from datetime import datetime
+from typing import Optional, Literal
 
 from pydantic import BaseModel
 
@@ -48,3 +49,34 @@ class ModelVersion(BaseModel):
     timestamp : datetime
     trained_model : str
     training_info : str
+
+class TrainedModelOut(BaseModel):
+    id: int
+    versions: list[str] | None
+
+## BEHAVIOUR MODELS
+
+class Behaviour(BaseModel):
+    id: int
+    name: str
+    description: str
+    function_reference: str
+
+class FunctionParameter(BaseModel):
+    id: int
+    parameter_type: str
+    name: Optional[str] = None
+
+class Rule(BaseModel):
+    id: int
+    behaviour: int
+    parameter_id: int
+    parameter_value: float
+    data_type: Literal['int', 'float', 'string']
+
+class RuleOut(BaseModel):
+    id: int
+    behaviour: int
+    parameter_name: str
+    parameter_value: float
+    data_type: Literal['int', 'float', 'string']

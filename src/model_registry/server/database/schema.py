@@ -60,3 +60,24 @@ class ModelVersion(BaseModelPeewee):
     timestamp = DateTimeField(default=datetime.now)
     trained_model = ForeignKeyField(TrainedModel, backref='model_versions')
     training_info = ForeignKeyField(TrainingInfo, backref='model_versions')
+
+
+## BEHAVIOUR MODELS
+
+class Behaviour(BaseModelPeewee):
+    id = AutoField()
+    name = CharField()
+    description = CharField()
+    function_reference = CharField()
+
+class FunctionParameter(BaseModelPeewee):
+    id = AutoField()
+    parameter_type = CharField()
+    name = CharField(null=True)
+
+class Rule(BaseModelPeewee):
+    id = AutoField()
+    behaviour= ForeignKeyField(Behaviour, backref='rule')
+    parameter = ForeignKeyField(FunctionParameter, backref='rule')
+    parameter_value = FloatField()
+    data_type = CharField(constraints=[SQL("CHECK (data_type IN ('int', 'float', 'string'))")])
