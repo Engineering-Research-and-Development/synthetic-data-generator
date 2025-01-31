@@ -1,7 +1,5 @@
-import random
-
 from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
-    Behaviour, FunctionParameter, Rule
+    Function, Parameter, FunctionParameter
 
 
 def insert_data():
@@ -51,26 +49,20 @@ def insert_data():
         for i in range(5)
     ]
 
-    # Insert Behaviour
-    behaviours = [
-        Behaviour.create(name=f"Behaviour_{i}", description=f"Useful_description_{i}", function_reference=f"func_{i}")
+    # Insert Function
+    functions = [
+        Function.create(name=f"Function_{i}", description=f"Description for Function_{i}", function_reference=f"ref_{i}")
+        for i in range(5)
+    ]
+
+    # Insert Parameter
+    parameters = [
+        Parameter.create(name=f"Parameter_{i}", value=f"Value_{i}", parameter_type="float")
         for i in range(5)
     ]
 
     # Insert FunctionParameter
-    parameter_types = ['int', 'float', 'string']
     function_parameters = [
-        FunctionParameter.create(parameter_type=random.choice(parameter_types), name=f"parameter_{i}", )
+        FunctionParameter.create(function=functions[i], parameter=parameters[(i+1) % 5])
         for i in range(5)
-    ]
-
-    # Insert Rule
-    rules = [
-        Rule.create(
-            behaviour=random.choice(behaviours),
-            parameter=random.choice(function_parameters),
-            data_type=random.choice(parameter_types),
-            parameter_value=0
-        )
-        for _ in range(5)
     ]

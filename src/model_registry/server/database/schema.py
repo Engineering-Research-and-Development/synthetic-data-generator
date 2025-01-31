@@ -62,22 +62,22 @@ class ModelVersion(BaseModelPeewee):
     training_info = ForeignKeyField(TrainingInfo, backref='model_versions')
 
 
-## BEHAVIOUR MODELS
 
-class Behaviour(BaseModelPeewee):
+class Function(BaseModelPeewee):
     id = AutoField()
     name = CharField()
     description = CharField()
     function_reference = CharField()
 
-class FunctionParameter(BaseModelPeewee):
+class Parameter(BaseModelPeewee):
     id = AutoField()
-    parameter_type = CharField()
-    name = CharField(null=True)
+    name = CharField()
+    value = CharField()
+    parameter_type = CharField(constraints=[SQL("CHECK (parameter_type IN ('float'))")])
 
-class Rule(BaseModelPeewee):
-    id = AutoField()
-    behaviour= ForeignKeyField(Behaviour, backref='rule')
-    parameter = ForeignKeyField(FunctionParameter, backref='rule')
-    parameter_value = FloatField()
-    data_type = CharField(constraints=[SQL("CHECK (data_type IN ('int', 'float', 'string'))")])
+class FunctionParameter(BaseModelPeewee):
+    function= ForeignKeyField(Function, backref='function_parameters')
+    parameter = ForeignKeyField(Parameter, backref='function_parameters')
+
+    class Meta:
+        primary_key = CompositeKey('function','parameter')

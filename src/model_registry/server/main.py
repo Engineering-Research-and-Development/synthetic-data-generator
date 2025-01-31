@@ -8,10 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
 from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
-    db, FunctionParameter, Behaviour, Rule
+    db, Parameter, Function, FunctionParameter
 from dummy_data_generator import insert_data
-from routers import datatypes, behaviours, \
-    rules  # , system_models, trained_models, model_versions, training_info, models
+from routers import datatypes, functions # , system_models, trained_models, model_versions, training_info, models
+from routers.sdg_input import user_data
 
 allowed_origins = os.environ.get('allowed_origins', '*').split(',')
 allow_credentials = os.environ.get("allow_credentials", True)
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     is run only once.
     """
     db.create_tables([SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion,
-                      Behaviour, FunctionParameter, Rule])
+                      Function, Parameter, FunctionParameter])
 
     if init_db:
         insert_data()
@@ -49,8 +49,8 @@ app.add_middleware(
 )
 
 app.include_router(datatypes.router)
-app.include_router(behaviours.router)
-app.include_router(rules.router)
+app.include_router(user_data.router)
+app.include_router(functions.router)
 #app.include_router(system_models.router)
 #app.include_router(trained_models.router)
 #app.include_router(model_versions.router)

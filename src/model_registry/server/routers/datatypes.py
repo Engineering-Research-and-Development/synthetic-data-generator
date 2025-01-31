@@ -4,7 +4,7 @@ from starlette.responses import JSONResponse
 
 from database.schema import DataType
 from database.validation.schema import DataType as PydanticDataType
-from playhouse.shortcuts import model_to_dict
+
 
 router = APIRouter(prefix="/datatypes")
 
@@ -26,8 +26,8 @@ async def get_all_datatypes() -> list[PydanticDataType]:
             )
 async def get_single_datatype(datatype_id: int = Path(description="The id of the datatype you want to get", example=1)):
     try:
-        result = DataType.get_by_id(datatype_id).get()
+        result = DataType.get_by_id(datatype_id).dicts().get()
     except peewee.DoesNotExist:
         return JSONResponse(status_code=404, content={"message": "Item not found"})
 
-    return model_to_dict(result)
+    return result
