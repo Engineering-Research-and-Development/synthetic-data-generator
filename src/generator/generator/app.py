@@ -1,7 +1,5 @@
-import asyncio
 import importlib
 import pkgutil
-import sys
 
 from yaml import safe_load
 from fastapi import FastAPI
@@ -12,8 +10,8 @@ from contextlib import asynccontextmanager
 from exceptions.DataException import DataException
 from exceptions.InputException import InputException
 from exceptions.ModelException import ModelException
-from generate.infer import run_infer_job
-from generate.train import run_train_inference_job
+from generator.generate.infer import run_infer_job
+from generator.generate.train import run_train_inference_job
 from services.model_services import save_trained_model, save_system_model, delete_sys_model_by_id
 from utils.parsing import parse_model_to_registry
 
@@ -70,7 +68,7 @@ async def lifespan(app: FastAPI):
             print(e)
             for mod_id in id_list:
                 delete_sys_model_by_id(mod_id)
-            exit(-1)
+            #exit(-1)
     yield
 
 

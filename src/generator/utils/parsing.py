@@ -1,9 +1,5 @@
-import numpy as np
-import pandas as pd
-
-from exceptions.DataException import DataException
-from models.classes.Model import UnspecializedModel
-from models.dataset.Dataset import Dataset
+from generator.models.classes.Model import UnspecializedModel
+from generator.models.dataset.Dataset import Dataset
 
 
 def parse_model_info(model_dict :dict):

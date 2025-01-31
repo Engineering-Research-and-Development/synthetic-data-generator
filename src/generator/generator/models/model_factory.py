@@ -1,6 +1,5 @@
 from exceptions.ModelException import ModelException
-from models.classes.Model import UnspecializedModel
-from traceback import print_tb
+from generator.models.classes.Model import UnspecializedModel
 import importlib
 
 from utils.parsing import parse_model_info

@@ -1,12 +1,11 @@
 import copy
 
-from evaluate.tabular_evaluate import TabularComparisonEvaluator
+from generator.evaluate.tabular_evaluate import TabularComparisonEvaluator
 from exceptions.ModelException import ModelException
-from models.dataset.Dataset import Dataset
-from models.model_factory import model_factory
+from generator.models.dataset.Dataset import Dataset
+from generator.models.model_factory import model_factory
 import pandas as pd
 
-from copy import deepcopy
 from utils.file_utils import store_files
 
 

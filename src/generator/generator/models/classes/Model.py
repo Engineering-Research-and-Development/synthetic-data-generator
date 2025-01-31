@@ -134,7 +134,7 @@ class UnspecializedModel(ABC):
 
     def _parse_shape(self, input_shape:str):
         try:
-            tuple_shape = parse_stringed_input_shape(input_shape)
+            tuple_shape = self.parse_stringed_input_shape(input_shape)
             self.input_shape = tuple_shape
         except ValueError:
             raise ModelException ("Cannot build the model, missing input shape")
