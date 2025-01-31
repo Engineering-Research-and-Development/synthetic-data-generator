@@ -4,10 +4,9 @@ from peewee import *
 from datetime import datetime
 
 username = os.environ.get("db_username", "postgres")
-password = os.environ.get("db_password", "postgres")
+password = os.environ.get("db_password", "admin")
 host = os.environ.get("db_host", "localhost")
 database = os.environ.get("db_name", "postgres")
-init_db = os.environ.get("INIT_DB", False)
 db = PostgresqlDatabase(database=database, host=host, user=username, password=password)
 
 
@@ -16,9 +15,10 @@ class BaseModelPeewee(Model):
         database = db
 
 class SystemModel(BaseModelPeewee):
+    id = AutoField()
     name = CharField(unique=True)
     description = CharField()
-    loss_function = CharField()
+    default_loss_function = CharField()
 
 class DataType(BaseModelPeewee):
     id = AutoField()
@@ -27,7 +27,7 @@ class DataType(BaseModelPeewee):
 
 class AllowedDataType(BaseModelPeewee):
     id = AutoField()
-    algorithm_name = ForeignKeyField(SystemModel, backref='allowed_data_types')
+    algorithm_id = ForeignKeyField(SystemModel, backref='allowed_data_types')
     datatype = ForeignKeyField(DataType, backref='allowed_data_types')
 
 class TrainedModel(BaseModelPeewee):
@@ -36,7 +36,7 @@ class TrainedModel(BaseModelPeewee):
     dataset_name = CharField()
     size = CharField()
     input_shape = CharField()
-    algorithm_name = ForeignKeyField(SystemModel, backref='trained_models')
+    algorithm_id = ForeignKeyField(SystemModel, backref='trained_models')
 
 class Features(BaseModelPeewee):
     id = AutoField()
@@ -48,10 +48,10 @@ class Features(BaseModelPeewee):
 class TrainingInfo(BaseModelPeewee):
     id = AutoField()
     loss_function = CharField()
-    train_loss_value = DoubleField()
-    val_loss_value = DoubleField()
-    n_train_sample = IntegerField()
-    n_validation_sample = IntegerField()
+    train_loss = DoubleField()
+    val_loss = DoubleField()
+    train_samples = IntegerField()
+    val_samples = IntegerField()
 
 class ModelVersion(BaseModelPeewee):
     id = AutoField()

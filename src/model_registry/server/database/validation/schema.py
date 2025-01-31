@@ -1,8 +1,8 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
 from datetime import datetime
-from typing import Literal
+from typing import Literal,Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel,BeforeValidator,Field
 from pydantic.dataclasses import dataclass
 
 
@@ -21,40 +21,65 @@ class AllowedDataType(BaseModel):
     algorithm_name : str
     datatype : str
 
-class TrainedModel(BaseModel):
-    id : int
-    name : str
-    dataset_name : str
-    size : str
-    input_shape : str
-    algorithm_name :str
+class CreateTrainedModel(BaseModel):
+    name: str
+    dataset_name: str
+    size: str
+    input_shape: str
+    algorithm_id: int
 
-class Features(BaseModel):
+class TrainedModel(CreateTrainedModel):
     id : int
+
+
+def convert_to_list(value: int) -> list:
+    if type(value) is int:
+        return [value]
+    else:
+        return [int(x) for x in value.split(',')]
+
+class TrainedModelAndVersionIds(TrainedModel):
+    version_ids: Annotated[list[int], BeforeValidator(convert_to_list)] | None
+
+class CreateFeatures(BaseModel):
     feature_name : str
     datatype : str
     feature_position : int
     trained_model : str
 
-class TrainingInfo(BaseModel):
+class Features(CreateFeatures):
     id : int
-    loss_function : str
-    train_loss_value : float
-    val_loss_value : float
-    n_train_sample : int
-    n_validation_sample : int
 
-class ModelVersion(BaseModel):
+class CreateTrainingInfo(BaseModel):
+    loss_function : str
+    train_loss : float
+    val_loss : float
+    train_samples : int
+    val_samples : int
+
+class TrainingInfo(CreateTrainingInfo):
     id : int
+
+class CreateModelVersion(BaseModel):
     version_name : str
     model_image_path : str
     timestamp : datetime
-    trained_model : str
-    training_info : str
+    trained_model : int
+    training_info : int
 
-class TrainedModelOut(BaseModel):
-    id: int
-    versions: list[str] | None
+class ModelVersion(CreateModelVersion):
+    id : int
+
+
+class ModelVersionAndTrainInfo(BaseModel):
+    version: ModelVersion
+    training_info: TrainingInfo
+
+
+class TrainedModelAndVersions(TrainedModel):
+    versions: list[ModelVersionAndTrainInfo] | None = Field(description="This is a list of the trained model"
+                                                            " versions and training infos")
+
 
 ## BEHAVIOUR MODELS
 

@@ -3,14 +3,15 @@ the database initialization on startup"""
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+from requests import Request
 from starlette.responses import RedirectResponse
 
 from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     db, Parameter, Function, FunctionParameter
 from dummy_data_generator import insert_data
-from routers import datatypes, functions # , system_models, trained_models, model_versions, training_info, models
+from routers import datatypes, functions,trained_models# , system_models, model_versions, training_info, models
 from routers.sdg_input import user_data
 
 allowed_origins = os.environ.get('allowed_origins', '*').split(',')
@@ -52,7 +53,7 @@ app.include_router(datatypes.router)
 app.include_router(user_data.router)
 app.include_router(functions.router)
 #app.include_router(system_models.router)
-#app.include_router(trained_models.router)
+app.include_router(trained_models.router)
 #app.include_router(model_versions.router)
 #app.include_router(training_info.router)
 #app.include_router(models.router)
