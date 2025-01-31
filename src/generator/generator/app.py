@@ -1,15 +1,24 @@
+import asyncio
+import importlib
+import pkgutil
+import sys
+
+from yaml import safe_load
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
+
 
 from exceptions.DataException import DataException
 from exceptions.InputException import InputException
 from exceptions.ModelException import ModelException
 from generate.infer import run_infer_job
 from generate.train import run_train_inference_job
-from services.model_services import save_trained_model
+from services.model_services import save_trained_model, save_system_model, delete_sys_model_by_id
 from utils.parsing import parse_model_to_registry
 
-generator = FastAPI()
+
+
 
 def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
     """
@@ -34,6 +43,38 @@ def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
     return model, behaviours, dataset, n_rows
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+
+    config_file = pkgutil.get_data("generator", "config.yaml")
+    config = safe_load(config_file)
+
+    id_list = []
+
+    print(config)
+    list_models = []
+    for pkg in config["system_models"]:
+        root = pkg["root_lib"]
+        for model in pkg["models"]:
+            list_models.append(root+model)
+
+    for model in list_models:
+        module_name, class_name = model.rsplit('.', 1)
+        module = importlib.import_module(module_name)
+        Class = getattr(module, class_name)
+        try:
+            # TODO: refine with correct APIs
+            response = save_system_model(Class.self_describe())
+            id_list.append(response["id"])
+        except ModelException as e:
+            print(e)
+            for mod_id in id_list:
+                delete_sys_model_by_id(mod_id)
+            exit(-1)
+    yield
+
+
+generator = FastAPI(lifespan=lifespan)
 
 @generator.post("/train")
 def train(request: dict):

@@ -2,7 +2,6 @@ import json
 
 import requests
 from requests.exceptions import RequestException
-from urllib3.exceptions import NewConnectionError
 from yaml import safe_load
 import pkgutil
 
@@ -89,6 +88,23 @@ def save_system_model(model: dict):
     api = model_registry["url"] + model_registry["apis"]["system_models"]
     try:
         response = requests.post(api, headers=headers, data=body)
+        if response.status_code > 300:
+            raise ModelException("Something went wrong in initializing the the system")
+    except RequestException:
+        raise ModelException("Impossible to reach Model Repository")
+
+
+def delete_sys_model_by_id(model_id: int):
+    """
+    Saves a system model, useful when adding a new feature or to initialize the system
+    :param model: a dictionary containing the model
+    :return: None
+    """
+    headers = {"Content-Type": "application/json"}
+    body = json.dumps({"id": model_id})
+    api = model_registry["url"] + model_registry["apis"]["system_models"]
+    try:
+        response = requests.delete(api, headers=headers, data=body)
         if response.status_code > 300:
             raise ModelException("Something went wrong in initializing the the system")
     except RequestException:

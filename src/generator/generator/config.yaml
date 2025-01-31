@@ -1,0 +1,5 @@
+system_models:
+  - root_lib: "models.classes.keras."
+    models: ["KerasTabularVae.KerasTabularVAE"]
+  - root_lib: "models.classes.pytorch."
+    models: []
