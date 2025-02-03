@@ -9,4 +9,4 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -r ./requirements.txt
 
 
-CMD ["uvicorn", "orion_catcher.main:orion_catcher", "--host", "0.0.0.0", "--port", "8010"]
+CMD ["uvicorn", "generator.app:generator", "--host", "0.0.0.0", "--port", "8010"]
