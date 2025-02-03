@@ -3,10 +3,8 @@ import os
 from peewee import *
 from datetime import datetime
 
-from sqlalchemy.log import echo_property
-
 username = os.environ.get("db_username", "postgres")
-password = os.environ.get("db_password", "admin")
+password = os.environ.get("db_password", "postgres")
 host = os.environ.get("db_host", "localhost")
 database = os.environ.get("db_name", "postgres")
 db = PostgresqlDatabase(database=database, host=host, user=username, password=password)
