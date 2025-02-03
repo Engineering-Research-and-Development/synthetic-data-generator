@@ -11,7 +11,7 @@ from utils.file_utils import store_files
 
 def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
     if len(dataset) == 0:
-        dataset = model.get("metadata", {}).get("training_data_info", [])
+        dataset = model.get("training_data_info", [])
         print(dataset)
         if len(dataset) == 0:
             raise ModelException("It is not possible to infer column names")
