@@ -2,8 +2,8 @@
 from datetime import datetime
 from typing import Literal,Annotated
 
-from pydantic import BaseModel,BeforeValidator,Field
-from pydantic.dataclasses import dataclass
+from pydantic import BaseModel ,BeforeValidator,Field
+
 
 
 class SystemModel(BaseModel):
@@ -41,14 +41,19 @@ def convert_to_list(value: int) -> list:
 class TrainedModelAndVersionIds(TrainedModel):
     version_ids: Annotated[list[int], BeforeValidator(convert_to_list)] | None
 
-class CreateFeatures(BaseModel):
-    feature_name : str
-    datatype : str
-    feature_position : int
-    trained_model : str
-
-class Features(CreateFeatures):
+class Features(BaseModel):
     id : int
+    feature_name : str
+    datatype : int
+    feature_position : int
+    trained_model : int
+
+# This is the features that we get in input and we delegate to job to find the ids to the model registry
+class CreateFeatures(BaseModel):
+    feature_name: str
+    feature_position : int
+    is_categorical: bool
+    datatype: str
 
 class CreateTrainingInfo(BaseModel):
     loss_function : str
@@ -63,9 +68,9 @@ class TrainingInfo(CreateTrainingInfo):
 class CreateModelVersion(BaseModel):
     version_name : str
     model_image_path : str
-    timestamp : datetime
-    trained_model : int
-    training_info : int
+#    timestamp : datetime
+#    trained_model : int
+#    training_info : int
 
 class ModelVersion(CreateModelVersion):
     id : int

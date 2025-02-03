@@ -26,7 +26,7 @@ async def get_all_datatypes() -> list[PydanticDataType]:
             )
 async def get_single_datatype(datatype_id: int = Path(description="The id of the datatype you want to get", example=1)):
     try:
-        result = db_handler.get_by_id(datatype_id)
+        result = DataType.select().where(DataType.id == datatype_id).dicts().get()
     except peewee.DoesNotExist:
         return JSONResponse(status_code=404, content={"message": "Item not found"})
-    return result
+    return PydanticDataType(**result)

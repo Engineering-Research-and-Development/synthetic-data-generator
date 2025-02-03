@@ -1,11 +1,10 @@
 from database.validation.schema import DataType as PydanticDataType
 from database.schema import DataType
 
-# def get_id_by_type_and_categorical(datatype: str, is_categorical: bool,session:SessionDep):
-#     statement = select(DataType.id).where(DataType.type == datatype) \
-#         .where(DataType.is_categorical == is_categorical)
-#     result = session.exec(statement).one()
-#     return result
+def get_id_by_type_and_categorical(datatype: str, is_categorical: bool) -> DataType:
+    obj = DataType.select().where(DataType.type == datatype) \
+        .where(DataType.is_categorical == is_categorical).get()
+    return obj
 #
 #
 # def is_datatype_present(datatype: DataType, session: SessionDep) -> bool:
@@ -24,7 +23,7 @@ from database.schema import DataType
 
 def get_by_id(datatype_id: int) -> PydanticDataType:
     query = DataType.select().where(DataType.id == datatype_id)
-    # Disgusting hack
+    # This hack is done so that we can get a dictionary and unpack it into a pydantic model
     return [PydanticDataType(**row) for row in query.dicts()][0]
 
 

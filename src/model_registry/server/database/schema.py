@@ -3,6 +3,8 @@ import os
 from peewee import *
 from datetime import datetime
 
+from sqlalchemy.log import echo_property
+
 username = os.environ.get("db_username", "postgres")
 password = os.environ.get("db_password", "admin")
 host = os.environ.get("db_host", "localhost")
@@ -61,7 +63,7 @@ class ModelVersion(BaseModelPeewee):
     trained_model = ForeignKeyField(TrainedModel, backref='model_versions')
     training_info = ForeignKeyField(TrainingInfo, backref='model_versions')
 
-
+# Behaviours
 
 class Function(BaseModelPeewee):
     id = AutoField()
