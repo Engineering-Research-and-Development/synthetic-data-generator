@@ -7,25 +7,32 @@ from routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input")
 
-@router.post("/")
+@router.post("/",
+             name="Synthetic Data Generator input collection",
+             description="Use this endpoint to collect the information and run the Synthetic Data Generator on the "
+                         "given data",
+             responses={400: {"reason": str},
+                        500: {"reason": str}}
+             )
 async def collect_user_input(input_data: UserDataInput):
     data = input_data.model_dump()
 
     function_ids = check_function_parameters(data['functions'])
     if not function_ids:
-        return JSONResponse(status_code=422, content="Error analysing functions")
+        return JSONResponse(status_code=400, content="Error analysing functions")
 
     model = check_ai_model(data.get('ai_model'))
     if not model:
-        return JSONResponse(status_code=422, content="Wrong model")
+        return JSONResponse(status_code=400, content="Wrong model")
 
     body={}
     if data.get('user_file') is not None:
         user_file = check_user_file(data.get('user_file'))
         if not user_file:
-            return JSONResponse(status_code=422, content="Error parsing input dataset")
+            return JSONResponse(status_code=400, content="Error parsing input dataset")
 
-        body=GeneratorDataOutput(function_ids=function_ids,
+        body=GeneratorDataOutput(
+                            function_ids=function_ids,
                             n_rows=data.get('additional_rows'),
                             model=model,
                             dataset=user_file,
@@ -36,11 +43,10 @@ async def collect_user_input(input_data: UserDataInput):
     else:
         url="http://localhost:8010/fine_tune"
 
-    return JSONResponse(content=body.model_dump())
-    request = requests.post(url, json=GeneratorDataOutput.model_json_schema())
-    if request.status_code == 200:
+    response = requests.post(url, json=body.model_dump())
+    if response.status_code == 200:
         return JSONResponse(status_code=200, content="Data augmentation started")
     else:
-        return JSONResponse(status_code=500, content="Generator error")
+        return JSONResponse(status_code=500, content=response.reason)
 
 
