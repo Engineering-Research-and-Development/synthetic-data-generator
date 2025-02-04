@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from requests import Request
 from starlette.responses import RedirectResponse
 
-from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
+from database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     db, Parameter, Function, FunctionParameter
 from dummy_data_generator import insert_data
 from routers import datatypes, functions,trained_models# , system_models, model_versions, training_info, models
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
     BEFORE the application is launched while the code after the yield is run AFTER the app execution. The code
     is run only once.
     """
-    db.create_tables([SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion,
+    db.create_tables([Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion,
                       Function, Parameter, FunctionParameter])
 
     if init_db:

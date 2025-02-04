@@ -14,7 +14,7 @@ class BaseModelPeewee(Model):
     class Meta:
         database = db
 
-class SystemModel(BaseModelPeewee):
+class Algorithm(BaseModelPeewee):
     id = AutoField()
     name = CharField(unique=True)
     description = CharField()
@@ -27,7 +27,7 @@ class DataType(BaseModelPeewee):
 
 class AllowedDataType(BaseModelPeewee):
     id = AutoField()
-    algorithm_id = ForeignKeyField(SystemModel, backref='allowed_data_types')
+    algorithm_id = ForeignKeyField(Algorithm, backref='allowed_data_types')
     datatype = ForeignKeyField(DataType, backref='allowed_data_types')
 
 class TrainedModel(BaseModelPeewee):
@@ -36,7 +36,7 @@ class TrainedModel(BaseModelPeewee):
     dataset_name = CharField()
     size = CharField()
     input_shape = CharField()
-    algorithm_id = ForeignKeyField(SystemModel, backref='trained_models')
+    algorithm_id = ForeignKeyField(Algorithm, backref='trained_models')
 
 class Features(BaseModelPeewee):
     id = AutoField()
@@ -56,13 +56,14 @@ class TrainingInfo(BaseModelPeewee):
 class ModelVersion(BaseModelPeewee):
     id = AutoField()
     version_name = CharField()
-    model_image_path = CharField()
+    image_path = CharField()
     timestamp = DateTimeField(default=datetime.now)
     trained_model = ForeignKeyField(TrainedModel, backref='model_versions')
     training_info = ForeignKeyField(TrainingInfo, backref='model_versions')
 
-# Behaviours
 
+
+######
 class Function(BaseModelPeewee):
     id = AutoField()
     name = CharField()

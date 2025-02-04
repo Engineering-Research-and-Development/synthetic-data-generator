@@ -1,12 +1,10 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
-from datetime import datetime
-from typing import Literal,Annotated
+from typing import Literal, Annotated
 
-from pydantic import BaseModel ,BeforeValidator,Field
-
+from pydantic import BaseModel, BeforeValidator, Field
 
 
-class SystemModel(BaseModel):
+class Algorithm(BaseModel):
     name: str
     description: str
     loss_function: str

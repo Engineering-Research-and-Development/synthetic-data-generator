@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List, Optional, Dict, Literal
 from pydantic import BaseModel, PositiveInt
 
+
 class ParametersInput(BaseModel):
     param_id: int
     value: float
@@ -11,21 +12,36 @@ class FunctionData(BaseModel):
     function_id: int
     parameters: List[ParametersInput]
 
+class AiModel(BaseModel):
+    selected_model: int
+    new_model: Optional[bool] = False
+    new_model_name: Optional[str] = None
+    model_version: Optional[str] = None
+
 class UserDataInput(BaseModel):
     additional_rows: PositiveInt
     functions: List[FunctionData]
-    selected_model: int
+    ai_model: AiModel
     user_file: Optional[List[Dict]] = None
-    new_model: Optional[bool] = None
-    new_model_name: Optional[str] = None
-    model_version: Optional[str] = None
     features_created: Optional[List] = None
+
+    @classmethod
+    def validate_either_present(cls, v, values, field):
+        if field.name == "user_file":
+            if v is None and not values.get("features_created"):
+                raise ValueError("Either 'user_file' or 'features_created' must be provided.")
+        elif field.name == "features_created":
+            if v is None and not values.get("user_file"):
+                raise ValueError("Either 'user_file' or 'features_created' must be provided.")
+        return v
 
 
 ############################
 class ModelOutput(BaseModel):
     algorithm_name: str
-    model_name: str
+    model_name: Optional[str]
+    input_shape: Optional[str] = None
+    image: Optional[str] = None
 
 class SupportedDatatypes(str, Enum):
     float = "float"
@@ -37,7 +53,7 @@ class DatasetOutput(BaseModel):
     column_type: str
     column_datatype: Literal[SupportedDatatypes.float, SupportedDatatypes.int]
 
-class TrainingOutput(BaseModel):
+class GeneratorDataOutput(BaseModel):
     function_ids: List[PositiveInt]
     model: ModelOutput
     n_rows: PositiveInt

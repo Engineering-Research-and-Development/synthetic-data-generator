@@ -1,9 +1,9 @@
+import requests
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from routers.sdg_input.handlers import check_functions, check_selected_model, check_user_file, \
-    check_features_created, check_new_model
-from routers.sdg_input.schema import UserDataInput
+from routers.sdg_input.handlers import check_function_parameters, check_user_file, check_ai_model
+from routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input")
 
@@ -11,22 +11,36 @@ router = APIRouter(prefix="/sdg_input")
 async def collect_user_input(input_data: UserDataInput):
     data = input_data.model_dump()
 
-    if not check_functions(data['functions']):
+    function_ids = check_function_parameters(data['functions'])
+    if not function_ids:
         return JSONResponse(status_code=422, content="Error analysing functions")
 
-    if data['new_model']:
-        if not check_new_model(data['selected_model'], data["new_model_name"]):
-            return JSONResponse(status_code=422, content="Wrong new model")
+    model = check_ai_model(data.get('ai_model'))
+    if not model:
+        return JSONResponse(status_code=422, content="Wrong model")
+
+    body={}
+    if data.get('user_file') is not None:
+        user_file = check_user_file(data.get('user_file'))
+        if not user_file:
+            return JSONResponse(status_code=422, content="Error parsing input dataset")
+
+        body=GeneratorDataOutput(function_ids=function_ids,
+                            n_rows=data.get('additional_rows'),
+                            model=model,
+                            dataset=user_file,
+                            )
+
+    if data.get('ai_model').get('new_model'):
+        url="http://localhost:8010/train"
     else:
-        if not check_selected_model(data['selected_model'], data["model_version"]):
-            return JSONResponse(status_code=422, content="Wrong selected model")
+        url="http://localhost:8010/fine_tune"
 
-    if not check_user_file(data['user_file']):
-        return JSONResponse(status_code=422, content="Error parsing input dataset")
-
-    if not check_features_created(data['features_created']):
-        return JSONResponse(status_code=422, content="Error parsing features")
-
-    return JSONResponse(status_code=200, content="Data augmentation started")
+    return JSONResponse(content=body.model_dump())
+    request = requests.post(url, json=GeneratorDataOutput.model_json_schema())
+    if request.status_code == 200:
+        return JSONResponse(status_code=200, content="Data augmentation started")
+    else:
+        return JSONResponse(status_code=500, content="Generator error")
 
 

@@ -1,11 +1,11 @@
-from database.schema import SystemModel, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
+from database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     Function, Parameter, FunctionParameter
 
 
 def insert_data():
     # Insert SystemModel
     systems = [
-        SystemModel.create(name=f"System_{i}", description=f"Unique Description {i}", default_loss_function=f"LossFunction_{i}")
+        Algorithm.create(name=f"System_{i}", description=f"Unique Description {i}", default_loss_function=f"LossFunction_{i}")
         for i in range(5)
     ]
 
@@ -50,13 +50,13 @@ def insert_data():
 
     # Insert ModelVersion
     model_versions = [
-        ModelVersion.create(version_name=f"v{i+1}.0", model_image_path=f"/models/unique_model_{i}.h5",
+        ModelVersion.create(version_name=f"v{i+1}.0", image_path=f"/models/unique_model_{i}.h5",
                             trained_model=trained_models[(i+1) % 5], training_info=training_infos[(i+3) % 5])
         for i in range(5)
     ]
     # Inserting multiple model version for the same training model
     model_versions = [
-        ModelVersion.create(version_name=f"v{i+1}.0", model_image_path=f"/models/unique_model_{i}.h5",
+        ModelVersion.create(version_name=f"v{i+1}.0", image_path=f"/models/unique_model_{i}.h5",
                             trained_model=1, training_info=training_infos_multiple[i % 5])
         for i in range(5,9)
     ]
