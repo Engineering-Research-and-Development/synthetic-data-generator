@@ -5,17 +5,6 @@ from database.validation.schema import TrainedModelAndVersionIds\
 from peewee import fn,JOIN
 
 def get_trained_model_versions(model_id,version_id) -> PydanticTrainedModelAndVersions:
-#     query = (TrainedModel.select(
-#         # This is done so that .dicts will not overwrite the ids of versions and training info
-#         TrainedModel, ModelVersion.id.alias("version_id"),ModelVersion
-#         ,TrainingInfo.id.alias("training_id"),TrainingInfo
-#         )
-#              .join(ModelVersion,JOIN.LEFT_OUTER)
-#              .join(TrainingInfo,JOIN.LEFT_OUTER)
-#              .where(TrainedModel.id == model_id)
-#     )
-    # This hack is done so that the attributes inside the validation class can change
-    # The above outer join although is more efficient has hardcoded values inside it, so this is more flexible
     if version_id is None:
         query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id)
     else: query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id).where(ModelVersion.id == version_id)

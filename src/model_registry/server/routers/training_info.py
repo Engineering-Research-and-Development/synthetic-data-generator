@@ -1,21 +1,21 @@
-from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import NoResultFound
-from model_registry.database.schema import TrainingInfo
-from ..dependencies import SessionDep
-from model_registry.database.handlers import tr_info_handler as db_handler
+from fastapi import APIRouter
+from starlette.responses import JSONResponse
+from database.schema import TrainingInfo
+from database.validation.schema import TrainingInfo as PydanticTrainingInfo
+from peewee import DoesNotExist
 
 router = APIRouter(prefix="/training_info")
 
-@router.get("/{training_info_id}", status_code=200)
-async def get_trained_info(training_info_id: int, session: SessionDep):
+@router.get("/{training_info_id}",
+            status_code=200,
+            name="Get training info by id",
+            summary="It returns a training info given the id",
+            responses={404:{"model":str}},
+            response_model=PydanticTrainingInfo)
+async def get_trained_info(training_info_id: int):
     try:
-        train_info = db_handler.get_by_id(training_info_id,session)
-    except NoResultFound:
-        raise HTTPException(status_code=404, detail="No training info with id: " + str(training_info_id) + " has been found")
-    return train_info
+        train_info = TrainingInfo.select().where(TrainingInfo.id == training_info_id).dicts().get()
+    except DoesNotExist:
+        return JSONResponse(status_code=404, content={"message":"No training info with id: " + str(training_info_id) + " has been found"})
+    return PydanticTrainingInfo(**train_info)
 
-@router.delete("/{training_info_id}", status_code=200)
-async def delete_training_info(training_info_id: int, session: SessionDep):
-    train_info = await get_trained_info(training_info_id)
-    session.delete(train_info)
-    session.commit()
