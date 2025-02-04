@@ -1,11 +1,12 @@
 import importlib
 import pkgutil
+from typing import Union
 
+from starlette.responses import RedirectResponse
 from yaml import safe_load
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-
 
 from exceptions.DataException import DataException
 from exceptions.InputException import InputException
@@ -14,8 +15,8 @@ from generator.generate.infer import run_infer_job
 from generator.generate.train import run_train_inference_job
 from services.model_services import save_trained_model, save_system_model, delete_sys_model_by_id
 from utils.parsing import parse_model_to_registry
-
-
+from generator.input_schema import TrainRequest, InferRequestData, InferRequestNoData
+from generator.output_schema import Response
 
 
 def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
@@ -25,7 +26,7 @@ def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
     :return:
     """
     model = body.get("model", {})
-    behaviour_ids = body.get("behaviour_ids", [])
+    behaviour_ids = body.get("functions_id", [])
     dataset = body.get("dataset", [])
     n_rows = body.get("n_rows", 100)
 
@@ -74,14 +75,16 @@ async def lifespan(app: FastAPI):
 
 generator = FastAPI(lifespan=lifespan)
 
-@generator.post("/train")
-def train(request: dict):
+@generator.post("/train",
+                responses={400: {"model":str}, 500: {"model": str}},
+                response_model=Response)
+def train(request: TrainRequest):
     """
     :param request: a request for train and infer
     :return:
     """
     try:
-        model_dict, behaviours, dataset, n_rows = elaborate_request(request)
+        model_dict, behaviours, dataset, n_rows = elaborate_request(request.model_dump())
         results, metrics, model, data = run_train_inference_job(model_dict, behaviours, dataset, n_rows)
         try:
             model_to_save = parse_model_to_registry(model, data)
@@ -103,12 +106,8 @@ def train(request: dict):
 
 
 
-@generator.post("/infer")
-def train(request: dict):
-    """
-    :param request: a request for train and infer
-    :return:
-    """
+
+def infer(request: dict):
     try:
         results, metrics = run_infer_job(*elaborate_request(request))
         return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
@@ -122,6 +121,33 @@ def train(request: dict):
         print(e)
         return JSONResponse(status_code=500, content={"error": "An error occurred while processing the output"})
 
+
+@generator.post("/infer",
+                responses={400: {"model":str}, 500: {"model": str}},
+                response_model=Response)
+def infer_data(request: InferRequestData):
+    """
+    :param request: a request for train and infer
+    :return:
+    """
+    return infer(request.model_dump())
+
+
+
+@generator.post("/infer_nodata",
+                responses={400: {"model":str}, 500: {"model": str}},
+                response_model=Response)
+def infer_nodata(request: InferRequestNoData):
+    """
+    :param request: a request for train and infer
+    :return:
+    """
+    return infer(request.model_dump())
+
+
+@generator.get("/", include_in_schema=False)
+async def home_to_docs():
+    return RedirectResponse(url="/docs")
 
 
 if __name__ == "__main__":
