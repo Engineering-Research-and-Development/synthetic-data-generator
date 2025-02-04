@@ -25,7 +25,8 @@ async def collect_user_input(input_data: UserDataInput):
         if not user_file:
             return JSONResponse(status_code=422, content="Error parsing input dataset")
 
-        body=GeneratorDataOutput(function_ids=function_ids,
+        body=GeneratorDataOutput(
+                            function_ids=function_ids,
                             n_rows=data.get('additional_rows'),
                             model=model,
                             dataset=user_file,
@@ -36,11 +37,10 @@ async def collect_user_input(input_data: UserDataInput):
     else:
         url="http://localhost:8010/fine_tune"
 
-    return JSONResponse(content=body.model_dump())
-    request = requests.post(url, json=GeneratorDataOutput.model_json_schema())
-    if request.status_code == 200:
+    response = requests.post(url, json=body.model_dump())
+    if response.status_code == 200:
         return JSONResponse(status_code=200, content="Data augmentation started")
     else:
-        return JSONResponse(status_code=500, content="Generator error")
+        return JSONResponse(status_code=500, content=response.reason)
 
 
