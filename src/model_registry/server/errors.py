@@ -18,3 +18,9 @@ class VersionNotFound(Exception):
     def __init__(self, message):
         # Calling the base class constructor with the parameters it needs
         super().__init__(message)
+
+class DataTypeNotAllowed(Exception):
+    def __init__(self, message):
+        # Calling the base class constructor with the parameters it needs
+        super().__init__(message)
+

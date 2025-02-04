@@ -3,12 +3,12 @@ from fastapi import APIRouter,Path
 from starlette.responses import JSONResponse
 
 from database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
-from database.handlers import tm_handler as db_handler
+from database.handlers import trained_models as db_handler
 from database.validation.schema import TrainedModel as PydanticTrainedModel, TrainedModelAndVersionIds, \
     TrainedModelAndVersions, \
-    CreateTrainedModel, CreateModelVersion, CreateFeatures, CreateTrainingInfo
+    CreateTrainedModel, CreateModelVersion, CreateFeatures, CreateTrainingInfo,TrainedModelAndFeatureSchema
 
-from peewee import DoesNotExist, IntegrityError
+from peewee import DoesNotExist, IntegrityError,fn
 
 
 router = APIRouter(prefix="/trained_models")
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/trained_models")
             summary = "Get all the trained model in the repository",
             name = "Get all trained models")
 async def get_all_trained_models() -> list[PydanticTrainedModel]:
-    results = [trained_models for trained_models in TrainedModel.select().dicts()]
+    results = [PydanticTrainedModel(**trained_models) for trained_models in TrainedModel.select().dicts()]
     return results
 
 @router.get("/versions",
@@ -35,14 +35,24 @@ async def get_trained_models_and_versions()-> list[TrainedModelAndVersionIds]:
             name="Get a single trained model",
             summary="It returns a trained model given the id",
             responses={404: {"model": str}},
-            response_model=PydanticTrainedModel)
-async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",
-                                                            example=1)):
+            response_model=TrainedModelAndFeatureSchema)
+async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",                                                        example=1)):
     try:
-        train_model = TrainedModel.select().where(TrainedModel.id == trained_model_id).dicts().get()
+        # Fetching the feature schema
+        trained_model = (TrainedModel.select(
+            TrainedModel,fn.JSON_AGG(
+                fn.JSON_BUILD_OBJECT('feature_name',Features.feature_name,'feature_position',Features.feature_position
+                                     ,'is_categorical',DataType.is_categorical,'datatype',DataType.type))
+        .alias("feature_schema"))
+                 .join(Features)
+                 .join(DataType)
+                 .where(TrainedModel.id == trained_model_id)
+                 .group_by(TrainedModel.id)).dicts().get()
     except DoesNotExist:
         return JSONResponse(status_code=404, content={"message": "Item not found"})
-    return PydanticTrainedModel(**train_model)
+    return TrainedModelAndFeatureSchema(**trained_model)
+
+
 
 @router.get("/{trained_model_id}/versions", status_code=200,
             name="Get a single trained model and all the versions",
@@ -83,7 +93,7 @@ async def create_model_and_version(trained_model: CreateTrainedModel,
                                                                           ", to use it add it with POST /datatype"})
              try:
                  Features.insert(feature_name=feature.feature_name,feature_position=feature.feature_position
-                                 ,datatype=datatype.id,trained_model=saved_tr.id)
+                                 ,datatype=datatype.id,trained_model=saved_tr.id).execute()
              except IntegrityError:
                  transaction.rollback()
                  return JSONResponse(status_code=500, content={'message': "Error in processing the request"})
@@ -107,7 +117,7 @@ async def create_model_and_version(trained_model: CreateTrainedModel,
 @router.delete("/{trained_model_id}",
                status_code=200,
                name = "Deletes a trained model",
-               summary = "Given an id it deletes a trained model with his feature schemas and versions from the registry",
+               summary = "Given an id it deletes a trained model with his feature schemas,versions and training info from the registry",
                responses = {404: {"model": str}}
                 )
 async def delete_train_model(trained_model_id: int):

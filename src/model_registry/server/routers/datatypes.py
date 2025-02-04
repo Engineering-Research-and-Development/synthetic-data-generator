@@ -14,7 +14,7 @@ router = APIRouter(prefix="/datatypes")
             summary="Get all the available datatypes",
             )
 async def get_all_datatypes() -> list[PydanticDataType]:
-    results = [datatype for datatype in DataType.select().dicts().get()]
+    results = [PydanticDataType(**datatype) for datatype in DataType.select().dicts().get()]
     return results
 
 
@@ -30,3 +30,5 @@ async def get_single_datatype(datatype_id: int = Path(description="The id of the
     except peewee.DoesNotExist:
         return JSONResponse(status_code=404, content={"message": "Item not found"})
     return PydanticDataType(**result)
+
+

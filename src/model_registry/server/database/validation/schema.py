@@ -4,13 +4,21 @@ from typing import Literal, Annotated
 from pydantic import BaseModel, BeforeValidator, Field
 
 
-class Algorithm(BaseModel):
+class CreateAlgorithm(BaseModel):
     name: str
     description: str
-    loss_function: str
+    default_loss_function: str
+
+
+class Algorithm(CreateAlgorithm):
+    id: int
 
 class DataType(BaseModel):
     id: int
+    type: str
+    is_categorical : bool
+
+class CreateDataType(BaseModel):
     type: str
     is_categorical : bool
 
@@ -18,6 +26,14 @@ class AllowedDataType(BaseModel):
     id : int
     algorithm_name : str
     datatype : str
+
+class CreateAllowedData(BaseModel):
+    datatype: str
+    is_categorical: bool
+
+class AlgorithmAndAllowedDatatypes(Algorithm):
+    allowed_data: list[CreateAllowedData] | None
+
 
 class CreateTrainedModel(BaseModel):
     name: str
@@ -28,7 +44,6 @@ class CreateTrainedModel(BaseModel):
 
 class TrainedModel(CreateTrainedModel):
     id : int
-
 
 def convert_to_list(value: int) -> list:
     if type(value) is int:
@@ -53,6 +68,9 @@ class CreateFeatures(BaseModel):
     is_categorical: bool
     datatype: str
 
+class TrainedModelAndFeatureSchema(TrainedModel):
+    feature_schema: list[CreateFeatures] | None = None
+
 class CreateTrainingInfo(BaseModel):
     loss_function : str
     train_loss : float
@@ -65,10 +83,8 @@ class TrainingInfo(CreateTrainingInfo):
 
 class CreateModelVersion(BaseModel):
     version_name : str
-    model_image_path : str
-#    timestamp : datetime
-#    trained_model : int
-#    training_info : int
+    image_path : str
+
 
 class ModelVersion(CreateModelVersion):
     id : int
@@ -82,6 +98,8 @@ class ModelVersionAndTrainInfo(BaseModel):
 class TrainedModelAndVersions(TrainedModel):
     versions: list[ModelVersionAndTrainInfo] | None = Field(description="This is a list of the trained model"
                                                             " versions and training infos")
+    feature_schema: list[CreateFeatures] | None = Field(description="This is a list of the features that the trained model"
+                                                            " has")
 
 
 ## BEHAVIOUR MODELS

@@ -1,10 +1,10 @@
 
-from database.schema import TrainedModel, TrainingInfo, ModelVersion
+from database.schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType
 from database.validation.schema import TrainedModelAndVersionIds\
     ,TrainedModelAndVersions as PydanticTrainedModelAndVersions,ModelVersionAndTrainInfo,ModelVersion as PydanticModelVersion, TrainingInfo as PydanticTrainingInfo
 from peewee import fn,JOIN
 
-def get_trained_model_versions(model_id) -> PydanticTrainedModelAndVersions:
+def get_trained_model_versions(model_id,version_id) -> PydanticTrainedModelAndVersions:
 #     query = (TrainedModel.select(
 #         # This is done so that .dicts will not overwrite the ids of versions and training info
 #         TrainedModel, ModelVersion.id.alias("version_id"),ModelVersion
@@ -16,13 +16,24 @@ def get_trained_model_versions(model_id) -> PydanticTrainedModelAndVersions:
 #     )
     # This hack is done so that the attributes inside the validation class can change
     # The above outer join although is more efficient has hardcoded values inside it, so this is more flexible
-    query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id)
+    if version_id is None:
+        query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id)
+    else: query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id).where(ModelVersion.id == version_id)
     versions = [PydanticModelVersion(**row) for row in query.dicts()]
     query = TrainingInfo.select(TrainingInfo).join(ModelVersion).where(ModelVersion.trained_model_id == model_id)
     training_infos = [PydanticTrainingInfo(**row) for row in query.dicts()]
     train_and_versions = [ModelVersionAndTrainInfo(version=elem[0],training_info=elem[1]) for elem in zip(versions,training_infos)]
-    trained_model = TrainedModel.select().where(TrainedModel.id == model_id).dicts()[0]
-    return PydanticTrainedModelAndVersions(**trained_model,versions=train_and_versions)
+    #Now we get the features
+    train_and_features = (TrainedModel.select(
+        TrainedModel, fn.JSON_AGG(
+            fn.JSON_BUILD_OBJECT('feature_name', Features.feature_name, 'feature_position', Features.feature_position
+                                 , 'is_categorical', DataType.is_categorical, 'datatype', DataType.type))
+        .alias("feature_schema"))
+             .join(Features)
+             .join(DataType)
+             .where(TrainedModel.id == model_id)
+             .group_by(TrainedModel.id)).dicts().get()
+    return PydanticTrainedModelAndVersions(**train_and_features,versions=train_and_versions)
 
 
 def get_models_and_version_ids() -> list[TrainedModelAndVersionIds]:
