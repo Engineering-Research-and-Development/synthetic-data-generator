@@ -1,3 +1,5 @@
+from typing import Dict
+
 import peewee
 
 from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
@@ -25,7 +27,7 @@ def check_function_parameters(functions: list[dict]) -> list:
     return functions_id
 
 
-def check_new_model(new_model: int, model_name: str) -> ModelOutput | {}:
+def check_new_model(new_model: int, model_name: str) -> ModelOutput | Dict:
     """
     Checks if a new model exists in the Algorithm database and returns model details.
 
@@ -40,7 +42,7 @@ def check_new_model(new_model: int, model_name: str) -> ModelOutput | {}:
         return {}
 
 
-def check_existing_model(selected_model: int, version: str) -> ModelOutput | {}:
+def check_existing_model(selected_model: int, version: str) -> ModelOutput | Dict:
     """
     Checks if an existing trained model and its version exist in the database.
 
@@ -63,7 +65,7 @@ def check_existing_model(selected_model: int, version: str) -> ModelOutput | {}:
                        input_shape=trained_model.input_shape, image=model_version.image_path)
 
 
-def check_ai_model(data: dict) -> ModelOutput | {}:
+def check_ai_model(data: dict) -> ModelOutput | Dict:
     """
     Determines whether to check for a new or existing AI model and retrieves its details.
 
