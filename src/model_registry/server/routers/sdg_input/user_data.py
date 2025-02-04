@@ -7,23 +7,29 @@ from routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input")
 
-@router.post("/")
+@router.post("/",
+             name="Synthetic Data Generator input collection",
+             description="Use this endpoint to collect the information and run the Synthetic Data Generator on the "
+                         "given data",
+             responses={400: {"reason": str},
+                        500: {"reason": str}}
+             )
 async def collect_user_input(input_data: UserDataInput):
     data = input_data.model_dump()
 
     function_ids = check_function_parameters(data['functions'])
     if not function_ids:
-        return JSONResponse(status_code=422, content="Error analysing functions")
+        return JSONResponse(status_code=400, content="Error analysing functions")
 
     model = check_ai_model(data.get('ai_model'))
     if not model:
-        return JSONResponse(status_code=422, content="Wrong model")
+        return JSONResponse(status_code=400, content="Wrong model")
 
     body={}
     if data.get('user_file') is not None:
         user_file = check_user_file(data.get('user_file'))
         if not user_file:
-            return JSONResponse(status_code=422, content="Error parsing input dataset")
+            return JSONResponse(status_code=400, content="Error parsing input dataset")
 
         body=GeneratorDataOutput(
                             function_ids=function_ids,
