@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Dict, Literal
+from typing import List, Optional, Dict
 from pydantic import BaseModel, PositiveInt
 
 
@@ -36,7 +36,6 @@ class UserDataInput(BaseModel):
         return v
 
 
-############################
 class ModelOutput(BaseModel):
     algorithm_name: str
     model_name: Optional[str]
@@ -51,7 +50,7 @@ class DatasetOutput(BaseModel):
     column_data: List[float | int]
     column_name: str
     column_type: str
-    column_datatype: Literal[SupportedDatatypes.float, SupportedDatatypes.int]
+    column_datatype: SupportedDatatypes
 
 class GeneratorDataOutput(BaseModel):
     function_ids: List[PositiveInt]

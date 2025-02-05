@@ -11,8 +11,8 @@ router = APIRouter(prefix="/sdg_input")
              name="Synthetic Data Generator input collection",
              description="Use this endpoint to collect the information and run the Synthetic Data Generator on the "
                          "given data",
-             responses={400: {"reason": str},
-                        500: {"reason": str}}
+             responses={400: {"model": str},
+                        500: {"model": str}}
              )
 async def collect_user_input(input_data: UserDataInput):
     data = input_data.model_dump()
