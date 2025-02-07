@@ -99,7 +99,7 @@ def test_get_bad_id():
 
 
 def test_get_trained_models_and_versions():
-    data = requests.get(server + endpoint + "/1" + "/versions")
+    data = requests.get(server + endpoint + "/1" + "?include_versions=True")
     assert data.status_code == 200
     payload = data.json()
     assert payload["name"]
@@ -114,7 +114,7 @@ def test_get_trained_models_and_versions():
 
 
 def test_get_bad_trained_models_and_versions():
-    data = requests.get(server + endpoint + "/1000" + "/versions")
+    data = requests.get(server + endpoint + "/1000" + "?include_versions=True")
     assert data.status_code == 404
 
 def test_create_trained_model():
@@ -125,7 +125,7 @@ def test_create_trained_model():
     created_id = data["id"]
     assert response.status_code == 201
     # Now we check that it has been saved in the repo
-    response = requests.get(server + endpoint + "/" + str(created_id) + "/versions")
+    response = requests.get(server + endpoint + "/" + str(created_id) + "?include_versions=True")
     assert response.status_code == 200
     data = response.json()
     assert data['name'] == model['trained_model']['name']
@@ -153,7 +153,7 @@ def test_delete_train_model():
     assert response.status_code == 201,print(response.content)
     model_id = response.json()['id']
     # We do a get so that we obtain the ids of training infos and model versions
-    response = requests.get(server + endpoint + "/" + str(model_id) + "/versions")
+    response = requests.get(server + endpoint + "/" + str(model_id) + "?include_versions=True")
     assert response.status_code == 200
     data = response.json()
     version_id = data['versions'][0]['version']['id']
@@ -171,7 +171,7 @@ def test_delete_train_model_version():
     data = response.json()
     model_id = data["id"]
     # We do a get so that we obtain the ids of training infos and model versions
-    response = requests.get(server + endpoint + "/" + str(model_id) + "/versions")
+    response = requests.get(server + endpoint + "/" + str(model_id) + "?include_versions=True")
     assert response.status_code == 200
     data = response.json()
     version_id = data['versions'][0]['version']['id']

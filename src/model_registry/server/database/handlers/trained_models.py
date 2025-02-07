@@ -4,7 +4,7 @@ from database.validation.schema import TrainedModelAndVersionIds\
     ,TrainedModelAndVersions as PydanticTrainedModelAndVersions,ModelVersionAndTrainInfo,ModelVersion as PydanticModelVersion, TrainingInfo as PydanticTrainingInfo
 from peewee import fn,JOIN
 
-def get_trained_model_versions(model_id,version_id) -> PydanticTrainedModelAndVersions:
+def get_trained_model_versions(model_id,version_id = None) -> PydanticTrainedModelAndVersions:
     if version_id is None:
         query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id)
     else: query = ModelVersion.select().where(ModelVersion.trained_model_id == model_id).where(ModelVersion.id == version_id)

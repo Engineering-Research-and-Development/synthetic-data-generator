@@ -1,5 +1,7 @@
 
 from fastapi import APIRouter,Path
+from fastapi.params import Query
+from sqlalchemy.sql.annotation import Annotated
 from starlette.responses import JSONResponse
 
 from database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
@@ -35,38 +37,34 @@ async def get_trained_models_and_versions()-> list[TrainedModelAndVersionIds]:
             name="Get a single trained model",
             summary="It returns a trained model given the id",
             responses={404: {"model": str}},
-            response_model=TrainedModelAndFeatureSchema)
-async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",                                                        example=1)):
-    try:
-        # Fetching the feature schema
-        trained_model = (TrainedModel.select(
-            TrainedModel,fn.JSON_AGG(
-                fn.JSON_BUILD_OBJECT('feature_name',Features.feature_name,'feature_position',Features.feature_position
-                                     ,'is_categorical',DataType.is_categorical,'datatype',DataType.type))
-        .alias("feature_schema"))
-                 .join(Features)
-                 .join(DataType)
-                 .where(TrainedModel.id == trained_model_id)
-                 .group_by(TrainedModel.id)).dicts().get()
-    except DoesNotExist:
-        return JSONResponse(status_code=404, content={"message": "Item not found"})
-    return TrainedModelAndFeatureSchema(**trained_model)
+            response_model=TrainedModelAndFeatureSchema | TrainedModelAndVersions)
+async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",example=1)
+                               ,include_versions: bool | None = Query(description="If the client wants all the versions "
+                                                                                  "associated with the trained model",default=False),
+                               version_id: int | None = Query(description="If the client wants to retrieve a specific "
+                                                                                 "version", default=None)
+                               ):
+    if not include_versions:
+        try:
+            # Fetching the feature schema
+            trained_model = (TrainedModel.select(
+                TrainedModel,fn.JSON_AGG(
+                    fn.JSON_BUILD_OBJECT('feature_name',Features.feature_name,'feature_position',Features.feature_position
+                                         ,'is_categorical',DataType.is_categorical,'datatype',DataType.type))
+            .alias("feature_schema"))
+                     .join(Features)
+                     .join(DataType)
+                     .where(TrainedModel.id == trained_model_id)
+                     .group_by(TrainedModel.id)).dicts().get()
+        except DoesNotExist:
+            return JSONResponse(status_code=404, content={"message": "No trained model has been found with this id"})
+        return TrainedModelAndFeatureSchema(**trained_model)
+    else:
+        try:
+            return db_handler.get_trained_model_versions(trained_model_id,version_id)
+        except DoesNotExist:
+            return JSONResponse(status_code=404, content={"message": "Trained Model not found"})
 
-
-
-@router.get("/{trained_model_id}/versions", status_code=200,
-            name="Get a single trained model and all the versions",
-            summary="It returns a trained model given the id and all his versions. If given the version id as query argument"
-                    " it will return that specific version",
-            responses={404: {"model": str}},
-            response_model=TrainedModelAndVersions)
-async def get_all_train_model_versions(trained_model_id: int = Path(description="The id of the trained model you want to get",
-                                                            example=1),
-                                       version_id: int | None = None):
-    try:
-        return db_handler.get_trained_model_versions(trained_model_id, version_id)
-    except DoesNotExist:
-        return JSONResponse(status_code=404, content={"message": "Trained Model not found"})
 
 
 @router.post("/",
