@@ -1,3 +1,5 @@
+import json
+
 import requests
 import yaml
 import random
@@ -6,6 +8,12 @@ with open('config.yml', 'r') as file:
     config = yaml.safe_load(file)
     server = config["server"]
 endpoint = "/datatypes"
+
+test_datatype = {
+          "type":"TestDatatype",
+          "is_categorical":"false"
+}
+
 
 
 def test_get_all_datatypes():
@@ -58,3 +66,6 @@ def test_wrong_datatype_payload():
     response = requests.get(server + endpoint + payload)
 
     assert response.status_code == 422
+
+def test_create_datatype():
+    assert requests.post(server + endpoint,json.dump(test_datatype)).status_code == 201

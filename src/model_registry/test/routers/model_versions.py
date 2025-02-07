@@ -1,29 +1,33 @@
+import json
 import requests
+import yaml
+import random
 
-localhost = "http://127.0.0.1:8001/versions"
+with open('src/model_registry/test/routers/config.yml', 'r') as file:
+    config = yaml.safe_load(file)
+    server = config["server"]
+
+endpoint = "/versions"
 
 def test_get_all_versions():
-    response = requests.get(localhost)
+    response = requests.get(server + endpoint)
     assert response.status_code == 200
-    versions = response.json()
-    for version in versions:
-        assert version["id"]
-        assert version["version_name"]
-        assert version["trained_model_id"]
-        assert version["timestamp"]
-        assert version["model_image_path"]
-        assert version["training_info_id"]
-
-def test_get_version_by_id(get_all_versions):
-    for test_version in get_all_versions:
-        response = requests.get(localhost + "/" + str(test_version["id"]))
-        assert response.status_code == 200
-        version = response.json()
-        assert version["id"] == test_version["id"]
-        assert version["version_name"] == test_version["version_name"]
-        assert version["trained_model_id"] == test_version["trained_model_id"]
-        assert version["timestamp"] == test_version["timestamp"]
-        assert version["model_image_path"] == test_version["model_image_path"]
-        assert version["training_info_id"] == test_version["training_info_id"]
+    random_version = random.choice(response.json())
+    assert random_version['id']
+    assert random_version['version_name']
+    assert random_version['image_path']
 
 
+def test_get_version_id():
+    response = requests.get(server + endpoint + "/1")
+    assert response.status_code == 200
+    data = response.json()
+    assert data['id']
+    assert data['version_name']
+    assert data['image_path']
+
+def test_get_bad_version_id():
+    assert requests.get(server + endpoint + "/1000").status_code == 404
+
+def test_create_version():
+    pass

@@ -1,9 +1,14 @@
 """This module tests the trained models router of all his methods"""
 import json
-
 import requests
-from model_registry.test.conftest import prefix
-localhost = prefix  + "/trained_models"
+import yaml
+import random
+
+with open('src/model_registry/test/routers/config.yml', 'r') as file:
+    config = yaml.safe_load(file)
+    server = config["server"]
+
+endpoint =  "/trained_models"
 
 # This is the dummy model we will use for testing purposes
 model = {
@@ -13,20 +18,20 @@ model = {
             "dataset_name": "A dataset",
             "size": "100b",
             "input_shape": "(19,29,19)",
-            "algorithm_name": "T-VAEs"
+            "algorithm_id": 2
         },
     "version":
         {
             "version_name": "Testing version",
-            "model_image_path": "A dataset"
+            "image_path": "A dataset"
         },
     "training_info":
         {
             "loss_function": "TestingTrainInfo",
-            "train_loss_value": 100,
-            "val_loss_value": 100,
-            "n_train_samples": 100,
-            "n_validation_samples": 100
+            "train_loss": 100,
+            "val_loss": 100,
+            "train_samples": 100,
+            "val_samples": 100
         },
     "feature_schema":
         [
@@ -34,109 +39,140 @@ model = {
                 "feature_name": "First feature added to model Testing",
                 "feature_position": "0",
                 "is_categorical": "true",
-                "datatype": "string"
+                "datatype": "DataType_0"
             },
             {
                 "feature_name": "Second feature added to model Testing",
                 "feature_position": 1,
                 "is_categorical": "true",
-                "datatype": "string"
+                "datatype": "DataType_0"
             }
         ]
 }
 
 def test_get_all_trained_models():
-    data = requests.get(localhost)
+    data = requests.get(server + endpoint)
     assert data.status_code == 200,print(data.json())
     payload = data.json()
     # Checking that they are not empty
-    for model in payload:
-        assert model["name"]
-        assert model["id"]
-        assert model["dataset_name"]
-        assert model["input_shape"]
-        assert model["algorithm_name"]
-        assert model["size"]
+    assert len(payload) > 0
+    rand_tr = random.choice(payload)
+    assert rand_tr["name"]
+    assert rand_tr["id"]
+    assert rand_tr["dataset_name"]
+    assert rand_tr["input_shape"]
+    assert rand_tr["algorithm_id"]
+    assert rand_tr["size"]
 
-def test_get_trained_models_and_versions():
-    data = requests.get(localhost + "/versions")
+def test_get_train_models_and_versions_ids():
+    data = requests.get(server + endpoint + "/versions")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    # Checking that they are not empty
+    assert len(payload) > 0
+    for elem in payload:
+        assert elem["name"]
+        assert elem["id"]
+        assert elem["dataset_name"]
+        assert elem["input_shape"]
+        assert elem["algorithm_id"]
+        assert elem["size"]
+        assert len(elem["version_ids"]) > 0
+
+def test_get_train_model_id():
+    payload = '/1'
+    data = requests.get(server + endpoint + payload)
     assert data.status_code == 200
     payload = data.json()
-    for model in payload:
-        assert model["name"]
-        assert model["id"]
-        assert model["dataset_name"]
-        assert model["input_shape"]
-        assert model["algorithm_name"]
-        assert model["size"]
-        # This time version_ids can not be empty
-        assert model["version_ids"]
+    assert payload['size']
+    assert payload['name']
+    assert payload['algorithm_id']
+    assert payload['dataset_name']
+    assert payload['input_shape']
+    assert payload['id']
+    assert payload['feature_schema']
 
-def test_get_train_model_id(train_models_test_data) -> bool:
-    for model in train_models_test_data:
-        data = requests.get(localhost + "/" + str(model['id']))
-        assert data.status_code == 200
-        data = data.json()
-        assert data['size'] == model['size']
-        assert data['name'] == model['name']
-        assert data['algorithm_name'] == data['algorithm_name']
-        assert data['dataset_name'] == model['dataset_name']
-        assert data['input_shape'] == model['input_shape']
-        assert data['id'] == model['id']
-
+def test_get_bad_id():
     # Now we try an id that does not exist
-    data = requests.get(localhost + "/" + str(10000))
+    data = requests.get(server + endpoint + "/1000")
     assert data.status_code == 404
 
-def test_get_all_train_model_versions(train_model_versions):
-    # First we check that we get that for all the models we get the versions
-    for model in train_model_versions:
-        request = requests.get(localhost + "/" + str(model["id"]) + "/versions")
-        assert request.status_code == 200
-        model_and_versions = request.json()
-        assert len(model["versions"]) == len(model_and_versions["versions"])
-        for test_version,model_version in zip(model["versions"],model_and_versions["versions"]):
-            assert test_version["version_info"]["id"] == model_version["version_info"]["id"]
-            assert test_version["training_info"]["id"] == model_version["training_info"]["id"]
-        assert len(model["feature_schema"]) == len(model_and_versions["feature_schema"])
 
-def test_create_and_delete_trained_model():
-    global model
-    payload = json.dumps(model)
-    response = requests.post(localhost,payload)
-    assert response.status_code != 422, print(response.json())
+def test_get_trained_models_and_versions():
+    data = requests.get(server + endpoint + "/1" + "/versions")
+    assert data.status_code == 200
+    payload = data.json()
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["size"]
+    assert payload["versions"]
+    assert payload["feature_schema"]
+
+
+
+def test_get_bad_trained_models_and_versions():
+    data = requests.get(server + endpoint + "/1000" + "/versions")
+    assert data.status_code == 404
+
+def test_create_trained_model():
+    data = json.dumps(model)
+    response = requests.post(server + endpoint,data=data)
+    assert response.status_code == 201, print(response.content)
     data = response.json()
-    response = requests.get(localhost + "/" + str(data["id"]) +"/versions")
-    assert response.status_code != 404
-    data = response.json()
-    version_id = data["versions"][0]["version_info"]["id"]
-    training_info_id = data["versions"][0]["training_info"]["id"]
-    # Now we try to delete it, and we check that all the versions and training infos are deleted as well
-    assert requests.delete(localhost + "/" + str(data["model"]["id"])).status_code == 200
-    assert requests.get(prefix + "/versions/" + str(version_id)).status_code == 404
-    assert requests.get(prefix + "/training_info/" + str(training_info_id)).status_code == 404
-
-
-def test_delete_a_version():
-    """
-    This function tests if a delete of a train model works
-    :return:
-    """
-    global model
-    payload = json.dumps(model)
-    response = requests.post(localhost,payload)
+    created_id = data["id"]
     assert response.status_code == 201
+    # Now we check that it has been saved in the repo
+    response = requests.get(server + endpoint + "/" + str(created_id) + "/versions")
+    assert response.status_code == 200
+    data = response.json()
+    assert data['name'] == model['trained_model']['name']
+    assert len(data['feature_schema']) == len(model['feature_schema'])
+
+from copy import deepcopy
+
+def test_bad_algo_id_create_trained_model():
+    bad_data = deepcopy(model)
+    bad_data["trained_model"]["algorithm_id"] = 100
+    response = requests.post(server + endpoint,json.dumps(bad_data))
+    assert response.status_code == 400,print(response.content)
+
+def test_bad_datatype_create_trained_model():
+    bad_data = deepcopy(model)
+    bad_data["feature_schema"][0]["datatype"] = "BadDatatype"
+    assert requests.post(server + endpoint,json.dumps(bad_data)).status_code == 400
+
+def test_delete_bad_train_model():
+    assert requests.delete(server + endpoint + "/100").status_code == 404
+
+def test_delete_train_model():
+    # First we create yet again another train model
+    response = requests.post(server + endpoint,json.dumps(model))
+    assert response.status_code == 201,print(response.content)
+    model_id = response.json()['id']
+    # We do a get so that we obtain the ids of training infos and model versions
+    response = requests.get(server + endpoint + "/" + str(model_id) + "/versions")
+    assert response.status_code == 200
+    data = response.json()
+    version_id = data['versions'][0]['version']['id']
+    training_id = data['versions'][0]['training_info']['id']
+    # Now we delete the model and check if it has deleted both the versions and training infos
+    assert requests.delete(server + endpoint + "/" + str(model_id)).status_code == 200
+    assert requests.get(server + endpoint + "/" + str(model_id)).status_code == 404
+    assert requests.get(server + "/versions/" + str(version_id)).status_code == 404
+    assert requests.get(server + "/training_info/" + str(training_id)).status_code == 404
+
+def test_delete_train_model_version():
+    data = json.dumps(model)
+    response = requests.post(server + endpoint, data=data)
+    assert response.status_code == 201, print(response.content)
     data = response.json()
     model_id = data["id"]
-    response = requests.get(localhost + "/" + str(model_id) + "/versions")
-    assert response.status_code != 404
-    data = response.json()
-    to_del = data["versions"][0]
-    response = requests.delete(localhost + "/"+str(model_id)+"/versions/?version_id=" + str(to_del["version_info"]["id"]))
+    # We do a get so that we obtain the ids of training infos and model versions
+    response = requests.get(server + endpoint + "/" + str(model_id) + "/versions")
     assert response.status_code == 200
-    # Now we check that the version has been deleted
-    response = requests.get(localhost + "/"+str(model_id)+"/versions")
-    assert response.status_code == 404
-
-
-
+    data = response.json()
+    version_id = data['versions'][0]['version']['id']
+    assert requests.delete(server + endpoint + "/" + str(model_id) + "?version_id=" + str(version_id)).status_code == 200

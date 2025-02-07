@@ -23,7 +23,7 @@ async def add_algorithm_and_datatype(algorithm: CreateAlgorithm, allowed_data: l
         try:
             saved_algo = Algorithm.create(**algorithm.model_dump())
         except IntegrityError:
-            return JSONResponse(status_code=500, content={'message': "Error in processing the request"})
+            return JSONResponse(status_code=400, content={'message': "Algorithm names must be uniques! Try another name!"})
         for feature in allowed_data:
             try:
                 datatype = DataType.select().where(DataType.type == feature.datatype) \

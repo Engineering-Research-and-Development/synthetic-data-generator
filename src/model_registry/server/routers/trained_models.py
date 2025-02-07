@@ -81,7 +81,7 @@ async def create_model_and_version(trained_model: CreateTrainedModel,
          try:
                saved_tr = TrainedModel.create(**trained_model.model_dump())
          except IntegrityError:
-             return JSONResponse(status_code=500, content={'message':"Error in processing the request"})
+             return JSONResponse(status_code=400, content={'message':"No algorithm has been found with this id"})
          # We need to check if the datatypes passed are allowed, i.e. present in the registry
          for feature in feature_schema:
              try:

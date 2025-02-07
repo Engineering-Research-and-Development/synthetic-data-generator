@@ -15,11 +15,11 @@ class Algorithm(CreateAlgorithm):
 
 class DataType(BaseModel):
     id: int
-    data_type: str
+    type: str
     is_categorical : bool
 
 class CreateDataType(BaseModel):
-    data_type: str
+    type: str
     is_categorical : bool
 
 class AllowedDataType(BaseModel):
