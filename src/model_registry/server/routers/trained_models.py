@@ -1,7 +1,6 @@
 
 from fastapi import APIRouter,Path
 from fastapi.params import Query
-from sqlalchemy.sql.annotation import Annotated
 from starlette.responses import JSONResponse
 
 from database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
