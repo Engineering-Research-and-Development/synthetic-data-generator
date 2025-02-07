@@ -17,19 +17,15 @@ router = APIRouter(prefix="/trained_models")
 @router.get("/",
             status_code=200,
             summary = "Get all the trained model in the repository",
-            name = "Get all trained models")
-async def get_all_trained_models() -> list[PydanticTrainedModel]:
-    results = [PydanticTrainedModel(**trained_models) for trained_models in TrainedModel.select().dicts()]
-    return results
+            name = "Get all trained models",
+            response_model=list[PydanticTrainedModel] | list[TrainedModelAndVersionIds])
+async def get_all_trained_models(include_version_ids: bool | None = Query(description="Include a list of version ids"
+                                " for each trained model",default=False)):
+    if not include_version_ids:
+        results = [PydanticTrainedModel(**trained_models) for trained_models in TrainedModel.select().dicts()]
+        return results
+    else: return db_handler.get_models_and_version_ids()
 
-@router.get("/versions",
-            status_code=200,
-            name = "Get all the trained models' versions",
-            summary = "It returns all the version ids of all the trained models",
-            )
-async def get_trained_models_and_versions()-> list[TrainedModelAndVersionIds]:
-    models = db_handler.get_models_and_version_ids()
-    return models
 
 @router.get("/{trained_model_id}",
             status_code=200,
@@ -114,33 +110,16 @@ async def create_model_and_version(trained_model: CreateTrainedModel,
 @router.delete("/{trained_model_id}",
                status_code=200,
                name = "Deletes a trained model",
-               summary = "Given an id it deletes a trained model with his feature schemas,versions and training info from the registry",
+               summary = "Given an id it deletes only a specific version from the trained model leaving the model intact",
                responses = {404: {"model": str}}
                 )
-async def delete_train_model(trained_model_id: int):
+async def delete_train_model(trained_model_id: int,
+                             version_id: int | None = Query(description="The id of the version to delete",default=None)):
     try:
         model = TrainedModel.get_by_id(trained_model_id)
     except DoesNotExist:
         return JSONResponse(status_code=404, content={'message': "Model not present"})
-    Features.delete().where(Features.trained_model == trained_model_id).execute()
-    query = (
-        ModelVersion.select(ModelVersion.id.alias("version_id"),
-                            TrainingInfo.id.alias("training_id"))
-            .join(TrainingInfo).where(ModelVersion.trained_model == trained_model_id)
-    )
-    for row in query.dicts():
-        ModelVersion.delete().where(ModelVersion.id == row["version_id"]).execute()
-        TrainingInfo.delete().where(TrainingInfo.id == row["training_id"]).execute()
-    model.delete_instance()
 
-@router.delete("/{trained_model_id}/versions",
-               status_code=200,
-               name = "Deletes all versions & training info of a trained model",
-               summary = "Given an id it deletes all versions and training info of a trained model, if the query param version_id"
-                         " is passed it deletes only that version id",
-               responses = {404: {"model": str}}
-                )
-async def delete_train_model_version(trained_model_id: int, version_id: int | None = None):
     if version_id is None:
         query = (
             ModelVersion.select(ModelVersion.id.alias("version_id"),
@@ -155,9 +134,16 @@ async def delete_train_model_version(trained_model_id: int, version_id: int | No
             .where(ModelVersion.trained_model == trained_model_id)
             .where(ModelVersion.id == version_id)
         )
-    if len(query.dicts()) == 0:
-        return JSONResponse(status_code=404, content={'message': "Either this model is not present or it "
-                                                                 "has no versions!"})
+        # This is the only case we need to return due to the fact that the client is trying to delete a specific version
+        # Even if no version is found above, there is no anomalous behaviour. Since the for loop will not be executed
+        # and only the model will be deleted
+        if len(query.dicts()) == 0:
+            return JSONResponse(status_code=404, content={'message': "This version has not been found!"})
+
     for row in query.dicts():
         ModelVersion.delete().where(ModelVersion.id == row["version_id"]).execute()
         TrainingInfo.delete().where(TrainingInfo.id == row["training_id"]).execute()
+
+    if version_id is None:
+        Features.delete().where(Features.trained_model == trained_model_id).execute()
+        model.delete_instance()

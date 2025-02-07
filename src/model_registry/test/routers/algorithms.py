@@ -1,7 +1,7 @@
 import json
 import requests
 import yaml
-from sqlalchemy.sql.functions import random
+#from database.validation.schema import
 
 with open('src/model_registry/test/routers/config.yml', 'r') as file:
     config = yaml.safe_load(file)
@@ -38,7 +38,8 @@ def test_create_algorithm():
     response = requests.post(server + endpoint,json.dumps(local_algo))
     assert response.status_code == 201,print(local_algo['algorithm']['name'],response.content)
     id = response.json()['id']
-    assert requests.get(server + endpoint + "/" + str(id)).status_code == 200
+    response = requests.get(server + endpoint + "/" + str(id))
+    assert response.status_code == 200,print(response.content)
 
 def test_create_bad_name_algorithm():
     local_algo = deepcopy(test_algorithm)
@@ -60,7 +61,7 @@ def test_get_all():
     assert random_algo['default_loss_function']
 
 def test_get_all_datatypes():
-    response = requests.get(server + endpoint + "/allowed_datatypes")
+    response = requests.get(server + endpoint + "?include_allowed_datatypes=True")
     assert response.status_code == 200
     random_algo = random.choice(response.json())
     assert random_algo['id']
@@ -75,7 +76,7 @@ def test_get_all_datatypes():
 
 def test_get_algo_by_id():
     response = requests.get(server + endpoint + "/2")
-    assert response.status_code == 200
+    assert response.status_code == 200,print(response.content)
     data = response.json()
     assert data['id']
     assert data['name']
@@ -87,7 +88,7 @@ def test_get_bad_algo_by_id():
     assert response.status_code == 404
 
 def test_get_algo_by_id_with_datatypes():
-    response = requests.get(server + endpoint + "/2/allowed_datatypes")
+    response = requests.get(server + endpoint + "/2/?include_allowed_datatypes=True")
     assert response.status_code == 200
     data = response.json()
     assert data['id']

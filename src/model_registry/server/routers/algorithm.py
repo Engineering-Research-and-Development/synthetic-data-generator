@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Query
 from starlette.responses import JSONResponse
 
 from database.validation.schema import CreateAlgorithm,Algorithm as PydanticAlgorithm, CreateAllowedData\
@@ -43,23 +43,23 @@ async def add_algorithm_and_datatype(algorithm: CreateAlgorithm, allowed_data: l
 @router.get("/",
             status_code=200,
             name="Get all algorithms",
-            description="It returns all the algorithms present in the model registry")
-async def get_all_algorithms() -> list[PydanticAlgorithm]:
-    results = [PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()]
-    return results
+            description="It returns all the algorithms present in the model registry",
+            response_model=list[PydanticAlgorithm] | list[AlgorithmAndAllowedDatatypes])
+async def get_all_algorithms(include_allowed_datatypes: bool | None = Query(description="Include the allowed datatypes"
+                              "for each algorithm present in the system",default=False)):
+    if not include_allowed_datatypes:
+        results = [PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()]
+        return results
+    else:
+        query = (Algorithm.select(
+            Algorithm,
+            fn.JSON_AGG(fn.JSON_BUILD_OBJECT('datatype', DataType.type, 'is_categorical', DataType.is_categorical))
+            .alias("allowed_data"))
+                 .join(AllowedDataType, JOIN.LEFT_OUTER)
+                 .join(DataType, JOIN.LEFT_OUTER)
+                 .group_by(Algorithm.id))
+        return [AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()]
 
-@router.get("/allowed_datatypes",
-            status_code=200,
-            name="Get all algorithms and allowed datatypes",
-            summary="It returns all the algorithmss with their respective allowed datatypes in the model registry")
-async def get_all_algorithms_datatypes() -> list[AlgorithmAndAllowedDatatypes]:
-    query = (Algorithm.select(
-        Algorithm,fn.JSON_AGG(fn.JSON_BUILD_OBJECT('datatype',DataType.type,'is_categorical',DataType.is_categorical))
-    .alias("allowed_data"))
-             .join(AllowedDataType,JOIN.LEFT_OUTER)
-             .join(DataType,JOIN.LEFT_OUTER)
-             .group_by(Algorithm.id))
-    return [AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()]
 
 
 @router.get("/{algorithm_id}",
@@ -67,32 +67,31 @@ async def get_all_algorithms_datatypes() -> list[AlgorithmAndAllowedDatatypes]:
             name="Get algorithm by id",
             summary="It returns an algorithm given the id",
             responses={404: {"model": str}},
-            response_model=PydanticAlgorithm)
-async def get_algorithm_by_id(algorithm_id: int):
-    try:
-        sys_model = Algorithm.select().where(Algorithm.id == algorithm_id).dicts().get()
-    except DoesNotExist:
-        return JSONResponse(status_code=404,content={"message":"Algorithm not found"})
-    return PydanticAlgorithm(**sys_model)
+            response_model=PydanticAlgorithm | AlgorithmAndAllowedDatatypes)
+async def get_algorithm_by_id(algorithm_id: int,
+                              include_allowed_datatypes: bool | None = Query(description="Include the allowed datatypes"
+                              "for each algorithm present in the system",default=False)):
+    if not include_allowed_datatypes:
+        try:
+            sys_model = Algorithm.select().where(Algorithm.id == algorithm_id).dicts().get()
+        except DoesNotExist:
+            return JSONResponse(status_code=404,content={"message":"Algorithm not found"})
+        return PydanticAlgorithm(**sys_model)
+    else:
+        try:
+            algorithm = (Algorithm.select(
+                Algorithm,
+                fn.JSON_AGG(fn.JSON_BUILD_OBJECT('datatype', DataType.type, 'is_categorical', DataType.is_categorical))
+                .alias("allowed_data"))
+                         .join(AllowedDataType, JOIN.LEFT_OUTER)
+                         .join(DataType, JOIN.LEFT_OUTER)
+                         .where(Algorithm.id == algorithm_id)
+                         .group_by(Algorithm.id)).dicts().get()
+        except DoesNotExist:
+            return JSONResponse(status_code=404, content={'message': "Algorithm not present"})
+        return AlgorithmAndAllowedDatatypes(**algorithm)
 
-@router.get("/{algorithm_id}/allowed_datatypes",
-            status_code=200,
-            name="Get algorithm by id and his allowed datatypes",
-            summary="It returns a algorithm given the id and his allowed datatypes",
-            responses={404: {"model": str}},
-            response_model=AlgorithmAndAllowedDatatypes)
-async def get_algorithm_by_id_and_datatypes(algorithm_id: int):
-    try:
-        algorithm = (Algorithm.select(
-            Algorithm,fn.JSON_AGG(fn.JSON_BUILD_OBJECT('datatype',DataType.type,'is_categorical',DataType.is_categorical))
-        .alias("allowed_data"))
-                 .join(AllowedDataType,JOIN.LEFT_OUTER)
-                 .join(DataType,JOIN.LEFT_OUTER)
-                 .where(Algorithm.id == algorithm_id)
-                 .group_by(Algorithm.id)).dicts().get()
-    except DoesNotExist:
-        return JSONResponse(status_code=404, content={'message': "Algorithm not present"})
-    return AlgorithmAndAllowedDatatypes(**algorithm)
+
 
 @router.delete("/{algorithm_id}",
                status_code=200,

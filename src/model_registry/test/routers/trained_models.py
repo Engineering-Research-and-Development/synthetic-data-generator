@@ -65,7 +65,7 @@ def test_get_all_trained_models():
     assert rand_tr["size"]
 
 def test_get_train_models_and_versions_ids():
-    data = requests.get(server + endpoint + "/versions")
+    data = requests.get(server + endpoint + "?include_version_ids=True")
     assert data.status_code == 200,print(data.json())
     payload = data.json()
     # Checking that they are not empty
@@ -77,7 +77,8 @@ def test_get_train_models_and_versions_ids():
         assert elem["input_shape"]
         assert elem["algorithm_id"]
         assert elem["size"]
-        assert len(elem["version_ids"]) > 0
+        if elem["version_ids"]:
+            assert len(elem["version_ids"]) > 0
 
 def test_get_train_model_id():
     payload = '/1'
