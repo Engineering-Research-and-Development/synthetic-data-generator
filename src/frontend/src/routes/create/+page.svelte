@@ -41,7 +41,7 @@
 
 		sessionStorage.setItem("selectedColumns", JSON.stringify(featureNames))
 		sessionStorage.setItem("featuresCreated", JSON.stringify(featuresCreated))
-		goto("/behaviour")
+		goto("/function")
 	}
 </script>
 

@@ -1,18 +1,24 @@
-type FunctionParameter = {
-    name: string;
-    type: string;
-    value: number;
-};
-
-type Behaviour = {
+type AIFunction = {
     id: number;
     name: string;
     description: string;
     function_reference: string;
-    function_parameters: FunctionParameter[];
 };
 
-type FeatureBehaviour = {
+type Parameter = {
+    id: number;
+    name: string;
+    value: string;
+    parameter_type: "float" | "int";
+};
+
+type FunctionParameter = {
+    function: AIFunction;
+    parameter: Parameter[];
+};
+
+
+type FeatureFunction = {
     [feature: string]: string[]
 };
 

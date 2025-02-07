@@ -2,14 +2,14 @@
     import { onMount } from "svelte";
     import CancelButton from "../components/CancelButton.svelte";
     import NextButton from "../components/NextButton.svelte";
-    import BehaviourTable from "../components/BehaviourTable.svelte";
+    import FunctionsTable from "../components/FunctionsTable.svelte";
     import BackButton from "../components/BackButton.svelte";
     import { Label, Input, InputAddon, ButtonGroup } from 'flowbite-svelte';
     import { PlusOutline } from 'flowbite-svelte-icons';
     import { goto } from "$app/navigation";
 
     let featuresName: string[] = []; // Array of feature names
-    let selectedFeatureBehaviour: FeatureBehaviour = {}; // Mapping feature -> selected behaviours
+    let featureFunction: FeatureFunction = {}; // Mapping feature -> selected Functions
     let additionalRows: number = 0; // Number of additional rows to create
 
     onMount(() => {
@@ -18,8 +18,8 @@
             try {
                 featuresName = JSON.parse(features);
                 featuresName.forEach((feature) => {
-                    if (!selectedFeatureBehaviour[feature]) {
-                        selectedFeatureBehaviour[feature] = [];
+                    if (!featureFunction[feature]) {
+                        featureFunction[feature] = [];
                     }
                 });
             } catch (error) {
@@ -28,22 +28,22 @@
         }
     });
 
-    function submitBehaviours(): void {
-        sessionStorage.setItem('selectedBehaviours', JSON.stringify(selectedFeatureBehaviour));
+    function submitFunctions(): void {
+        sessionStorage.setItem('featureFunction', JSON.stringify(featureFunction));
         sessionStorage.setItem('additionalRows', additionalRows.toString());
-        goto("/rule");
+        goto("/parameters");
     }
 </script>
 
-<h1 class="flex justify-center text-2xl font-bold my-4">Behaviour Selection</h1>
+<h1 class="flex justify-center text-2xl font-bold my-4">Functions Selection</h1>
 <div class="flex items-center justify-center bg-white dark:bg-gray-900">
     <form
-            on:submit|preventDefault={submitBehaviours}
+            on:submit|preventDefault={submitFunctions}
             class="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800"
     >
-        <BehaviourTable
+        <FunctionsTable
                 featuresName={featuresName}
-                selectedFeatureBehaviour={selectedFeatureBehaviour}
+                featureFunction={featureFunction}
         />
 
         <div class="flex items-center justify-center bg-gray-100 dark:bg-gray-900">

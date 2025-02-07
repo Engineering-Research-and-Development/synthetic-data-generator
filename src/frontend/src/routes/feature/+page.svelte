@@ -46,11 +46,11 @@
 		}
 		showAlert = false; // Hide the Alert if columns are selected
 		sessionStorage.setItem('selectedColumns', JSON.stringify(selectedColumns));
-		goto("/behaviour");
+		goto("/function");
 	}
 </script>
 
-<h1 class="flex justify-center text-2xl font-bold my-4">Uploaded CSV Data</h1>
+<h1 class="flex justify-center text-2xl fon0t-bold my-4">Uploaded CSV Data</h1>
 <div class="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
 	<form on:submit|preventDefault={submitColumns}>
 		{#if showAlert}

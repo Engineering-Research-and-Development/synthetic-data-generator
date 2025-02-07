@@ -145,9 +145,9 @@
 		<p>{additionalRows}</p>
 	</div>
 
-	<!-- Selected Behaviours -->
+	<!-- Selected Functions -->
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
-		<h2 class="text-center text-xl font-semibold mb-4">Selected Behaviours</h2>
+		<h2 class="text-center text-xl font-semibold mb-4">Selected Functions</h2>
 		{#if Object.keys(rulesData).length > 0}
 			<Table class="w-full text-gray-500 dark:text-gray-400" shadow>
 				<TableHead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -156,11 +156,11 @@
 					<TableHeadCell>Parameters</TableHeadCell>
 				</TableHead>
 				<TableBody tableBodyClass="divide-y">
-					{#each Object.entries(rulesData) as [feature, behaviours]}
-						{#each behaviours as behaviour, index}
+					{#each Object.entries(rulesData) as [feature, Functions]}
+						{#each Functions as behaviour, index}
 							<TableBodyRow class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
 								{#if index === 0}
-									<TableBodyCell rowspan={behaviours.length}>{feature}</TableBodyCell>
+									<TableBodyCell rowspan={Functions.length}>{feature}</TableBodyCell>
 								{/if}
 								<TableBodyCell>{behaviour.behaviourName}</TableBodyCell>
 								<TableBodyCell>
@@ -178,7 +178,7 @@
 				</TableBody>
 			</Table>
 		{:else}
-			<p class="text-center text-gray-700 dark:text-gray-300">No behaviours selected or data available.</p>
+			<p class="text-center text-gray-700 dark:text-gray-300">No Functions selected or data available.</p>
 		{/if}
 	</div>
 
