@@ -7,6 +7,8 @@ from routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input")
 
+generator_url = "http://localhost:8010"
+
 @router.post("/",
              name="Synthetic Data Generator input collection",
              description="Use this endpoint to collect the information and run the Synthetic Data Generator on the "
@@ -39,9 +41,9 @@ async def collect_user_input(input_data: UserDataInput):
                             )
 
     if data.get('ai_model').get('new_model'):
-        url="http://localhost:8010/train"
+        url=generator_url+"/train"
     else:
-        url="http://localhost:8010/fine_tune"
+        url=generator_url+"/fine_tune"
 
     response = requests.post(url, json=body.model_dump())
     if response.status_code == 200:
