@@ -1,6 +1,7 @@
 services:
   sdg-middleware:
-    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
+#    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
+    build: .
     ports:
       - "8001:8001"
     environment:
@@ -8,7 +9,7 @@ services:
       db_name: "postgres"
       db_password: "postgres"
       db_username: "postgres"
-      INIT_DB: True
+      INIT_DB: False
       allowed_origins: '*'
     depends_on:
       - database
