@@ -1,6 +1,6 @@
-fastapi[standard] == 0.115.5
+fastapi[standard]
 starlette
-pydantic == 2.10.3
+pydantic
 pytest == 8.3.4
 peewee
 requests
