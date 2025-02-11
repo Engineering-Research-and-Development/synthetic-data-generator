@@ -2,8 +2,8 @@ import peewee
 from fastapi import APIRouter, Path
 from starlette.responses import JSONResponse
 
-from database.schema import Parameter, Function, FunctionParameter
-from database.validation.schema import FunctionParameterOut
+from src.model_registry.server.database.schema import Parameter, Function, FunctionParameter
+from src.model_registry.server.database.validation.schema import FunctionParameterOut
 
 router = APIRouter(prefix="/functions")
 
@@ -33,7 +33,7 @@ async def get_all_functions() -> list[FunctionParameterOut]:
             responses={404: {"model": str}}
             )
 async def get_function_parameters_by_function_id(
-        function_id: int = Path(description="The ID of the function to retrieve parameters for", example=1)
+        function_id: int = Path(description="The ID of the function to retrieve parameters for", examples=1)
 ):
     try:
         function = Function.select().where(Function.id == function_id).dicts().get()

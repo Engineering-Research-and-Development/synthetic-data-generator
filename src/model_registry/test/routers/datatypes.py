@@ -1,11 +1,12 @@
-import json
-import requests
 import yaml
 import random
+from fastapi.testclient import TestClient
+from src.model_registry.server.main import app
 
 with open('src/model_registry/test/routers/config.yml', 'r') as file:
     config = yaml.safe_load(file)
     server = config["server"]
+    port = config['port']
 endpoint = "/datatypes"
 
 test_datatype = {
@@ -13,10 +14,12 @@ test_datatype = {
           "is_categorical":"false"
 }
 
+client = TestClient(app, client=(server, port))
 
 
 def test_get_all_datatypes():
-    response = requests.get(server + endpoint)
+    response = client.get(endpoint)
+    assert response.status_code == 200
     data = response.json()
 
     # Check something is returned
@@ -38,7 +41,7 @@ def test_get_all_datatypes():
 
 def test_get_datatype_id():
     payload = "/1"
-    response = requests.get(server + endpoint + payload)
+    response = client.get(server + endpoint + payload)
     data = response.json()
 
     assert data["is_categorical"] is not None
@@ -55,16 +58,16 @@ def test_get_datatype_id():
 
 def test_no_datatype_id():
     payload = "/0"
-    response = requests.get(server + endpoint + payload)
+    response = client.get(server + endpoint + payload)
 
     assert response.status_code == 404
 
 
 def test_wrong_datatype_payload():
     payload = "/wrong_payload"
-    response = requests.get(server + endpoint + payload)
+    response = client.get(server + endpoint + payload)
 
     assert response.status_code == 422
 
 def test_create_datatype():
-    assert requests.post(server + endpoint,json.dumps(test_datatype)).status_code == 201
+    assert client.post(server + endpoint,json=test_datatype).status_code == 201

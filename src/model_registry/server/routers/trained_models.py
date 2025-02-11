@@ -3,9 +3,9 @@ from fastapi import APIRouter,Path
 from fastapi.params import Query
 from starlette.responses import JSONResponse
 
-from database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
-from database.handlers import trained_models as db_handler
-from database.validation.schema import TrainedModel as PydanticTrainedModel, TrainedModelAndVersionIds, \
+from src.model_registry.server.database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
+from src.model_registry.server.database.handlers import trained_models as db_handler
+from src.model_registry.server.database.validation.schema import TrainedModel as PydanticTrainedModel, TrainedModelAndVersionIds, \
     TrainedModelAndVersions, \
     CreateTrainedModel, CreateModelVersion, CreateFeatures, CreateTrainingInfo,TrainedModelAndFeatureSchema
 
@@ -33,7 +33,7 @@ async def get_all_trained_models(include_version_ids: bool | None = Query(descri
             summary="It returns a trained model given the id",
             responses={404: {"model": str}},
             response_model=TrainedModelAndFeatureSchema | TrainedModelAndVersions)
-async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",example=1)
+async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",examples=1)
                                ,include_versions: bool | None = Query(description="If the client wants all the versions "
                                                                                   "associated with the trained model",default=False),
                                version_id: int | None = Query(description="If the client wants to retrieve a specific "

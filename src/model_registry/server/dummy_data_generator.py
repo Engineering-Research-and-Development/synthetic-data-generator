@@ -1,4 +1,4 @@
-from database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
+from src.model_registry.server.database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     Function, Parameter, FunctionParameter
 
 

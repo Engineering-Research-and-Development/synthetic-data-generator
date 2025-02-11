@@ -2,8 +2,8 @@ from typing import Dict
 
 import peewee
 
-from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
-from routers.sdg_input.schema import DatasetOutput, SupportedDatatypes, ModelOutput
+from src.model_registry.server.database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
+from src.model_registry.server.routers.sdg_input.schema import DatasetOutput, SupportedDatatypes, ModelOutput
 
 def check_function_parameters(functions: list[dict]) -> list:
     """

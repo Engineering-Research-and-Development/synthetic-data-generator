@@ -2,8 +2,8 @@ import peewee
 from fastapi import APIRouter, Path
 from starlette.responses import JSONResponse
 
-from database.schema import DataType
-from database.validation.schema import CreateDataType,DataType as PydanticDataType
+from src.model_registry.server.database.schema import DataType
+from src.model_registry.server.database.validation.schema import CreateDataType,DataType as PydanticDataType
 
 
 router = APIRouter(prefix="/datatypes")
@@ -24,7 +24,7 @@ async def get_all_datatypes() -> list[PydanticDataType]:
             response_model= PydanticDataType,
             responses={404: {"model": str}}
             )
-async def get_single_datatype(datatype_id: int = Path(description="The id of the datatype you want to get", example=1)):
+async def get_single_datatype(datatype_id: int = Path(description="The id of the datatype you want to get", examples=1)):
     try:
         result = DataType.select().where(DataType.id == datatype_id).dicts().get()
     except peewee.DoesNotExist:

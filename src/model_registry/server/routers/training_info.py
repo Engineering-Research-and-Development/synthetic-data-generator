@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
-from database.schema import TrainingInfo
-from database.validation.schema import TrainingInfo as PydanticTrainingInfo
+from src.model_registry.server.database.schema import TrainingInfo
+from src.model_registry.server.database.validation.schema import TrainingInfo as PydanticTrainingInfo
 from peewee import DoesNotExist
 
 router = APIRouter(prefix="/training_info")

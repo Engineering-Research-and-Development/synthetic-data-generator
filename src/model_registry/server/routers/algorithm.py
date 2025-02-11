@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Query
 from starlette.responses import JSONResponse
 
-from database.validation.schema import CreateAlgorithm,Algorithm as PydanticAlgorithm, CreateAllowedData\
+from src.model_registry.server.database.validation.schema import CreateAlgorithm,Algorithm as PydanticAlgorithm, CreateAllowedData\
     ,AlgorithmAndAllowedDatatypes
-from database.schema import DataType, AllowedDataType, db, Algorithm, TrainedModel
+from src.model_registry.server.database.schema import DataType, AllowedDataType, db, Algorithm, TrainedModel
 
-from routers.trained_models import delete_train_model
+from src.model_registry.server.routers.trained_models import delete_train_model
 
 from peewee import DoesNotExist,IntegrityError,fn,JOIN
 
