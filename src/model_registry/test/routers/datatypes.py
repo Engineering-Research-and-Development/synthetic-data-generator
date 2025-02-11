@@ -1,6 +1,6 @@
 import yaml
 import random
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 from src.model_registry.server.main import app
 
 with open('src/model_registry/test/routers/config.yml', 'r') as file:
