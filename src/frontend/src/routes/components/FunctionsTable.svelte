@@ -23,18 +23,8 @@
                 const data = await response.json();
 
                 const fetchedFunctions: FunctionParameter[] = data.map((functionParameter: FunctionParameter) => ({
-                    function: {
-                        id: functionParameter.function.id,
-                        name: functionParameter.function.name,
-                        description: functionParameter.function.description,
-                        function_reference: functionParameter.function.function_reference,
-                    },
-                    parameter: functionParameter.parameter.map((param: Parameter) => ({
-                        id: param.id,
-                        name: param.name,
-                        value: param.value,
-                        parameter_type: param.parameter_type,
-                    })),
+                    function: functionParameter.function,
+                    parameter: functionParameter.parameter
                 }));
 
                 shownFunctions = fetchedFunctions.map((Function) => ({
@@ -47,8 +37,8 @@
         }
     });
 
-    export function updateFunctions(feature: string, Functions: string[]) {
-        featureFunction[feature] = Functions;
+    export function updateFunctions(feature: string, functions: string[]) {
+        featureFunction[feature] = functions;
     }
 </script>
 

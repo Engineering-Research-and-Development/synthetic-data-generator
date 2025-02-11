@@ -29,27 +29,19 @@ type FeaturesCreated = {
     subType: string
 };
 
-type BuiltInModel = {
+type NewAlgorithm = {
     id: number;
     name: string;
     description: string;
-    loss_function: string;
-    allowed_datatype: string[];
-    is_categorical: boolean[];
+    default_loss_function: string;
 };
 
 type PreTrainedModel = {
-    name: string;
     id: number;
+    name: string;
     dataset_name: string;
     input_shape: string;
-    algorithm_name: string;
+    algorithm_id: string;
     size: string;
     version_ids: number[];
 };
-
-type SelectedModel ={
-    id: number;
-    name: string;
-    version: number;
-}

@@ -69,7 +69,7 @@
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Algorithm</TableBodyCell>
-                        <TableBodyCell>{models.algorithm_name}</TableBodyCell>
+                        <TableBodyCell>{models.algorithm_id}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Size</TableBodyCell>

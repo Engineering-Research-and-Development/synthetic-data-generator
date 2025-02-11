@@ -8,9 +8,9 @@
     import { PlusOutline } from 'flowbite-svelte-icons';
     import { goto } from "$app/navigation";
 
-    let featuresName: string[] = []; // Array of feature names
-    let featureFunction: FeatureFunction = {}; // Mapping feature -> selected Functions
-    let additionalRows: number = 0; // Number of additional rows to create
+    let featuresName: string[] = [];
+    let featureFunction: FeatureFunction = {};
+    let additionalRows: number = 0;
 
     onMount(() => {
         const features = sessionStorage.getItem("selectedColumns");

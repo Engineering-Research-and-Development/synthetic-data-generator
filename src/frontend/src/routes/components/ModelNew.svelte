@@ -5,13 +5,13 @@
     export let builtInModels;
     export let selected: string;
 
-    let fetchedBuiltInModels: BuiltInModel[] = [];
+    let fetchedBuiltInModels: NewAlgorithm[] = [];
     let selectedModel: typeof fetchedBuiltInModels[number] | null = null;
-    let newModels: { value: string; name: string }[] = [];
+    let algorithms: { value: string; name: string }[] = [];
 
     onMount(async ()=>{
         fetchedBuiltInModels = builtInModels || [];
-        newModels = fetchedBuiltInModels.map((model) => ({
+        algorithms = fetchedBuiltInModels.map((model) => ({
             value: model.name,
             name: model.name
         }));
@@ -23,12 +23,10 @@
 <div class="w-full">
         <Label>
             Select an option
-            <Select class="mt-2" items={newModels} bind:value={selected} />
+            <Select class="mt-2" items={algorithms} bind:value={selected} />
         </Label>
 
-    <!-- Table to display selected model details -->
     <div class="w-full mt-8">
-
         {#if selectedModel}
             <Table>
                 <TableHead>
@@ -46,7 +44,7 @@
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Loss Function</TableBodyCell>
-                        <TableBodyCell>{selectedModel.loss_function}</TableBodyCell>
+                        <TableBodyCell>{selectedModel.default_loss_function}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Allowed Datatypes</TableBodyCell>

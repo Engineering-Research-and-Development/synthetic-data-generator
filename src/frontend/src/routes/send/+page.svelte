@@ -16,8 +16,8 @@
 
 	let userFile: RowData[] = [];
 	let additionalRows: number = 0;
-	let rulesData: Record<string, Array<{
-		behaviourName: string;
+	let functionData: Record<string, Array<{
+		functionName: string;
 		parameters: Array<{ name: string; value: number }>
 	}>> = {};
 	let newModel: boolean = false;
@@ -37,12 +37,12 @@
 		} catch (error) {
 			userFile = [];
 		}
-}
+	}
 
 	onMount(async () => {
 		await loadUserFile();
 		additionalRows = Number(sessionStorage.getItem("additionalRows")) || 0;
-		rulesData = JSON.parse(sessionStorage.getItem("rulesData") || "{}");
+		functionData = JSON.parse(sessionStorage.getItem("functionData") || "{}");
 		newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
 		selectedModel = sessionStorage.getItem("selectedModel") || "";
 		selectedVersion = Number(sessionStorage.getItem("selectedVersion")) || 0;
@@ -55,7 +55,7 @@
 			featuresCreated,
 			userFile,
 			additionalRows,
-			rulesData,
+			functionData,
 			newModel,
 			selectedVersion,
 			selectedModel,
@@ -148,24 +148,25 @@
 	<!-- Selected Functions -->
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
 		<h2 class="text-center text-xl font-semibold mb-4">Selected Functions</h2>
-		{#if Object.keys(rulesData).length > 0}
+
+		{#if Object.keys(functionData).length > 0}
 			<Table class="w-full text-gray-500 dark:text-gray-400" shadow>
 				<TableHead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 					<TableHeadCell>Feature</TableHeadCell>
-					<TableHeadCell>Behaviour Name</TableHeadCell>
+					<TableHeadCell>Function Name</TableHeadCell>
 					<TableHeadCell>Parameters</TableHeadCell>
 				</TableHead>
 				<TableBody tableBodyClass="divide-y">
-					{#each Object.entries(rulesData) as [feature, Functions]}
-						{#each Functions as behaviour, index}
+					{#each Object.entries(functionData) as [feature, functionParameter]}
+						{#each functionParameter as func, index}
 							<TableBodyRow class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
 								{#if index === 0}
-									<TableBodyCell rowspan={Functions.length}>{feature}</TableBodyCell>
+									<TableBodyCell rowspan={functionParameter.length} class="font-semibold">{feature}</TableBodyCell>
 								{/if}
-								<TableBodyCell>{behaviour.behaviourName}</TableBodyCell>
+								<TableBodyCell>{func.functionName}</TableBodyCell>
 								<TableBodyCell>
 									<ul class="list-disc pl-6">
-										{#each behaviour.parameters as param}
+										{#each func.parameters as param}
 											<li>
 												<strong>{param.name}:</strong> {param.value}
 											</li>
@@ -181,6 +182,8 @@
 			<p class="text-center text-gray-700 dark:text-gray-300">No Functions selected or data available.</p>
 		{/if}
 	</div>
+
+
 
 	<!-- New Model -->
 	<div class="bg-green-200 rounded-lg shadow-md p-6 dark:bg-gray-800">
