@@ -63,7 +63,7 @@ from copy import deepcopy
 
 def test_get_all():
     with TestClient(app, client=(server, port)) as client:
-        response = client.get(server + endpoint)
+        response = client.get(f"{server}:{port}{endpoint}")
         assert response.status_code == 200
         print(response.json())
         random_algo = random.choice(response.json())

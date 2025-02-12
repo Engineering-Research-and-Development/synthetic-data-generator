@@ -18,7 +18,7 @@ test_datatype = {
 
 def test_get_all_datatypes():
     with TestClient(app, client=(server, port)) as client:
-        response = client.get(endpoint)
+        response = client.get(f"{server}:{port}{endpoint}")
         assert response.status_code == 200
         data = response.json()
         print(data)

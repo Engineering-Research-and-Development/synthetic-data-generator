@@ -54,7 +54,7 @@ model = {
 
 def test_get_all_trained_models():
     with TestClient(app, client=(server, port)) as client:
-        data = client.get(server + endpoint)
+        data = client.get(f"{server}:{port}{endpoint}")
         assert data.status_code == 200,print(data.json())
         payload = data.json()
         print(payload)

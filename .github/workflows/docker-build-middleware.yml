@@ -16,7 +16,9 @@ env:
 
 
 jobs:
-  build:
+  test:
+    env:
+      INIT_DB: True
 
     runs-on: ubuntu-latest
     permissions:
@@ -55,6 +57,14 @@ jobs:
       - name: Run tests
         run: pytest src/model_registry/test/routers/
 
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
