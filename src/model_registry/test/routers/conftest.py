@@ -9,7 +9,7 @@ with open('src/model_registry/test/routers/config.yml', 'r') as file:
     port = config['port']
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="package")
 def client():
     with TestClient(app, client=(server, port)) as client:
         return client
