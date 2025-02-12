@@ -69,7 +69,7 @@
         const functionDataToSave: Record<string, Array<{
             functionId: number;
             functionName: string;
-            parameters: Array<{ name: string; value: number }>
+            parameters: Array<Parameter>
         }>> = {};
 
         for (const [feature, functionParameters] of Object.entries(functionData)) {
@@ -79,15 +79,17 @@
                 const functionEntry = {
                     functionId: functionParameter.function.id,
                     functionName: functionParameter.function.name,
-                    parameters: [] as Array<{ name: string; value: number }>
+                    parameters: [] as Array<Parameter>
                 };
 
                 for (const param of functionParameter.parameter) {
                     const inputElement = document.getElementById(`param-${functionParameter.function.id}-${param.id}`) as HTMLInputElement;
                     if (inputElement) {
                         functionEntry.parameters.push({
+                            id: param.id,
+                            parameter_type: param.parameter_type,
                             name: param.name,
-                            value: parseFloat(inputElement.value)
+                            value: inputElement.value
                         });
                     }
                 }

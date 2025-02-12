@@ -45,3 +45,30 @@ type PreTrainedModel = {
     size: string;
     version_ids: number[];
 };
+
+
+type OutParameter = {
+    param_id: number;
+    value: number;
+}
+
+type OutFunction = {
+    feature: string;
+    function_id: number;
+    parameters: OutParameter[];
+}
+
+type AIModel = {
+    selected_model: number;
+    new_model: boolean;
+    new_model_name: string;
+    model_version: string;
+}
+
+type SdgOut = {
+    additional_rows: number;
+    functions: OutFunction[];
+    ai_model: AIModel;
+    user_file?: object[];
+    features_created?: string[];
+}

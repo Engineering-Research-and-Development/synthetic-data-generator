@@ -37,7 +37,7 @@
         sessionStorage.setItem('newModel', JSON.stringify(useNewModel));
         sessionStorage.setItem('selectedModel', JSON.stringify(selectedModel));
         sessionStorage.setItem('selectedVersion', JSON.stringify(selectedVersion))
-        goto("/send")
+        goto("/preview")
     }
 </script>
 
