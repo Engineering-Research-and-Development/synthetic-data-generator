@@ -2,7 +2,7 @@ import yaml
 from starlette.testclient import TestClient
 from src.model_registry.server.main import app
 
-with open('routers/config.yml', 'r') as file:
+with open('src/model_registry/test/routers/config.yml', 'r') as file:
     config = yaml.safe_load(file)
     server = config["server"]
     port = config["port"]
