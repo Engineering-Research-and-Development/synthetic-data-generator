@@ -5,9 +5,10 @@ from datetime import datetime
 
 username = os.environ.get("db_username", "postgres")
 password = os.environ.get("db_password", "postgres")
-host = os.environ.get("db_host", "localhost")
+host = os.environ.get("db_host", "127.0.0.1")
 database = os.environ.get("db_name", "postgres")
-db = PostgresqlDatabase(database=database, host=host, user=username, password=password)
+port = os.environ.get("port",5432)
+db = PostgresqlDatabase(database=database, host=host, user=username, password=password,port=port)
 
 
 class BaseModelPeewee(Model):

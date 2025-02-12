@@ -18,7 +18,7 @@ allowed_origins = os.environ.get('allowed_origins', '*').split(',')
 allow_credentials = os.environ.get("allow_credentials", True)
 allow_methods = os.environ.get("allow_methods", '*').split(',')
 allow_headers = os.environ.get("allow_headers", '*').split(',')
-init_db = os.environ.get("INIT_DB", True)
+init_db = os.environ.get("INIT_DB", False)
 
 
 @asynccontextmanager
