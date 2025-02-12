@@ -3,9 +3,8 @@ the database initialization on startup"""
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from requests import Request
 from starlette.responses import RedirectResponse
 
 from src.model_registry.server.database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
@@ -18,7 +17,7 @@ allowed_origins = os.environ.get('allowed_origins', '*').split(',')
 allow_credentials = os.environ.get("allow_credentials", True)
 allow_methods = os.environ.get("allow_methods", '*').split(',')
 allow_headers = os.environ.get("allow_headers", '*').split(',')
-init_db = os.environ.get("INIT_DB", True)
+init_db = os.environ.get("INIT_DB", False)
 
 
 @asynccontextmanager

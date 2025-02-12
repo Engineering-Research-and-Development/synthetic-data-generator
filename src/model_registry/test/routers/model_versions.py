@@ -24,5 +24,3 @@ def test_get_version_id(client):
 def test_get_bad_version_id(client):
     assert client.get(f"{server}:{port}{endpoint}" + "/1000").status_code == 404
 
-# def test_create_version():
-#     pass
