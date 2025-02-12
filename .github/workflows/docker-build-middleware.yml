@@ -62,9 +62,10 @@ jobs:
     needs: test
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Build and run Docker container
-        with:
-          context: src/model_registry
         run: |
           docker build -t test-container .
           docker run -d -p 8001:8001 --name test-container test-container
@@ -78,7 +79,7 @@ jobs:
 
 
   push:
-    needs: test
+    needs: [test, dryrun]
     runs-on: ubuntu-latest
     permissions:
       contents: read
