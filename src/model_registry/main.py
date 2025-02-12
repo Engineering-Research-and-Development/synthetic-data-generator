@@ -7,11 +7,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
-from src.model_registry.server.database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
+from .server.database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     db, Parameter, Function, FunctionParameter
-from src.model_registry.server.dummy_data_generator import insert_data
-from src.model_registry.server.routers import datatypes, functions,trained_models, algorithm, models, model_versions, training_info
-from src.model_registry.server.routers.sdg_input import user_data
+from .server.dummy_data_generator import insert_data
+from .server.routers import datatypes, functions,trained_models, algorithm, models, model_versions, training_info
+from .server.routers.sdg_input import user_data
 
 allowed_origins = os.environ.get('allowed_origins', '*').split(',')
 allow_credentials = os.environ.get("allow_credentials", True)

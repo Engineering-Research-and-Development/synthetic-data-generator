@@ -1,6 +1,6 @@
 
-from src.model_registry.server.database.schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType
-from src.model_registry.server.database.validation.schema import TrainedModelAndVersionIds\
+from ...database.schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType
+from ...database.validation.schema import TrainedModelAndVersionIds\
     ,TrainedModelAndVersions as PydanticTrainedModelAndVersions,ModelVersionAndTrainInfo,ModelVersion as PydanticModelVersion, TrainingInfo as PydanticTrainingInfo
 from peewee import fn,JOIN
 

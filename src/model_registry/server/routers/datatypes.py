@@ -2,8 +2,8 @@ import peewee
 from fastapi import APIRouter, Path
 from starlette.responses import JSONResponse
 
-from src.model_registry.server.database.schema import DataType
-from src.model_registry.server.database.validation.schema import CreateDataType,DataType as PydanticDataType
+from ..database.schema import DataType
+from ..database.validation.schema import CreateDataType,DataType as PydanticDataType
 
 
 router = APIRouter(prefix="/datatypes")

@@ -2,8 +2,8 @@ import requests
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from src.model_registry.server.routers.sdg_input.handlers import check_function_parameters, check_user_file, check_ai_model
-from src.model_registry.server.routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
+from ...routers.sdg_input.handlers import check_function_parameters, check_user_file, check_ai_model
+from ...routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input")
 

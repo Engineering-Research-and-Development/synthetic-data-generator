@@ -3,9 +3,9 @@ from fastapi import APIRouter,Path
 from fastapi.params import Query
 from starlette.responses import JSONResponse
 
-from src.model_registry.server.database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
-from src.model_registry.server.database.handlers import trained_models as db_handler
-from src.model_registry.server.database.validation.schema import TrainedModel as PydanticTrainedModel, TrainedModelAndVersionIds, \
+from ..database.schema import TrainedModel, Features,TrainingInfo,ModelVersion,db,DataType
+from ..database.handlers import trained_models as db_handler
+from ..database.validation.schema import TrainedModel as PydanticTrainedModel, TrainedModelAndVersionIds, \
     TrainedModelAndVersions, \
     CreateTrainedModel, CreateModelVersion, CreateFeatures, CreateTrainingInfo,TrainedModelAndFeatureSchema
 

@@ -8,7 +8,7 @@ password = os.environ.get("db_password", "postgres")
 host = os.environ.get("db_host", "127.0.0.1")
 database = os.environ.get("db_name", "postgres")
 port = os.environ.get("port",5432)
-db = PostgresqlDatabase(database=database, host=host, user=username, password=password,port=port)
+db = PostgresqlDatabase(database=database, host=host, user=username, password=password,port=2022)
 
 
 class BaseModelPeewee(Model):

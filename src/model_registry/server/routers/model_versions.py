@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
-from src.model_registry.server.database.validation.schema import ModelVersion as PydanticModelVersion
-from src.model_registry.server.database.schema import ModelVersion
+from ..database.validation.schema import ModelVersion as PydanticModelVersion
+from ..database.schema import ModelVersion
 from peewee import DoesNotExist
 
 router = APIRouter(prefix="/versions")

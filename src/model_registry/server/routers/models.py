@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.model_registry.server.routers import algorithm, trained_models
+from ..routers import algorithm, trained_models
 
 router = APIRouter(prefix="/models")
 
