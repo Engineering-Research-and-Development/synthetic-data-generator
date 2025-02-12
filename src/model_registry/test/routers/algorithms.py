@@ -2,7 +2,7 @@ import yaml
 from starlette.testclient import TestClient
 from src.model_registry.server.main import app
 
-with open('src/model_registry/test/routers/config.yml', 'r') as file:
+with open('routers/config.yml', 'r') as file:
     config = yaml.safe_load(file)
     server = config["server"]
     port = config["port"]
@@ -63,7 +63,7 @@ from copy import deepcopy
 
 def test_get_all():
     with TestClient(app, client=(server, port)) as client:
-        response = client.get(server + endpoint)
+        response = client.get(f"{server}:{port}{endpoint}")
         assert response.status_code == 200
         print(response.json())
         random_algo = random.choice(response.json())
