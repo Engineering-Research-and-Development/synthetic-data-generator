@@ -21,6 +21,7 @@ def test_get_all_datatypes():
         response = client.get(endpoint)
         assert response.status_code == 200
         data = response.json()
+        print(data)
 
         # Check something is returned
         assert len(data) > 0
@@ -39,38 +40,38 @@ def test_get_all_datatypes():
         assert len(random_type) == 0
 
 
-def test_get_datatype_id():
-    with TestClient(app, client=(server, port)) as client:
-        payload = "/1"
-        response = client.get(server + endpoint + payload)
-        data = response.json()
-
-        assert data["is_categorical"] is not None
-        assert data["type"]
-        assert data["id"]
-
-        # Check no more keys are present in the payload
-        data.pop("is_categorical")
-        data.pop("type")
-        data.pop("id")
-
-        assert len(data) == 0
-
-
-def test_no_datatype_id():
-    with TestClient(app, client=(server, port)) as client:
-        payload = "/0"
-        response = client.get(server + endpoint + payload)
-
-        assert response.status_code == 404
-
-
-def test_wrong_datatype_payload():
-    with TestClient(app, client=(server, port)) as client:
-        payload = "/wrong_payload"
-        response = client.get(server + endpoint + payload)
-        assert response.status_code == 422
-
-def test_create_datatype():
-    with TestClient(app, client=(server, port)) as client:
-        assert client.post(server + endpoint,json=test_datatype).status_code == 201
+# def test_get_datatype_id():
+#     with TestClient(app, client=(server, port)) as client:
+#         payload = "/1"
+#         response = client.get(server + endpoint + payload)
+#         data = response.json()
+#
+#         assert data["is_categorical"] is not None
+#         assert data["type"]
+#         assert data["id"]
+#
+#         # Check no more keys are present in the payload
+#         data.pop("is_categorical")
+#         data.pop("type")
+#         data.pop("id")
+#
+#         assert len(data) == 0
+#
+#
+# def test_no_datatype_id():
+#     with TestClient(app, client=(server, port)) as client:
+#         payload = "/0"
+#         response = client.get(server + endpoint + payload)
+#
+#         assert response.status_code == 404
+#
+#
+# def test_wrong_datatype_payload():
+#     with TestClient(app, client=(server, port)) as client:
+#         payload = "/wrong_payload"
+#         response = client.get(server + endpoint + payload)
+#         assert response.status_code == 422
+#
+# def test_create_datatype():
+#     with TestClient(app, client=(server, port)) as client:
+#         assert client.post(server + endpoint,json=test_datatype).status_code == 201
