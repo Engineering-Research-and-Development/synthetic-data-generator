@@ -67,6 +67,7 @@ jobs:
 
       - name: Build and run Docker container
         run: |
+          set -e
           docker build -t test-container src/model_registry
           docker run -d -p 8001:8001 --name test-container test-container
           sleep 10
