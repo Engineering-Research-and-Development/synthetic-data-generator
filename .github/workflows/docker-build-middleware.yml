@@ -71,7 +71,11 @@ jobs:
           docker build -t test-container src/model_registry
           docker run -d -p 8001:8001 --name test-container test-container
           sleep 10
-          docker logs test-container
+          if ! docker ps --filter "name=test-container" --format "{{.Status}}" | grep -q "Up"; then
+            echo "Container failed to start"
+            docker logs test-container  # Print logs for debugging
+            exit 1  # Fail the pipeline
+          fi
 
       - name: Stop and remove container
         run: |
