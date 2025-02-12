@@ -12,7 +12,7 @@ endpoint = "/versions"
 
 def test_get_all_versions():
     with TestClient(app, client=(server, port)) as client:
-        response = client.get(server + endpoint)
+        response = client.get(f"{server}:{port}{endpoint}")
         print(response.json())
         assert response.status_code == 200
         random_version = random.choice(response.json())
