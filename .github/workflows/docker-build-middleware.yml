@@ -95,9 +95,12 @@ jobs:
             -p 8001:8001 \
             --name test-container test-container
 
-      - name: Check container status
+      - name: Wait the container to be up and running
         run: |
-          sleep 20
+          sleep 10
+
+      - name: Check container status
+        run: |      
           STATUS=$(docker inspect --format='{{.State.Status}}' test-container || echo "not_found")
           
           if [ "$STATUS" != "running" ]; then
@@ -105,7 +108,6 @@ jobs:
             docker logs test-container  # Print logs for debugging
             exit 1  # Fail the pipeline
           fi
-
 
       - name: Stop and remove container
         run: |
