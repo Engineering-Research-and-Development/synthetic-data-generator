@@ -26,7 +26,7 @@ jobs:
       packages: write
 
     services:
-      database:
+      postgres:
         image: postgres:15
         env:
           POSTGRES_DB: postgres
@@ -64,7 +64,7 @@ jobs:
       INIT_DB: True
 
     services:
-      database:
+      postgres:
         image: postgres:15
         env:
           POSTGRES_DB: postgres
@@ -86,7 +86,7 @@ jobs:
         run: |
           set -e
           docker build -t test-container src/model_registry
-          docker run -d -p 8001:8001 --name test-container test-container
+          docker run -d --network ${{ job.services.postgres.network }} -p 8001:8001 --name test-container test-container
           sleep 10
           if ! docker ps --filter "name=test-container" --format "{{.Status}}" | grep -q "Up"; then
             echo "Container failed to start"
