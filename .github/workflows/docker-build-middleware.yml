@@ -82,12 +82,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and run Docker container
+      - name: Build Docker image
+        run: |
+          docker build -t test-container src/model_registry
+
+      - name: Run the Docker container
         run: |
           set -e
-          docker build -t test-container src/model_registry
-          docker run -d --network ${{ job.services.postgres.network }} -e db_host=postgres -e INIT_DB=True -p 8001:8001 --name test-container test-container
-          sleep 10
+          docker run -d --network ${{ job.services.postgres.network }} \
+            -e db_host=postgres \
+            -e INIT_DB=True \
+            -p 8001:8001 \
+            --name test-container test-container
+
+      - name: Check container status
+        run: |
+          sleep 20
           if ! docker ps --filter "name=test-container" --format "{{.Status}}" | grep -q "Up"; then
             echo "Container failed to start"
             docker logs test-container  # Print logs for debugging
