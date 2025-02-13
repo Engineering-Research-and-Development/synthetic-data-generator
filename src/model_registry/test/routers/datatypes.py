@@ -1,4 +1,7 @@
 import random
+
+import requests
+
 from ..conftest import server,port
 
 
@@ -11,8 +14,8 @@ test_datatype = {
 
 
 
-def test_get_all_datatypes(client):
-    response = client.get(f"{server}:{port}{endpoint}")
+def test_get_all_datatypes():
+    response = requests.get(f"{server}:{port}{endpoint}")
     assert response.status_code == 200
     data = response.json()
 
@@ -33,9 +36,9 @@ def test_get_all_datatypes(client):
     assert len(random_type) == 0
 
 
-def test_get_datatype_id(client):
+def test_get_datatype_id():
     payload = "/1"
-    response = client.get(f"{server}:{port}{endpoint}" + payload)
+    response = requests.get(f"{server}:{port}{endpoint}" + payload)
     data = response.json()
 
     assert data["is_categorical"] is not None
@@ -50,17 +53,17 @@ def test_get_datatype_id(client):
     assert len(data) == 0
 
 
-def test_no_datatype_id(client):
+def test_no_datatype_id():
     payload = "/0"
-    response = client.get(f"{server}:{port}{endpoint}" + payload)
+    response = requests.get(f"{server}:{port}{endpoint}" + payload)
 
     assert response.status_code == 404
 
 
-def test_wrong_datatype_payload(client):
+def test_wrong_datatype_payload():
     payload = "/wrong_payload"
-    response = client.get(f"{server}:{port}{endpoint}" + payload)
+    response = requests.get(f"{server}:{port}{endpoint}" + payload)
     assert response.status_code == 422
 
-def test_create_datatype(client):
-    assert client.post(f"{server}:{port}{endpoint}",json=test_datatype).status_code == 201
+def test_create_datatype():
+    assert requests.post(f"{server}:{port}{endpoint}",json=test_datatype).status_code == 201

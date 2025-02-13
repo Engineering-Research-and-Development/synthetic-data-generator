@@ -1,8 +1,6 @@
 fastapi[standard]
 starlette
 pydantic
-pytest == 8.3.4
-peewee
 requests
+peewee
 psycopg2-binary
-httpx

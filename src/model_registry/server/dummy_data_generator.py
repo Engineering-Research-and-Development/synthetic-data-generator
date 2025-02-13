@@ -1,4 +1,4 @@
-from ..server.database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
+from .database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     Function, Parameter, FunctionParameter
 
 

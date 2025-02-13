@@ -1,3 +1,5 @@
+import requests
+
 from ..conftest import server,port
 
 
@@ -29,28 +31,28 @@ test_algorithm = {
 import random
 from copy import deepcopy
 
-def test_create_algorithm(client):
+def test_create_algorithm():
     local_algo = deepcopy(test_algorithm)
     local_algo['algorithm']['name'] = (local_algo['algorithm']['name'] + str(random.randint(0,100))
                                        + str(random.randint(0,100)))
-    response = client.post(f"{server}:{port}{endpoint}",json=local_algo)
+    response = requests.post(f"{server}:{port}{endpoint}",json=local_algo)
     assert response.status_code == 201,print(local_algo['algorithm']['name'],response.content)
-    id = response.json()['id']
-    response = client.get(f"{server}:{port}{endpoint}" + "/" + str(id))
+    algo_id = response.json()['id']
+    response = requests.get(f"{server}:{port}{endpoint}" + "/" + str(algo_id))
     assert response.status_code == 200,print(response.content)
 
-def test_create_bad_name_algorithm(client):
+def test_create_bad_name_algorithm():
     local_algo = deepcopy(test_algorithm)
     local_algo['algorithm']['name'] = 'System_1'
-    assert client.post(f"{server}:{port}{endpoint}",json=local_algo).status_code == 400
+    assert requests.post(f"{server}:{port}{endpoint}",json=local_algo).status_code == 400
 
-def test_create_bad_datatype_algorithm(client):
+def test_create_bad_datatype_algorithm():
     local_algo = deepcopy(test_algorithm)
     local_algo['allowed_data'][0]['datatype'] = 'bad_datatype'
-    assert client.post(f"{server}:{port}{endpoint}",json=local_algo).status_code == 400
+    assert requests.post(f"{server}:{port}{endpoint}",json=local_algo).status_code == 400
 
-def test_get_all(client):
-    response = client.get(f"{server}:{port}{endpoint}")
+def test_get_all():
+    response = requests.get(f"{server}:{port}{endpoint}")
     assert response.status_code == 200
     random_algo = random.choice(response.json())
     assert random_algo['id']
@@ -58,8 +60,8 @@ def test_get_all(client):
     assert random_algo['description']
     assert random_algo['default_loss_function']
 
-def test_get_all_datatypes(client):
-    response = client.get(f"{server}:{port}{endpoint}" + "?include_allowed_datatypes=True")
+def test_get_all_datatypes():
+    response = requests.get(f"{server}:{port}{endpoint}" + "?include_allowed_datatypes=True")
     assert response.status_code == 200
     assert len(response.json()) > 0
     random_algo = random.choice(response.json())
@@ -73,8 +75,8 @@ def test_get_all_datatypes(client):
         assert random_data['is_categorical']
 
 
-def test_get_algo_by_id(client):
-    response = client.get(f"{server}:{port}{endpoint}" + "/2")
+def test_get_algo_by_id():
+    response = requests.get(f"{server}:{port}{endpoint}" + "/2")
     assert response.status_code == 200,print(response.content)
     data = response.json()
     assert data['id']
@@ -82,12 +84,12 @@ def test_get_algo_by_id(client):
     assert data['description']
     assert data['default_loss_function']
 
-def test_get_bad_algo_by_id(client):
-    response = client.get(f"{server}:{port}{endpoint}" + "/1000")
+def test_get_bad_algo_by_id():
+    response = requests.get(f"{server}:{port}{endpoint}" + "/1000")
     assert response.status_code == 404
 
-def test_get_algo_by_id_with_datatypes(client):
-    response = client.get(f"{server}:{port}{endpoint}" + "/2/?include_allowed_datatypes=True")
+def test_get_algo_by_id_with_datatypes():
+    response = requests.get(f"{server}:{port}{endpoint}" + "/2/?include_allowed_datatypes=True")
     assert response.status_code == 200
     data = response.json()
     assert data['id']
@@ -96,20 +98,20 @@ def test_get_algo_by_id_with_datatypes(client):
     assert data['default_loss_function']
     assert data['allowed_data']
 
-def test_get_bad_algo_by_id_with_datatypes(client):
-    response = client.get(f"{server}:{port}{endpoint}" + "/1000/allowed_datatypes")
+def test_get_bad_algo_by_id_with_datatypes():
+    response = requests.get(f"{server}:{port}{endpoint}" + "/1000/allowed_datatypes")
     assert response.status_code == 404
 
 
-def test_delete_algo(client):
+def test_delete_algo():
     local_algo = deepcopy(test_algorithm)
     local_algo['algorithm']['name'] = local_algo['algorithm']['name'] + str(random.randint(0,100))
-    response = client.post(f"{server}:{port}{endpoint}",json=local_algo)
+    response = requests.post(f"{server}:{port}{endpoint}",json=local_algo)
     assert response.status_code == 201
     created_id = response.json()['id']
-    response = client.delete(f"{server}:{port}{endpoint}" + "/" + str(created_id))
+    response = requests.delete(f"{server}:{port}{endpoint}" + "/" + str(created_id))
     assert response.status_code == 200
-    assert client.get(f"{server}:{port}{endpoint}" + "/" + str(created_id)).status_code == 404
+    assert requests.get(f"{server}:{port}{endpoint}" + "/" + str(created_id)).status_code == 404
 
-def test_bad_delete(client):
-    assert client.delete(f"{server}:{port}{endpoint}" + "/1000").status_code == 404
+def test_bad_delete():
+    assert requests.delete(f"{server}:{port}{endpoint}" + "/1000").status_code == 404
