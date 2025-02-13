@@ -1,5 +1,5 @@
 import random
-from .conftest import server,port
+from ..conftest import server,port
 
 
 endpoint = "/datatypes"

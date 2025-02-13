@@ -1,4 +1,4 @@
-from .conftest import server,port
+from ..conftest import server,port
 
 
 endpoint = "/training_info"

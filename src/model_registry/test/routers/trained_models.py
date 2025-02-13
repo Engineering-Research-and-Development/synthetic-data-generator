@@ -1,6 +1,6 @@
 """This module tests the trained models router of all his methods"""
 import random
-from .conftest import server,port
+from ..conftest import server,port
 
 
 
