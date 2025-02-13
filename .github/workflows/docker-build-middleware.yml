@@ -98,11 +98,14 @@ jobs:
       - name: Check container status
         run: |
           sleep 20
-          if ! docker ps --filter "name=test-container" --format "{{.Status}}" | grep -q "Up"; then
-            echo "Container failed to start"
+          STATUS=$(docker inspect --format='{{.State.Status}}' test-container || echo "not_found")
+          
+          if [ "$STATUS" != "running" ]; then
+            echo "Container failed to start (status: $STATUS)"
             docker logs test-container  # Print logs for debugging
             exit 1  # Fail the pipeline
           fi
+
 
       - name: Stop and remove container
         run: |
