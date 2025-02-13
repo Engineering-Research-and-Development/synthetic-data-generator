@@ -6,4 +6,4 @@ COPY . .
 
 RUN pip install --upgrade -r ./requirements.txt
 
-CMD ["fastapi", "run", "server/main.py", "--port", "8001"]
+CMD ["fastapi", "run", "main.py", "--port", "8001"]
