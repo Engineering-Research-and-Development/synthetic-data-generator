@@ -3,7 +3,7 @@ from typing import Dict
 import peewee
 
 from ...database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
-from ...routers.sdg_input.schema import DatasetOutput, SupportedDatatypes, ModelOutput
+from .schema import DatasetOutput, SupportedDatatypes, ModelOutput
 
 def check_function_parameters(functions: list[dict]) -> list:
     """

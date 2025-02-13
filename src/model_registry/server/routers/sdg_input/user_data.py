@@ -1,13 +1,15 @@
+import os
+
 import requests
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from ...routers.sdg_input.handlers import check_function_parameters, check_user_file, check_ai_model
-from ...routers.sdg_input.schema import UserDataInput, GeneratorDataOutput
+from .handlers import check_function_parameters, check_user_file, check_ai_model
+from .schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input")
 
-generator_url = "http://localhost:8010"
+generator_url = os.environ.get("generator_url", "http://localhost:8010")
 
 @router.post("/",
              name="Synthetic Data Generator input collection",
