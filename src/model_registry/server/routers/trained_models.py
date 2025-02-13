@@ -12,7 +12,7 @@ from ..database.validation.schema import TrainedModel as PydanticTrainedModel, T
 from peewee import DoesNotExist, IntegrityError,fn
 
 
-router = APIRouter(prefix="/trained_models")
+router = APIRouter(prefix="/trained_models", tags=['Trained Models'])
 
 @router.get("/",
             status_code=200,

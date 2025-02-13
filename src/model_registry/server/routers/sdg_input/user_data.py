@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 from .handlers import check_function_parameters, check_user_file, check_ai_model
 from .schema import UserDataInput, GeneratorDataOutput
 
-router = APIRouter(prefix="/sdg_input")
+router = APIRouter(prefix="/sdg_input", tags=['SDG Input'])
 
 generator_url = os.environ.get("generator_url", "http://localhost:8010")
 

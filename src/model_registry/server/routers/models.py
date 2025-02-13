@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from ..routers import algorithm, trained_models
 
-router = APIRouter(prefix="/models")
+router = APIRouter(prefix="/models", tags=['All models'])
 
 # The following functions will serve as the mains interface for the client layer
 @router.get("/",

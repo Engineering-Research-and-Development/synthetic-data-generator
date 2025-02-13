@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from ..database.schema import Parameter, Function, FunctionParameter
 from ..database.validation.schema import FunctionParameterOut
 
-router = APIRouter(prefix="/functions")
+router = APIRouter(prefix="/functions", tags=['Functions'])
 
 
 @router.get("/",

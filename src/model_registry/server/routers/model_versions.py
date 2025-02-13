@@ -4,7 +4,7 @@ from ..database.validation.schema import ModelVersion as PydanticModelVersion
 from ..database.schema import ModelVersion
 from peewee import DoesNotExist
 
-router = APIRouter(prefix="/versions")
+router = APIRouter(prefix="/versions", tags=['Model Versions'])
 
 
 @router.get("/",

@@ -4,7 +4,7 @@ from ..database.schema import TrainingInfo
 from ..database.validation.schema import TrainingInfo as PydanticTrainingInfo
 from peewee import DoesNotExist
 
-router = APIRouter(prefix="/training_info")
+router = APIRouter(prefix="/training_info", tags=['Training Info'])
 
 @router.get("/{training_info_id}",
             status_code=200,

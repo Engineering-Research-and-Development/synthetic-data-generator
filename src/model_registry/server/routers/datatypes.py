@@ -6,7 +6,7 @@ from ..database.schema import DataType
 from ..database.validation.schema import CreateDataType,DataType as PydanticDataType
 
 
-router = APIRouter(prefix="/datatypes")
+router = APIRouter(prefix="/datatypes", tags=['Datatypes'])
 
 
 @router.get("/",
