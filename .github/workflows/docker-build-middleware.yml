@@ -45,11 +45,10 @@ jobs:
           docker build -t test-container src/model_registry
 
       - name: Run the Docker container
-        env:
-          db_host: postgres
-          INIT_DB: True
         run: |
           docker run -d --network ${{ job.services.postgres.network }} \
+            -e db_host=postgres \
+            -e INIT_DB=True \
             -p 8001:8001 \
             --name test-container test-container
 
