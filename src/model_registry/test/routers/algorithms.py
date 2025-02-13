@@ -72,7 +72,7 @@ def test_get_all_datatypes():
     if random_algo['allowed_data']:
         random_data = random.choice(random_algo['allowed_data'])
         assert random_data['datatype']
-        assert random_data['is_categorical']
+        assert type(random_data['is_categorical']) == bool
 
 
 def test_get_algo_by_id():
