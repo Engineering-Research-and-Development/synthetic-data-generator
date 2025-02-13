@@ -17,10 +17,6 @@ env:
 
 jobs:
   test:
-    env:
-      db_host: postgres
-      INIT_DB: True
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -49,6 +45,9 @@ jobs:
           docker build -t test-container src/model_registry
 
       - name: Run the Docker container
+        env:
+          db_host: postgres
+          INIT_DB: True
         run: |
           docker run -d --network ${{ job.services.postgres.network }} \
             -p 8001:8001 \
