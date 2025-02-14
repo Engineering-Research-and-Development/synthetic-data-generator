@@ -115,7 +115,6 @@ async def add_algorithm_and_datatype(algorithm: CreateAlgorithm, allowed_data: l
 @router.get("/",
             status_code=200,
             name="Get all algorithms",
-            description="It returns all the algorithms present in the model registry",
             response_model=list[PydanticAlgorithm] | list[AlgorithmAndAllowedDatatypes])
 async def get_all_algorithms(include_allowed_datatypes: bool | None = Query(description="Include the allowed datatypes"
                               "for each algorithm present in the system",default=False)):
@@ -184,28 +183,6 @@ async def get_all_algorithms(include_allowed_datatypes: bool | None = Query(desc
     2. If the `include_allowed_datatypes` parameter is set to `False` (or omitted), only the basic algorithm details are returned.
     3. If the `include_allowed_datatypes` parameter is set to `True`, each algorithm's allowed data types are also included in the response.
     4. The data is returned in a structured JSON format, either as a list of basic algorithms or as a list of algorithms with their allowed data types.
-
-    ### Example Request:
-    - `GET /?include_allowed_datatypes=true`
-
-    ### Example Response (when `include_allowed_datatypes=True`):
-    ```json
-    [
-      {
-        "id": "algorithm_id",
-        "name": "algorithm_name",
-        "allowed_data": [
-          {
-            "datatype": "string",
-            "is_categorical": true
-          },
-          {
-            "datatype": "integer",
-            "is_categorical": false
-          }
-        ]
-      }
-    ]
     """
     if not include_allowed_datatypes:
         results = [PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()]
