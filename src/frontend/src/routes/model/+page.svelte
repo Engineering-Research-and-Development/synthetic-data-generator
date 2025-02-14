@@ -12,19 +12,28 @@
     let useNewModel = true;
     let selectedModel: string = "";
     let selectedVersion: number;
-    let data: { trained_models: string[], built_in: string[] } = {
-        trained_models: [],
-        built_in: []
-    };
+    let trained_models: PreTrainedModel[];
+    let algorithms: NewAlgorithm[];
     let isLoading = true; // Add a loading state
 
     onMount(async () => {
         try {
-            const backend_response = await fetch(BACKEND_URL + '/models');
-            if (backend_response.ok) {
-                data = await backend_response.json();
+            const response = await fetch(BACKEND_URL + '/algorithms/?include_allowed_datatypes=true')
+            if (response.ok) {
+                algorithms = await response.json()
             } else {
-                console.error('Failed to fetch data:', backend_response.statusText);
+                console.error('Failed to fetch data:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+
+        }
+        try {
+            const response = await fetch(BACKEND_URL + '/trained_models/?include_version_ids=true');
+            if (response.ok) {
+                trained_models = await response.json();
+            } else {
+                console.error('Failed to fetch data:', response.statusText);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -56,7 +65,7 @@
             >
                 <h2 class="text-xl font-semibold mb-4 text-center">New Model</h2>
                 {#if !isLoading}
-                    <ModelNew builtInModels={data.built_in} bind:selected={selectedModel} />
+                    <ModelNew builtInModels={algorithms} bind:selected={selectedModel} />
                 {:else}
                     <p>Loading...</p>
                 {/if}
@@ -75,7 +84,7 @@
             >
                 <h2 class="text-xl font-semibold mb-4 text-center">Pre-Trained Model</h2>
                 {#if !isLoading}
-                    <ModelPreTrained trainedModels={data.trained_models} bind:selectedModel bind:selectedVersion/>
+                    <ModelPreTrained trainedModels={trained_models} bind:selectedModel bind:selectedVersion/>
                 {:else}
                     <p>Loading...</p>
                 {/if}

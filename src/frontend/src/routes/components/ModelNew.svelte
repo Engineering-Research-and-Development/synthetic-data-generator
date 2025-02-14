@@ -47,13 +47,11 @@
                         <TableBodyCell>{selectedModel.default_loss_function}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
-                        <TableBodyCell>Allowed Datatypes</TableBodyCell>
-                        <TableBodyCell>{selectedModel.allowed_datatype.join(', ')}</TableBodyCell>
-                    </TableBodyRow>
-                    <TableBodyRow>
-                        <TableBodyCell>Is Categorical</TableBodyCell>
+                        <TableBodyCell>Allowed Data</TableBodyCell>
                         <TableBodyCell>
-                            {selectedModel.is_categorical.map((val) => (val ? 'Yes' : 'No')).join(', ')}
+                            {#each selectedModel.allowed_data as data}
+                                <div>{data.datatype} ({data.is_categorical ? 'categorical' : 'non-categorical'})</div>
+                            {/each}
                         </TableBodyCell>
                     </TableBodyRow>
                 </TableBody>

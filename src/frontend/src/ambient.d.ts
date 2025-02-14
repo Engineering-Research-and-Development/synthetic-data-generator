@@ -29,12 +29,32 @@ type FeaturesCreated = {
     subType: string
 };
 
+type AllowedData  = {
+    datatype: string
+    is_categorical: boolean
+}
+
 type NewAlgorithm = {
     id: number;
     name: string;
     description: string;
     default_loss_function: string;
+    allowed_data: AllowedData[]
 };
+
+type TrainingInfo = {
+    loss_function: string;
+    train_loss: number;
+    val_loss: number;
+    train_samples: number;
+    val_samples: number;
+}
+type FeatureSchema = {
+    feature_name: string;
+    feature_position: number;
+    is_categorical: boolean;
+    datatype: string;
+}
 
 type PreTrainedModel = {
     id: number;

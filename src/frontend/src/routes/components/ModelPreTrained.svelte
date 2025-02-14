@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Label, Select, Table, TableHead, TableBody, TableBodyCell, TableBodyRow, TableHeadCell } from 'flowbite-svelte';
     import { onMount } from 'svelte';
+    import {BACKEND_URL} from "../../stores/shared";
 
     export let trainedModels;
     export let selectedModel: string;
@@ -10,23 +11,48 @@
     let models: typeof fetchedPreTrainedModels[number] | null = null;
     let selectedVersionLabel: { value: number; name: string }[] = [];
     let newModels: { value: string; name: string }[] = [];
-    let selectedModelVersions: string = "";
+    let trainingInfo: TrainingInfo | null = null;
+    let featureSchema: FeatureSchema[] = [];
 
     onMount(async () => {
         try {
-                fetchedPreTrainedModels = trainedModels || [];
-                newModels = fetchedPreTrainedModels.map((model) => ({
-                    value: model.name,
-                    name: model.name
-                }));
+            fetchedPreTrainedModels = trainedModels || [];
+            newModels = fetchedPreTrainedModels.map((model) => ({
+                value: model.name,
+                name: model.name
+            }));
         } catch (error) {
             console.error('Error fetching trained models:', error);
         }
     });
 
     $: models = fetchedPreTrainedModels.find((model) => model.name === selectedModel) || null;
-    $: selectedVersionLabel = models ? models.version_ids.map((id) => ({ value: id, name: `Version ${id}` })): [];
-    $: selectedModelVersions = models? models.version_ids.join(", "): "";
+    $: selectedVersionLabel = models ? models.version_ids.map((id) => ({ value: id, name: `Version ${id}` })) : [];
+
+    // Fetch training info and feature schema when selectedVersion changes
+    $: {
+        if (selectedVersion && models) {
+            fetchTrainingInfoAndFeatureSchema();
+        }
+    }
+
+    async function fetchTrainingInfoAndFeatureSchema() {
+        try {
+            // Use the selected model's ID in the fetch URL
+            const response = await fetch(BACKEND_URL +`/trained_models/${models?.id}?include_versions=true&${selectedVersion}`);
+            const data = await response.json();
+
+            if (data.training_info) {
+                trainingInfo = data.training_info as TrainingInfo;
+            }
+
+            if (data.feature_schema) {
+                featureSchema = data.feature_schema as FeatureSchema[];
+            }
+        } catch (error) {
+            console.error('Error fetching training info and feature schema:', error);
+        }
+    }
 </script>
 
 <div class="w-full">
@@ -40,10 +66,10 @@
 
     <!-- Label list for selecting version_id -->
     <div class="w-full">
-            <Label>
-                Available Version IDs:
-                <Select class="mt-2" items={selectedVersionLabel} bind:value={selectedVersion}/>
-            </Label>
+        <Label>
+            Available Version IDs:
+            <Select class="mt-2" items={selectedVersionLabel} bind:value={selectedVersion} />
+        </Label>
     </div>
 
     <!-- Table to display selected model details -->
@@ -75,10 +101,52 @@
                         <TableBodyCell>Size</TableBodyCell>
                         <TableBodyCell>{models.size}</TableBodyCell>
                     </TableBodyRow>
-                    <TableBodyRow>
-                        <TableBodyCell>Version ID</TableBodyCell>
-                        <TableBodyCell>{selectedModelVersions}</TableBodyCell>
-                    </TableBodyRow>
+
+                    <!-- Display Training Info -->
+                    {#if trainingInfo}
+                        <TableBodyRow>
+                            <TableBodyCell>Loss Function</TableBodyCell>
+                            <TableBodyCell>{trainingInfo.loss_function}</TableBodyCell>
+                        </TableBodyRow>
+                        <TableBodyRow>
+                            <TableBodyCell>Train Loss</TableBodyCell>
+                            <TableBodyCell>{trainingInfo.train_loss}</TableBodyCell>
+                        </TableBodyRow>
+                        <TableBodyRow>
+                            <TableBodyCell>Validation Loss</TableBodyCell>
+                            <TableBodyCell>{trainingInfo.val_loss}</TableBodyCell>
+                        </TableBodyRow>
+                        <TableBodyRow>
+                            <TableBodyCell>Train Samples</TableBodyCell>
+                            <TableBodyCell>{trainingInfo.train_samples}</TableBodyCell>
+                        </TableBodyRow>
+                        <TableBodyRow>
+                            <TableBodyCell>Validation Samples</TableBodyCell>
+                            <TableBodyCell>{trainingInfo.val_samples}</TableBodyCell>
+                        </TableBodyRow>
+                    {/if}
+
+                    <!-- Display Feature Schema -->
+                    {#if featureSchema.length > 0}
+                        {#each featureSchema as feature}
+                            <TableBodyRow>
+                                <TableBodyCell>Feature Name</TableBodyCell>
+                                <TableBodyCell>{feature.feature_name}</TableBodyCell>
+                            </TableBodyRow>
+                            <TableBodyRow>
+                                <TableBodyCell>Feature Position</TableBodyCell>
+                                <TableBodyCell>{feature.feature_position}</TableBodyCell>
+                            </TableBodyRow>
+                            <TableBodyRow>
+                                <TableBodyCell>Is Categorical</TableBodyCell>
+                                <TableBodyCell>{feature.is_categorical ? 'Yes' : 'No'}</TableBodyCell>
+                            </TableBodyRow>
+                            <TableBodyRow>
+                                <TableBodyCell>Data Type</TableBodyCell>
+                                <TableBodyCell>{feature.datatype}</TableBodyCell>
+                            </TableBodyRow>
+                        {/each}
+                    {/if}
                 </TableBody>
             </Table>
         {:else}
