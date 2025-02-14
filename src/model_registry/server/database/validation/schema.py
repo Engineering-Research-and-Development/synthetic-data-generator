@@ -44,6 +44,7 @@ class CreateTrainedModel(BaseModel):
 
 class TrainedModel(CreateTrainedModel):
     id : int
+    algorithm_name: str
 
 def convert_to_list(value: int) -> list:
     if type(value) is int:
@@ -100,7 +101,9 @@ class TrainedModelAndVersions(TrainedModel):
                                                             " versions and training infos")
     feature_schema: list[CreateFeatures] | None = Field(description="This is a list of the features that the trained model"
                                                             " has")
-
+class AlgorithmsAndTrainedModels(BaseModel):
+    algorithms: list[AlgorithmAndAllowedDatatypes]
+    trained_models: list[TrainedModelAndVersionIds]
 
 ## BEHAVIOUR MODELS
 

@@ -1,5 +1,5 @@
 
-from ...database.schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType
+from ...database.schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType,Algorithm
 from ...database.validation.schema import TrainedModelAndVersionIds\
     ,TrainedModelAndVersions as PydanticTrainedModelAndVersions,ModelVersionAndTrainInfo,ModelVersion as PydanticModelVersion, TrainingInfo as PydanticTrainingInfo
 from peewee import fn,JOIN
@@ -17,19 +17,22 @@ def get_trained_model_versions(model_id,version_id = None) -> PydanticTrainedMod
         TrainedModel, fn.JSON_AGG(
             fn.JSON_BUILD_OBJECT('feature_name', Features.feature_name, 'feature_position', Features.feature_position
                                  , 'is_categorical', DataType.is_categorical, 'datatype', DataType.type))
-        .alias("feature_schema"))
+        .alias("feature_schema"),Algorithm.name.alias('algorithm_name'))
+             .join(Algorithm, on=TrainedModel.algorithm_id == Algorithm.id)
+             .switch(TrainedModel)
              .join(Features)
              .join(DataType)
              .where(TrainedModel.id == model_id)
-             .group_by(TrainedModel.id)).dicts().get()
+             .group_by(TrainedModel.id,Algorithm.name)).dicts().get()
     return PydanticTrainedModelAndVersions(**train_and_features,versions=train_and_versions)
 
 
 def get_models_and_version_ids() -> list[TrainedModelAndVersionIds]:
     query = (TrainedModel.select(
-        TrainedModel,fn.STRING_AGG(ModelVersion.id.cast('TEXT'),', ').alias('version_ids'))
+        TrainedModel,Algorithm.name.alias('algorithm_name'),fn.STRING_AGG(ModelVersion.id.cast('TEXT'),', ').alias('version_ids'))
              .join(ModelVersion,JOIN.LEFT_OUTER)
-             .group_by(TrainedModel.id))
+             .join(Algorithm,JOIN.LEFT_OUTER,on=TrainedModel.algorithm_id == Algorithm.id)
+             .group_by(TrainedModel.id,Algorithm.name.alias('algorithm_name')))
     payload = [TrainedModelAndVersionIds(**row) for row in query.dicts()]
     return payload
 
