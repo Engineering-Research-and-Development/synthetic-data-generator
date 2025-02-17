@@ -4,12 +4,15 @@ import requests
 from requests.exceptions import RequestException
 from yaml import safe_load
 import pkgutil
+import os
 
 from exceptions.ModelException import ModelException
 
 config_file = pkgutil.get_data("services", "config.yaml")
 config = safe_load(config_file)
 model_registry = config["model_registry"]
+
+model_registry_url = os.getenv("MODEL_REGISTRY_URL",  model_registry["url"])
 
 
 def get_trained_model_version_by_id(model_id: int, version_id: int) -> dict:
@@ -19,7 +22,7 @@ def get_trained_model_version_by_id(model_id: int, version_id: int) -> dict:
     :param version_id: the unique identifier of the version
     :return:
     """
-    api = model_registry["url"] + model_registry["apis"]["trained_model_version_by_id"].format(str(model_id),
+    api = model_registry_url + model_registry["apis"]["trained_model_version_by_id"].format(str(model_id),
                                                                                                str(version_id))
     try:
         response = requests.get(api)
@@ -35,7 +38,7 @@ def get_trained_model_by_id(model_id: int) -> dict:
     :param model_id: the unique identifier of the model
     :return: a dictionary containing model information
     """
-    api = model_registry["url"] + model_registry["apis"]["trained_model_by_id"].format(str(model_id))
+    api = model_registry_url + model_registry["apis"]["trained_model_by_id"].format(str(model_id))
     try:
         response = requests.get(api)
     except RequestException:
@@ -49,7 +52,7 @@ def get_all_system_models() -> dict:
     Returns the list of system models
     :return: the list of models
     """
-    api = model_registry["url"] + model_registry["apis"]["system_models"]
+    api = model_registry_url + model_registry["apis"]["system_models"]
     try:
         response = requests.get(api)
     except RequestException:
@@ -67,7 +70,7 @@ def save_trained_model(model_to_send: dict):
     """
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_send)
-    api = model_registry["url"] + model_registry["apis"]["trained_models"]
+    api = model_registry_url + model_registry["apis"]["trained_models"]
     try:
         response = requests.post(api, headers=headers, data=body)
         if response.status_code > 300:
@@ -85,7 +88,7 @@ def save_system_model(model: dict):
     """
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model)
-    api = model_registry["url"] + model_registry["apis"]["system_models"]
+    api = model_registry_url + model_registry["apis"]["system_models"]
     try:
         response = requests.post(api, headers=headers, data=body)
         if response.status_code > 300:
@@ -102,7 +105,7 @@ def delete_sys_model_by_id(model_id: int):
     """
     headers = {"Content-Type": "application/json"}
     body = json.dumps({"id": model_id})
-    api = model_registry["url"] + model_registry["apis"]["system_models"]
+    api = model_registry_url + model_registry["apis"]["system_models"]
     try:
         response = requests.delete(api, headers=headers, data=body)
         if response.status_code > 300:
