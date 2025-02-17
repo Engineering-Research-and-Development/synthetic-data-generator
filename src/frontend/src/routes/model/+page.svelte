@@ -10,7 +10,7 @@
     import { BACKEND_URL } from "../../stores/shared";
 
     let useNewModel = true;
-    let selectedModel: string = "";
+    let selectedModel: SelectedModel;
     let selectedVersion: number;
     let trained_models: PreTrainedModel[];
     let algorithms: NewAlgorithm[];
@@ -65,7 +65,7 @@
             >
                 <h2 class="text-xl font-semibold mb-4 text-center">New Model</h2>
                 {#if !isLoading}
-                    <ModelNew builtInModels={algorithms} bind:selected={selectedModel} />
+                    <ModelNew availableAlgorithms={algorithms} bind:selectedModel />
                 {:else}
                     <p>Loading...</p>
                 {/if}

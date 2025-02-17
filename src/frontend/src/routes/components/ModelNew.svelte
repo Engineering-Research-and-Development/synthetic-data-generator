@@ -2,32 +2,38 @@
     import {Label,Select,Table,TableHead,TableBody,TableBodyCell,TableBodyRow,TableHeadCell} from 'flowbite-svelte';
     import { onMount } from 'svelte';
 
-    export let builtInModels;
-    export let selected: string;
+    export let availableAlgorithms: NewAlgorithm[];
+    export let selectedModel: SelectedModel
 
-    let fetchedBuiltInModels: NewAlgorithm[] = [];
-    let selectedModel: typeof fetchedBuiltInModels[number] | null = null;
+    let fetchedAlgorithms: NewAlgorithm[] = [];
+    let chosenAlgo: typeof fetchedAlgorithms[number] | null = null;
     let algorithms: { value: string; name: string }[] = [];
+    let algorithmName: string;
+
 
     onMount(async ()=>{
-        fetchedBuiltInModels = builtInModels || [];
-        algorithms = fetchedBuiltInModels.map((model) => ({
+        algorithms = availableAlgorithms.map((model) => ({
             value: model.name,
             name: model.name
         }));
     });
 
-    $: selectedModel = fetchedBuiltInModels.find((model) => model.name === selected) || null;
+    $: {
+        chosenAlgo = availableAlgorithms.find((model) => model.name === algorithmName) || null;
+        if (chosenAlgo) {
+            selectedModel = {id: chosenAlgo.id, name:chosenAlgo.name}
+        }
+    }
 </script>
 
 <div class="w-full">
         <Label>
             Select an option
-            <Select class="mt-2" items={algorithms} bind:value={selected} />
+            <Select class="mt-2" items={algorithms} bind:value={algorithmName} />
         </Label>
 
     <div class="w-full mt-8">
-        {#if selectedModel}
+        {#if chosenAlgo}
             <Table>
                 <TableHead>
                     <TableHeadCell class="font-bold">Property</TableHeadCell>
@@ -36,20 +42,20 @@
                 <TableBody tableBodyClass="divide-y">
                     <TableBodyRow>
                         <TableBodyCell>Name</TableBodyCell>
-                        <TableBodyCell>{selectedModel.name}</TableBodyCell>
+                        <TableBodyCell>{chosenAlgo.name}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Description</TableBodyCell>
-                        <TableBodyCell>{selectedModel.description}</TableBodyCell>
+                        <TableBodyCell>{chosenAlgo.description}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Loss Function</TableBodyCell>
-                        <TableBodyCell>{selectedModel.default_loss_function}</TableBodyCell>
+                        <TableBodyCell>{chosenAlgo.default_loss_function}</TableBodyCell>
                     </TableBodyRow>
                     <TableBodyRow>
                         <TableBodyCell>Allowed Data</TableBodyCell>
                         <TableBodyCell>
-                            {#each selectedModel.allowed_data as data}
+                            {#each chosenAlgo.allowed_data as data}
                                 <div>{data.datatype} ({data.is_categorical ? 'categorical' : 'non-categorical'})</div>
                             {/each}
                         </TableBodyCell>

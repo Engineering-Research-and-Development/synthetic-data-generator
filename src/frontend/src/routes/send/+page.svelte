@@ -1,6 +1,7 @@
 <script lang="ts">
     import {BACKEND_URL} from "../../stores/shared";
     import {onMount} from "svelte";
+
     type RowData = { [key: string]: any };
 
     let userFile: RowData[] = [];
@@ -11,7 +12,7 @@
         parameters: Array<Parameter>
     }>> = {};
     let newModel: boolean = false;
-    let selectedModel: string = "";
+    let selectedModel: SelectedModel;
     let selectedVersion: number = 0;
     let featuresCreated: FeaturesCreated[] = [];
 
@@ -36,29 +37,39 @@
         return outFunctions;
     }
 
+    function generateAiModel(newModel: boolean, selectedVersion: number, newModelName: string, selectedModelId: number): AIModel{
+        return {
+            selected_model_id: selectedModelId,
+            model_version: selectedVersion.toString(),
+            new_model: newModel,
+            new_model_name: newModelName
+        }
+    }
 
     onMount(async () => {
-        userFile = JSON.parse(sessionStorage.getItem("userFile") || "{}");
         additionalRows = Number(sessionStorage.getItem("additionalRows")) || 0;
         functionData = JSON.parse(sessionStorage.getItem("functionData") || "{}");
         newModel = JSON.parse(sessionStorage.getItem("newModel") || "false");
-        selectedModel = sessionStorage.getItem("selectedModel") || "";
+        selectedModel = JSON.parse(sessionStorage.getItem("selectedModel") || "");
         selectedVersion = Number(sessionStorage.getItem("selectedVersion")) || 0;
+        userFile = JSON.parse(sessionStorage.getItem("userFile") || "{}");
         featuresCreated = JSON.parse(sessionStorage.getItem("featuresCreated") || "[]");
-
-        console.log(generateOutFunctions(functionData))
+        await sendData()
     });
 
     async function sendData() {
-        let postData = {
-            featuresCreated,
-            userFile,
-            additionalRows,
-            functionData,
-            newModel,
-            selectedVersion,
-            selectedModel,
+        let postData: SdgOut = {
+            additional_rows: additionalRows,
+            functions: generateOutFunctions(functionData),
+            ai_model: generateAiModel(newModel, selectedVersion, "test_name", selectedModel.id),
         };
+
+        if (userFile.length>0) {
+            postData["user_file"]= userFile
+        }
+        if (featuresCreated.length>0) {
+            postData["features_created"] = featuresCreated
+        }
 
         console.log(JSON.stringify(postData));
         try {

@@ -7,7 +7,7 @@
 	import NextButton from "../components/NextButton.svelte";
 	import { goto } from "$app/navigation";
 
-	let features: Array<{ id: number, name: string, featureType: string, subType: string }> = [];
+	let features: FeaturesCreated[] = [];
 	let types = [
 		{ value: 'String', name: 'String' },
 		{ value: 'Integer', name: 'Integer' },
@@ -21,7 +21,7 @@
 
 	// Function to add a new feature row
 	function addFeature() {
-		features = [...features, { id: features.length + 1, name: '', featureType: '', subType: '' }];
+		features = [...features, { id: features.length + 1, feature: '', type: '', category: '' }];
 	}
 
 	// Function to remove a feature row by its index
@@ -32,11 +32,11 @@
 	// Function to handle the form submission
 	function submit(event: Event) {
 		event.preventDefault(); // Prevent the default form submission behavior
-		const featureNames = features.map(feature => feature.name);
+		const featureNames = features.map(feature => feature.feature);
 		const featuresCreated = features.map(feature => ({
-			name: feature.name,
-			featureType: feature.featureType,
-			subType: feature.subType
+			feature: feature.feature,
+			type: feature.type,
+			category: feature.category
 		}));
 
 		sessionStorage.setItem("selectedColumns", JSON.stringify(featureNames))
@@ -69,11 +69,11 @@
 							type="text"
 							class="w-1/2 p-2 border rounded"
 							placeholder="Feature Name"
-							bind:value={feature.name}
+							bind:value={feature.feature}
 							required
 					/>
 					<Select
-							bind:value={feature.featureType}
+							bind:value={feature.type}
 							class="w-1/2 p-2 border rounded"
 							required
 					>
@@ -82,7 +82,7 @@
 						{/each}
 					</Select>
 					<Select
-							bind:value={feature.subType}
+							bind:value={feature.category}
 							class="w-1/2 p-2 border rounded"
 							required
 					>

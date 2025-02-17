@@ -3,21 +3,23 @@
     import { onMount } from 'svelte';
     import {BACKEND_URL} from "../../stores/shared";
 
-    export let trainedModels;
-    export let selectedModel: string;
+    export let trainedModels:PreTrainedModel[];
+    export let selectedModel: SelectedModel;
     export let selectedVersion: number;
 
+    let chosenModel: string;
     let fetchedPreTrainedModels: PreTrainedModel[] = [];
+
     let models: typeof fetchedPreTrainedModels[number] | null = null;
     let selectedVersionLabel: { value: number; name: string }[] = [];
     let newModels: { value: string; name: string }[] = [];
+
     let trainingInfo: TrainingInfo | null = null;
     let featureSchema: FeatureSchema[] = [];
 
     onMount(async () => {
         try {
-            fetchedPreTrainedModels = trainedModels || [];
-            newModels = fetchedPreTrainedModels.map((model) => ({
+            newModels = trainedModels.map((model) => ({
                 value: model.name,
                 name: model.name
             }));
@@ -26,13 +28,12 @@
         }
     });
 
-    $: models = fetchedPreTrainedModels.find((model) => model.name === selectedModel) || null;
-    $: selectedVersionLabel = models ? models.version_ids.map((id) => ({ value: id, name: `Version ${id}` })) : [];
-
-    // Fetch training info and feature schema when selectedVersion changes
     $: {
+        models = trainedModels.find((model) => model.name === chosenModel) || null;
+        selectedVersionLabel = models ? models.version_ids.map((id) => ({value: id, name: `Version ${id}`})) : [];
         if (selectedVersion && models) {
             fetchTrainingInfoAndFeatureSchema();
+            selectedModel ={id: models.id, name:models.name}
         }
     }
 
@@ -60,7 +61,7 @@
     <div class="w-full">
         <Label>
             Select a model
-            <Select class="mt-2" items={newModels} bind:value={selectedModel} />
+            <Select class="mt-2" items={newModels} bind:value={chosenModel} />
         </Label>
     </div>
 

@@ -24,9 +24,9 @@ type FeatureFunction = {
 
 type FeaturesCreated = {
     id: number,
-    name: string,
-    featureType: string,
-    subType: string
+    feature: string,
+    type: string,
+    category: string
 };
 
 type AllowedData  = {
@@ -66,6 +66,10 @@ type PreTrainedModel = {
     version_ids: number[];
 };
 
+type SelectedModel = {
+    id: number;
+    name: string;
+}
 
 type OutParameter = {
     param_id: number;
@@ -79,7 +83,7 @@ type OutFunction = {
 }
 
 type AIModel = {
-    selected_model: number;
+    selected_model_id: number;
     new_model: boolean;
     new_model_name: string;
     model_version: string;
@@ -90,5 +94,5 @@ type SdgOut = {
     functions: OutFunction[];
     ai_model: AIModel;
     user_file?: object[];
-    features_created?: string[];
+    features_created?: FeaturesCreated[];
 }
