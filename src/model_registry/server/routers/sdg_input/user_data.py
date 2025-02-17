@@ -18,37 +18,6 @@ generator_url = os.environ.get("generator_url", "http://localhost:8010")
              )
 async def collect_user_input(input_data: UserDataInput):
     """
-    ## Synthetic Data Generator Input Collection
-
-    ### Endpoint
-    **POST** `/`
-
-    ### Name
-    **Synthetic Data Generator input collection**
-
-    ### Description
-    This endpoint collects the required information and initiates the Synthetic Data Generator process using the provided data. The input data may include functions, AI model details, and an optional user file for dataset augmentation.
-
-    ### Request Body
-    The request body must include the following information:
-
-    - **functions**: A list of function IDs used for data generation.
-    - **ai_model**: Details of the AI model, including whether it is a new model or requires fine-tuning.
-    - **user_file**: An optional file from the user for dataset augmentation.
-    - **additional_rows**: The number of additional rows to generate.
-
-    #### Example Request Body
-    ```json
-    {
-      "functions": [1, 2, 3],
-      "ai_model": {
-        "name": "AI_Model_X",
-        "new_model": true
-      },
-      "user_file": "user_data.csv",
-      "additional_rows": 100
-    }
-
     """
     data = input_data.model_dump()
 

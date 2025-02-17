@@ -15,58 +15,7 @@ router = APIRouter(prefix="/functions", tags=['Functions'])
             )
 async def get_all_functions() -> list[FunctionParameterOut]:
     """
-    ## Get All Function Parameters
-
-    ### Endpoint
-    **GET** `/`
-
-    ### Name
-    **Get all function parameters**
-
-    ### Summary
-    Retrieves all available functions along with their associated parameters.
-
-    ### Response
-    - **200 OK**: Returns a list of functions, each with its associated parameters.
-
-    #### Response Body (Success)
-    ```json
-    [
-      {
-        "function": {
-          "id": 1,
-          "name": "ExampleFunction",
-          "description": "This is an example function"
-        },
-        "parameter": [
-          {
-            "id": 101,
-            "name": "Parameter1",
-            "type": "string"
-          },
-          {
-            "id": 102,
-            "name": "Parameter2",
-            "type": "integer"
-          }
-        ]
-      },
-      {
-        "function": {
-          "id": 2,
-          "name": "AnotherFunction",
-          "description": "Another example function"
-        },
-        "parameter": [
-          {
-            "id": 201,
-            "name": "ParameterA",
-            "type": "boolean"
-          }
-        ]
-      }
-    ]
-
+    This method returns all the function parameters that are present in the model registry
     """
     functions = Function.select().dicts()
     results = [
@@ -90,48 +39,7 @@ async def get_function_parameters_by_function_id(
         function_id: int = Path(description="The ID of the function to retrieve parameters for", examples=1)
 ):
     """
-    ## Get Function Parameters by Function ID
-
-    ### Endpoint
-    **GET** `/{function_id}`
-
-    ### Name
-    **Get function parameters by function ID**
-
-    ### Summary
-    Retrieves all parameters associated with a specific function.
-
-    ### Path Parameter
-    | Name        | Type  | Description                                       | Example |
-    |------------|------|---------------------------------------------------|---------|
-    | function_id | `int` | The ID of the function to retrieve parameters for | `1` |
-
-    ### Response
-    - **200 OK**: Returns the function details along with its associated parameters.
-    - **404 Not Found**: If the function with the specified ID does not exist.
-
-    #### Response Body (Success)
-    ```json
-    {
-      "function": {
-        "id": 1,
-        "name": "ExampleFunction",
-        "description": "This is an example function"
-      },
-      "parameter": [
-        {
-          "id": 101,
-          "name": "Parameter1",
-          "type": "string"
-        },
-        {
-          "id": 102,
-          "name": "Parameter2",
-          "type": "integer"
-        }
-      ]
-    }
-
+    This function returns a function parameter given his id. If not found, a 404 will be returned
     """
     try:
         function = Function.select().where(Function.id == function_id).dicts().get()
