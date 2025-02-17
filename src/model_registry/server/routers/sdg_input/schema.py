@@ -13,7 +13,7 @@ class FunctionData(BaseModel):
     parameters: List[ParametersInput]
 
 class AiModel(BaseModel):
-    selected_model: int
+    selected_model_id: int
     new_model: Optional[bool] = False
     new_model_name: Optional[str] = None
     model_version: Optional[str] = None
