@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..routers import algorithm, trained_models
-from server.database.validation.schema import AlgorithmsAndTrainedModels
+from ..database.validation.schema import AlgorithmsAndTrainedModels
 
 router = APIRouter(prefix="/models", tags=['All models'])
 
