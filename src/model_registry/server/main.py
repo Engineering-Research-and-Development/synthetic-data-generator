@@ -10,7 +10,7 @@ from starlette.responses import RedirectResponse
 from .database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
     db, Parameter, Function, FunctionParameter
 from .dummy_data_generator import insert_data
-from .routers import datatypes, functions,trained_models, algorithm, models, model_versions, training_info
+from .routers import datatypes, functions,trained_models, algorithm, models
 from .routers.sdg_input import user_data
 
 allowed_origins = os.environ.get('allowed_origins', '*').split(',')
@@ -53,8 +53,6 @@ app.include_router(user_data.router)
 app.include_router(functions.router)
 app.include_router(algorithm.router)
 app.include_router(trained_models.router)
-app.include_router(model_versions.router)
-app.include_router(training_info.router)
 app.include_router(models.router)
 
 @app.get("/", include_in_schema=False)

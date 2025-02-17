@@ -15,37 +15,7 @@ router = APIRouter(prefix="/datatypes", tags=['Datatypes'])
             )
 async def get_all_datatypes() -> list[PydanticDataType]:
     """
-    ## Get All Datatypes
-
-    ### Endpoint
-    **GET** `/`
-
-    ### Name
-    **Get all datatypes**
-
-    ### Summary
-    Retrieves all the available datatypes.
-
-    ### Response
-    - **200 OK**: Returns a list of all available datatypes.
-
-    #### Response Body
-    A JSON array of objects representing datatypes.
-
-    ```json
-    [
-      {
-        "id": 1,
-        "name": "ExampleType",
-        "description": "This is an example datatype"
-      },
-      {
-        "id": 2,
-        "name": "AnotherType",
-        "description": "Another example datatype"
-      }
-    ]
-
+    This method returns all the datatypes that are present in the model registry
     """
     results = [PydanticDataType(**datatype) for datatype in DataType.select().dicts()]
     return results
@@ -59,34 +29,7 @@ async def get_all_datatypes() -> list[PydanticDataType]:
             )
 async def get_single_datatype(datatype_id: int = Path(description="The id of the datatype you want to get", examples=1)):
     """
-    ## Get a Single Datatype
-
-    ### Endpoint
-    **GET** `/{datatype_id}`
-
-    ### Name
-    **Get a single datatype**
-
-    ### Summary
-    Retrieves a specific datatype by its ID.
-
-    ### Path Parameter
-    | Name        | Type  | Description                      | Example |
-    |------------|------|----------------------------------|---------|
-    | datatype_id | `int` | The ID of the datatype to retrieve | `1` |
-
-    ### Response
-    - **200 OK**: Returns the requested datatype as a `PydanticDataType` object.
-    - **404 Not Found**: If the datatype with the specified ID does not exist.
-
-    #### Response Body (Success)
-    ```json
-    {
-      "id": 1,
-      "name": "ExampleType",
-      "description": "This is an example datatype"
-    }
-
+    This method returns a datatype given his id. If not present, an 404 error will be returned
     """
     try:
         result = DataType.select().where(DataType.id == datatype_id).dicts().get()
@@ -100,26 +43,6 @@ async def get_single_datatype(datatype_id: int = Path(description="The id of the
              summary="Given the data it creates a datatype that can be used across the registry")
 def create_datatype(datatype: CreateDataType):
     """
-        ## Create a Datatype
-
-        ### Endpoint
-        **POST** `/`
-
-        ### Name
-        **Create a datatype**
-
-        ### Summary
-        Creates a new datatype that can be used across the registry.
-
-        ### Request Body
-        The request must include a JSON object that follows the `CreateDataType` model.
-
-        #### Example Request Body
-        ```json
-        {
-          "name": "ExampleType",
-          "description": "This is an example datatype"
-        }
-
+        This method given the information of a datatype it creates it.
     """
     DataType.insert(**datatype.model_dump()).execute()

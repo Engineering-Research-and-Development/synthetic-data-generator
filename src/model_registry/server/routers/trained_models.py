@@ -18,12 +18,14 @@ router = APIRouter(prefix="/trained_models", tags=['Trained Models'])
             status_code=200,
             summary = "Get all the trained model in the repository",
             name = "Get all trained models",
-            description="This method returns all the trained models present in the registry, if the query parameter"
-                        " include_versions_ids is passed then for each model it is returned a list of all the version ids"
-                        " it has",
             response_model=list[PydanticTrainedModel] | list[TrainedModelAndVersionIds])
 async def get_all_trained_models(include_version_ids: bool | None = Query(description="Include a list of version ids"
                                 " for each trained model",default=False)):
+    """
+    This method returns all the trained models present in the registry, if the query parameter
+    `include_versions_ids` = ***True*** then for each model it is returned a list having all the ids of the versions
+    that it has
+    """
     if not include_version_ids:
         results = [PydanticTrainedModel(**trained_models) for trained_models in
                    TrainedModel.select(TrainedModel,Algorithm.name.alias('algorithm_name')).join(Algorithm).dicts()]
@@ -35,20 +37,33 @@ async def get_all_trained_models(include_version_ids: bool | None = Query(descri
             status_code=200,
             name="Get a single trained model",
             summary="It returns a trained model given the id",
-            description="Given an id it returns a trained model. If the query parameter include_version is passed, then "
-                        "it also returned all the versions that the model has. If include_version is True, it can be re"
-                        "trieved a specific version by passing the version id with the query parameter version_id",
             responses={404: {"model": str}},
             response_model=TrainedModelAndFeatureSchema | TrainedModelAndVersions)
 async def get_trained_model_id(trained_model_id: int = Path(description="The id of the trained model you want to get",examples=1)
                                ,include_versions: bool | None = Query(description="If the client wants all the versions "
                                                                                   "associated with the trained model",default=False),
                                version_id: int | None = Query(description="If the client wants to retrieve a specific "
-                                                                                 "version", default=None)
+                                                                                 "version", default=None),
+                               include_training_info: bool | None = Query(description="If the client wants to retrieve"
+                                                                                 "also the training info", default=False)
                                ):
+    """
+Given an id, it returns a trained model. This method accepts the following query parameters:
+
+- `include_version` (default: ***False***)
+  If passed, all the versions associated with the model are returned.
+
+- `version_id` (default: ***None***)
+  If passed, a specific version with the given ID is returned. It ***overrides*** `include_version` if provided.
+
+- `include_training_info` (default: ***False***)
+  If passed, it returns all the corresponding training information for each version.
+
+
+    """
     if version_id or include_versions:
         try:
-            return db_handler.get_trained_model_versions(trained_model_id, version_id)
+            return db_handler.get_trained_model_versions(trained_model_id, version_id,include_training_info)
         except DoesNotExist:
             return JSONResponse(status_code=404, content={"message": "Trained Model not found"})
     else:
@@ -74,13 +89,17 @@ async def get_trained_model_id(trained_model_id: int = Path(description="The id 
 @router.post("/",
             name="Create a new training model",
             summary="It creates a trained model given the all the information,version,training infos and feature schema",
-            description="Given a version,training infos, feature schema and information about the model it creates a new"
-                        " trained model.",
             responses={500: {"model": str}, 400: {"model":str},201:{"model":str}})
 async def create_model_and_version(trained_model: CreateTrainedModel,
                                    version: CreateModelVersion,
                                    training_info: CreateTrainingInfo,
                                    feature_schema: list[CreateFeatures]):
+    """
+    This method lets the user create a new training model inside the repository. All the information is ***mandatory***
+    and it is validated by the backend. Only datatypes that are already present in the model registry are ***accepted***
+    , otherwise a 400 error will be returned. If a new datatype is being used, then it must be inserted with POST manually
+    by the user
+    """
     with db.atomic() as transaction:
          try:
                saved_tr = TrainedModel.create(**trained_model.model_dump())
@@ -122,12 +141,16 @@ async def create_model_and_version(trained_model: CreateTrainedModel,
                status_code=200,
                name = "Deletes a trained model",
                summary = "Given an id it deletes only a specific version from the trained model leaving the model intact",
-               description="This method given an id it deletes all the information of a trained model. If the version_id it"
-                           "is passed it only deletes that version leaving the model intact ",
                responses = {404: {"model": str}}
                 )
 async def delete_train_model(trained_model_id: int,
                              version_id: int | None = Query(description="The id of the version to delete",default=None)):
+    """
+    This method lets the user delete a specific trained model in the registry, this operation will delete
+    all the trained model versions, feature schema and as well as training info. If not present, an 404 error will be raised.
+    The query parameter `version_id` (default ***None***) lets the user delete a specific version and associated training info,
+    leaving the trained model data and feature schema untouched.
+    """
     try:
         model = TrainedModel.get_by_id(trained_model_id)
     except DoesNotExist:
