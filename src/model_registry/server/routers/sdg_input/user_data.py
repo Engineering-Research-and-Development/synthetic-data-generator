@@ -42,6 +42,10 @@ async def collect_user_input(input_data: UserDataInput):
                             dataset=user_file,
                             )
 
+    #Todo: Check and implement features_created controls
+    if data.get('features_created') is not None:
+        pass
+
     if data.get('ai_model').get('new_model'):
         url=generator_url+"/train"
     else:

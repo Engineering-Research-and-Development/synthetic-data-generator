@@ -18,12 +18,25 @@ class AiModel(BaseModel):
     new_model_name: Optional[str] = None
     model_version: Optional[str] = None
 
+class SupportedDatatypes(str, Enum):
+    float = "float"
+    int = "int"
+
+class SupportedDatatypesCategory(str, Enum):
+    continuous = "continuous"
+    categorical = "categorical"
+
+class FeaturesCreated(BaseModel):
+    feature: str
+    type: SupportedDatatypes
+    category: SupportedDatatypesCategory
+
 class UserDataInput(BaseModel):
     additional_rows: PositiveInt
     functions: List[FunctionData]
     ai_model: AiModel
     user_file: Optional[List[Dict]] = None
-    features_created: Optional[List] = None
+    features_created: Optional[FeaturesCreated] = None
 
     @classmethod
     def validate_either_present(cls, v, values, field):
@@ -41,10 +54,6 @@ class ModelOutput(BaseModel):
     model_name: Optional[str]
     input_shape: Optional[str] = None
     image: Optional[str] = None
-
-class SupportedDatatypes(str, Enum):
-    float = "float"
-    int = "int"
 
 class DatasetOutput(BaseModel):
     column_data: List[float | int]
