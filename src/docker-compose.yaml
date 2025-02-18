@@ -1,5 +1,6 @@
 services:
   database:
+    container_name: sdg-database
     image: "postgres:latest"
     ports:
       - "5432:5432"
@@ -9,6 +10,7 @@ services:
       POSTGRES_DB: "postgres"
 
   sdg-middleware:
+    container_name: sdg-middleware
     depends_on:
       - database
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
@@ -23,14 +25,15 @@ services:
       allowed_origins: '*'
 
   generator:
+    container_name: sdg-generator
     depends_on:
       - sdg-middleware
-    container_name: sdg-generator
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:generator
     ports:
       - "8010:8010"
 
   frontend:
+    container_name: sdg-frontend
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:frontend
     ports:
       - "5173:5173"

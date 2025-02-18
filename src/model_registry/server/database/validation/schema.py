@@ -46,7 +46,7 @@ class TrainedModel(CreateTrainedModel):
     id : int
     algorithm_name: str
 
-def convert_to_list(value: int) -> list:
+def convert_to_list(value: int | str) -> list:
     if type(value) is int:
         return [value]
     else:
