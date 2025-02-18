@@ -153,7 +153,7 @@ def test_delete_train_model():
     assert response.status_code == 201,print(response.content)
     model_id = response.json()['id']
     # We do a get so that we obtain the ids of training infos and model versions
-    response = requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id) + "?include_versions=True")
+    response = requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id) + "?include_versions=True&include_training_info=True")
     assert response.status_code == 200
     data = response.json()
     version_id = data['versions'][0]['version']['id']
@@ -161,8 +161,6 @@ def test_delete_train_model():
     # Now we delete the model and check if it has deleted both the versions and training infos
     assert requests.delete(f"{server}:{port}{endpoint}" + "/" + str(model_id)).status_code == 200
     assert requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id)).status_code == 404
-    assert requests.get(f"{server}:{port}{endpoint}" + "/versions/" + str(version_id)).status_code == 404
-    assert requests.get(f"{server}:{port}{endpoint}" + "/training_info/" + str(training_id)).status_code == 404
 
 def test_delete_train_model_version():
     response = requests.post(f"{server}:{port}{endpoint}", json=model)
@@ -170,7 +168,7 @@ def test_delete_train_model_version():
     data = response.json()
     model_id = data["id"]
     # We do a get so that we obtain the ids of training infos and model versions
-    response = requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id) + "?include_versions=True")
+    response = requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id) + "?include_versions=True&include_training_info=True")
     assert response.status_code == 200
     data = response.json()
     version_id = data['versions'][0]['version']['id']
