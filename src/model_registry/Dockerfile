@@ -1,8 +1,9 @@
-FROM python:3.12-alpine
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
+WORKDIR /home
 COPY ./server .
 
-RUN pip install --upgrade pip
-RUN pip install -r ./requirements.txt
+RUN uv init
+RUN uv add -r ./requirements.txt
 
-CMD ["fastapi", "run", "main.py", "--port", "8001"]
+CMD [".venv/bin/fastapi", "run", "main.py", "--port", "8001"]
