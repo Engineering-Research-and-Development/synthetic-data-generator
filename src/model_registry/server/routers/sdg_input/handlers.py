@@ -2,7 +2,7 @@ from typing import Dict
 
 import peewee
 
-from ...database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
+from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
 from .schema import DatasetOutput, SupportedDatatypes, ModelOutput
 
 def check_function_parameters(functions: list[dict]) -> list:
@@ -85,12 +85,12 @@ def check_ai_model(data: dict) -> ModelOutput | Dict:
 
 def determine_column_type(values: list) -> str:
     """
-    Determines whether a column contains numerical or categorical data.
+    Determines whether a column contains continuous or categorical data.
 
     :param values: List of values in the column.
-    :return: "numerical" if all values are integers or floats, otherwise "categorical".
+    :return: "continuous" if all values are integers or floats, otherwise "categorical".
     """
-    return "numerical" if all(isinstance(v, (int, float)) for v in values) else "categorical"
+    return "continuous" if all(isinstance(v, (int, float)) or (isinstance(v, str) and v.replace('.', '', 1).isdigit()) for v in values) else "categorical"
 
 
 def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
@@ -111,7 +111,7 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
     for column_name, values in columns.items():
         column_type = determine_column_type(values)
 
-        if column_type == "numerical":
+        if column_type == "continuous":
             column_datatype = SupportedDatatypes.int if all(isinstance(v, int) for v in values) else SupportedDatatypes.float
             dataset_outputs.append(
                 DatasetOutput(

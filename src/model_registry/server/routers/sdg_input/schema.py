@@ -19,8 +19,8 @@ class AiModel(BaseModel):
     model_version: Optional[str] = None
 
 class SupportedDatatypes(str, Enum):
-    float = "float"
-    int = "int"
+    float = "float32"
+    int = "int32"
 
 class SupportedDatatypesCategory(str, Enum):
     continuous = "continuous"
@@ -62,7 +62,7 @@ class DatasetOutput(BaseModel):
     column_datatype: SupportedDatatypes
 
 class GeneratorDataOutput(BaseModel):
-    function_ids: List[PositiveInt]
+    functions_id: List[PositiveInt]
     model: ModelOutput
     n_rows: PositiveInt
     dataset: List[DatasetOutput]

@@ -1,5 +1,5 @@
-from ...database.schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType,Algorithm
-from ...database.validation.schema import TrainedModelAndVersionIds\
+from ..schema import TrainedModel, TrainingInfo, ModelVersion,Features,DataType,Algorithm
+from ..validation.schema import TrainedModelAndVersionIds\
     ,TrainedModelAndVersions as PydanticTrainedModelAndVersions,ModelVersionAndTrainInfo,ModelVersion as PydanticModelVersion, TrainingInfo as PydanticTrainingInfo
 from peewee import fn,JOIN
 
