@@ -31,6 +31,9 @@ class FeaturesCreated(BaseModel):
     type: SupportedDatatypes
     category: SupportedDatatypesCategory
 
+    class Config:
+        use_enum_values = True
+
 class UserDataInput(BaseModel):
     additional_rows: PositiveInt
     functions: List[FunctionData]
@@ -60,6 +63,9 @@ class DatasetOutput(BaseModel):
     column_name: str
     column_type: str
     column_datatype: SupportedDatatypes
+
+    class Config:
+        use_enum_values = True
 
 class GeneratorDataOutput(BaseModel):
     functions_id: List[PositiveInt]

@@ -1,3 +1,4 @@
+import json
 import os
 
 import requests
@@ -21,8 +22,8 @@ async def collect_user_input(input_data: UserDataInput):
     """
     data = input_data.model_dump()
 
-    function_ids = check_function_parameters(data['functions'])
-    if not function_ids:
+    functions_id = check_function_parameters(data['functions'])
+    if not functions_id:
         return JSONResponse(status_code=400, content="Error analysing functions")
 
     model = check_ai_model(data.get('ai_model'))
@@ -36,7 +37,7 @@ async def collect_user_input(input_data: UserDataInput):
             return JSONResponse(status_code=400, content="Error parsing input dataset")
 
         body=GeneratorDataOutput(
-                            function_ids=function_ids,
+                            functions_id=functions_id,
                             n_rows=data.get('additional_rows'),
                             model=model,
                             dataset=user_file,
@@ -55,6 +56,6 @@ async def collect_user_input(input_data: UserDataInput):
     if response.status_code == 200:
         return JSONResponse(status_code=200, content="Data augmentation started")
     else:
-        return JSONResponse(status_code=500, content=response.reason)
+        return JSONResponse(status_code=response.status_code, content=json.loads(response.text))
 
 

@@ -112,7 +112,7 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
         column_type = determine_column_type(values)
 
         if column_type == "continuous":
-            column_datatype = SupportedDatatypes.int if all(isinstance(v, int) for v in values) else SupportedDatatypes.float
+            column_datatype = SupportedDatatypes.int if all(isinstance(v, int) for v in values) else SupportedDatatypes.float.value
             dataset_outputs.append(
                 DatasetOutput(
                     column_data=values,
