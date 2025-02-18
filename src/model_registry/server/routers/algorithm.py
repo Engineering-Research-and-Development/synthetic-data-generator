@@ -121,11 +121,5 @@ async def delete_algorithm(algorithm_id: int):
         algorithm = Algorithm.get_by_id(algorithm_id)
     except DoesNotExist:
         return JSONResponse(status_code=404,content={"message":"This algorithm does not exist!"})
-    # First we delete the allowed datatypes
-    AllowedDataType.delete().where(AllowedDataType.algorithm_id == algorithm_id).execute()
-    # Then we delete all the train models associated with it
-    trained_model_ids = TrainedModel.select(TrainedModel.id).where(TrainedModel.algorithm_id == algorithm_id).dicts()
-    for row in trained_model_ids:
-        await delete_train_model(row['id'])
-    # Finally we delete the algorithm
+
     algorithm.delete_instance()

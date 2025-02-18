@@ -122,17 +122,17 @@ async def create_model_and_version(trained_model: CreateTrainedModel,
                  return JSONResponse(status_code=500, content={'message': "Error in processing the request"})
 
          try:
-             save_training_info = TrainingInfo.create(**training_info.model_dump())
+             saved_model_version = ModelVersion.create(**version.model_dump(),trained_model = saved_tr.id)
          except IntegrityError:
              transaction.rollback()
              return JSONResponse(status_code=500, content={'message': "Error in processing the request"})
 
          try:
-             ModelVersion.insert(**version.model_dump(),training_info = save_training_info.id
-                                                     ,trained_model = saved_tr.id).execute()
+             TrainingInfo.insert(**training_info.model_dump(),model_version_id = saved_model_version.id).execute()
          except IntegrityError:
              transaction.rollback()
              return JSONResponse(status_code=500, content={'message': "Error in processing the request"})
+
 
     return JSONResponse(status_code=201,content={"message": "Successfully saved model with the following id", "id": saved_tr.id})
 
@@ -151,35 +151,15 @@ async def delete_train_model(trained_model_id: int,
     The query parameter `version_id` (default ***None***) lets the user delete a specific version and associated training info,
     leaving the trained model data and feature schema untouched.
     """
-    try:
-        model = TrainedModel.get_by_id(trained_model_id)
-    except DoesNotExist:
-        return JSONResponse(status_code=404, content={'message': "Model not present"})
-
-    if version_id is None:
-        query = (
-            ModelVersion.select(ModelVersion.id.alias("version_id"),
-                                TrainingInfo.id.alias("training_id"))
-                .join(TrainingInfo).where(ModelVersion.trained_model == trained_model_id)
-        )
+    if version_id:
+        try:
+            version = ModelVersion.get_by_id(version_id)
+        except DoesNotExist:
+            return JSONResponse(status_code=404, content={'message': "Model not present"})
+        version.delete_instance()
     else:
-        query = (
-            ModelVersion.select(ModelVersion.id.alias("version_id"),
-                                TrainingInfo.id.alias("training_id"))
-            .join(TrainingInfo)
-            .where(ModelVersion.trained_model == trained_model_id)
-            .where(ModelVersion.id == version_id)
-        )
-        # This is the only case we need to return due to the fact that the client is trying to delete a specific version
-        # Even if no version is found above, there is no anomalous behaviour. Since the for loop will not be executed
-        # and only the model will be deleted
-        if len(query.dicts()) == 0:
-            return JSONResponse(status_code=404, content={'message': "This version has not been found!"})
-
-    for row in query.dicts():
-        ModelVersion.delete().where(ModelVersion.id == row["version_id"]).execute()
-        TrainingInfo.delete().where(TrainingInfo.id == row["training_id"]).execute()
-
-    if version_id is None:
-        Features.delete().where(Features.trained_model == trained_model_id).execute()
+        try:
+            model = TrainedModel.get_by_id(trained_model_id)
+        except DoesNotExist:
+            return JSONResponse(status_code=404, content={'message': "Model not present"})
         model.delete_instance()

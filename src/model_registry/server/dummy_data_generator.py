@@ -35,31 +35,29 @@ def insert_data():
         for i in range(5)
     ]
 
-    # Insert TrainingInfo
-    training_infos = [
-        TrainingInfo.create(loss_function=f"LossFunction_{i}", train_loss=0.1*i + 0.05, val_loss=0.2*i + 0.1,
-                            train_samples=100*i + 10, val_samples=50*i + 5)
-        for i in range(5)
-    ]
-    # Insert TrainingInfo for multiple model versions
-    training_infos_multiple = [
-        TrainingInfo.create(loss_function=f"LossFunction_{i}", train_loss=0.1*i + 0.05, val_loss=0.2*i + 0.1,
-                            train_samples=100*i + 10, val_samples=50*i + 5)
-        for i in range(5,9)
-    ]
-
     # Insert ModelVersion
     model_versions = [
         ModelVersion.create(version_name=f"v{i+1}.0", image_path=f"/models/unique_model_{i}.h5",
-                            trained_model=trained_models[(i+1) % 5], training_info=training_infos[(i+3) % 5])
+                            trained_model=trained_models[(i+1) % 5])
         for i in range(5)
     ]
     # Inserting multiple model version for the same training model
-    model_versions = [
+    multiple_model_versions = [
         ModelVersion.create(version_name=f"v{i+1}.0", image_path=f"/models/unique_model_{i}.h5",
-                            trained_model=1, training_info=training_infos_multiple[i % 5])
+                            trained_model=1)
         for i in range(5,9)
     ]
+
+
+    all_versions = model_versions + multiple_model_versions
+
+    # Insert TrainingInfo
+    training_infos = [
+        TrainingInfo.create(loss_function=f"LossFunction_{index}", train_loss=0.1*index + 0.05, val_loss=0.2*index + 0.1,
+                            train_samples=100*index + 10, val_samples=50*index + 5,model_version_id=i)
+        for index,i in enumerate(all_versions)
+    ]
+
 
     # Insert Function
     functions = [
@@ -79,3 +77,4 @@ def insert_data():
         FunctionParameter.create(function=functions[i], parameter=parameters[(i+1) % 5])
         for i in range(5)
     ]
+

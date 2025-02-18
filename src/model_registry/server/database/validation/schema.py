@@ -81,6 +81,7 @@ class CreateTrainingInfo(BaseModel):
 
 class TrainingInfo(CreateTrainingInfo):
     id : int
+    model_version_id: int
 
 class CreateModelVersion(BaseModel):
     version_name : str
