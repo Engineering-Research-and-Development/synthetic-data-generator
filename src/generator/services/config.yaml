@@ -4,4 +4,4 @@ model_registry:
     trained_model_by_id: "trained_models/{}"
     trained_model_version_by_id: "trained_models/{}/version/{}"
     trained_models: "trained_models/"
-    system_models: "system_models/"
+    system_models: "algorithms/"

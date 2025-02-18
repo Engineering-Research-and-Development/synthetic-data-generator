@@ -1,0 +1,194 @@
+import pickle
+
+import numpy as np
+import os
+import keras
+from keras import layers, saving, ops
+import tensorflow as tf
+
+from generator.models.classes.Model import UnspecializedModel
+from generator.models.classes.ModelInfo import ModelInfo, AllowedData
+from generator.models.classes.TrainingInfo import TrainingInfo
+from generator.models.dataset.Dataset import Dataset
+from generator.models.preprocess.scale import standardize_input
+
+os.environ["KERAS_BACKEND"] = "tensorflow"
+
+
+class Sampling(layers.Layer):
+    """Uses (z_mean, z_log_var) to sample z, the vector encoding a digit."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.seed_generator = keras.random.SeedGenerator(42)
+
+    def call(self, inputs):
+        z_mean, z_log_var = inputs
+        batch = ops.shape(z_mean)[0]
+        dim = ops.shape(z_mean)[1]
+        epsilon = keras.random.normal(shape=(batch, dim), seed=self.seed_generator)
+        return z_mean + ops.exp(0.5 * z_log_var) * epsilon
+
+
+class VAE(keras.Model):
+    def __init__(self, encoder, decoder, **kwargs):
+        super().__init__(**kwargs)
+        self.encoder = encoder
+        self.decoder = decoder
+        self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
+        self.reconstruction_loss_tracker = keras.metrics.Mean(
+            name="reconstruction_loss"
+        )
+        self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
+
+    @property
+    def metrics(self):
+        return [
+            self.total_loss_tracker,
+            self.reconstruction_loss_tracker,
+            self.kl_loss_tracker,
+        ]
+
+    def train_step(self, data):
+        with tf.GradientTape() as tape:
+            z_mean, z_log_var, z = self.encoder(data)
+            reconstruction = self.decoder(z)
+            reconstruction_loss = ops.mean(
+                ops.sum(keras.losses.binary_crossentropy(data, reconstruction), axis=(1, 2))
+            )
+            kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
+            kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
+            total_loss = reconstruction_loss + kl_loss
+        grads = tape.gradient(total_loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+        self.total_loss_tracker.update_state(total_loss)
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.kl_loss_tracker.update_state(kl_loss)
+        return {
+            "loss": self.total_loss_tracker.result(),
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "kl_loss": self.kl_loss_tracker.result(),
+        }
+
+
+
+class KerasTimeSeriesVAE(UnspecializedModel):
+
+    def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
+        super().__init__(metadata, model_name, input_shape, model_filepath)
+        self.latent_dim = 2
+        self._initialize()
+
+
+    def build(self, input_shape:tuple[int,...]):
+        print(input_shape)
+        encoder_inputs = keras.Input(shape=input_shape)
+        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same", data_format="channels_first")(encoder_inputs)
+        x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same",  data_format="channels_first")(x)
+        x = layers.Flatten()(x)
+        x = layers.Dense(16, activation="relu")(x)
+        z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
+        z_log_var = layers.Dense(self.latent_dim,  name="z_log_var")(x)
+        z = Sampling()([z_mean, z_log_var])
+        encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+
+        shape_out = np.round(input_shape[1]/4, 0)
+        latent_inputs = keras.Input(shape=(self.latent_dim,))
+        y = layers.Dense(shape_out*64, activation="relu")(latent_inputs)
+        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same", data_format="channels_first")(y)
+        y = layers.Conv1DTranspose(32,3, activation="relu", strides=2, padding="same", data_format="channels_first")(y)
+        decoder_outputs = layers.Conv1DTranspose(input_shape[1], 3, activation="sigmoid", padding="same", data_format="channels_first")(y)
+        decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
+
+        vae = VAE(encoder, decoder)
+        vae.summary()
+        return vae
+
+
+    def load(self):
+        encoder_filename = os.path.join(self.model_filepath, "encoder.keras")
+        decoder_filename = os.path.join(self.model_filepath, "decoder.keras")
+        scaler_filename = os.path.join(self.model_filepath, "scaler.pkl")
+        encoder = saving.load_model(encoder_filename)
+        decoder = saving.load_model(decoder_filename)
+        model = VAE(encoder, decoder)
+        with open(scaler_filename, "rb") as f:
+            scaler = pickle.load(f)
+        return model, scaler
+
+
+    def pre_process(self, data: Dataset, **kwargs):
+        cont_np_data = data.continuous_data.to_numpy()
+        if not self.scaler:
+            scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
+            self.scaler = scaler
+        else:
+            np_input_scaled = self.scaler.transform(cont_np_data)
+        return np_input_scaled
+
+
+    def train(self, data: Dataset, **kwargs):
+        data  = self.pre_process(data)
+
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
+        history = self.model.fit(data, epochs=200, batch_size=8)
+        self.training_info = TrainingInfo(
+            loss_fn="ELBO",
+            train_loss=history.history["loss"][-1].numpy().item(),
+            train_samples=data.shape[0],
+            validation_loss=-1,
+            validation_samples=0
+
+        )
+
+
+    def fine_tune(self, data: np.array, **kwargs):
+        pass
+
+
+    def infer(self, n_rows:int, **kwargs):
+        z_random = np.random.normal(size=(n_rows, self.latent_dim))
+        results = self.model.decoder.predict(z_random)
+        return results
+
+
+    def save(self, **kwargs):
+        save_folder = self._create_new_version_folder()
+        try:
+            encoder_filename = os.path.join(save_folder, "encoder.keras")
+            decoder_filename = os.path.join(save_folder, "decoder.keras")
+            saving.save_model(self.model.encoder, encoder_filename)
+            saving.save_model(self.model.decoder, decoder_filename)
+        except Exception as e:
+            print("Unable to save the model file", e)
+            return
+
+        try:
+            scaler_filename = os.path.join(save_folder, "scaler.pkl")
+            with open(scaler_filename, 'wb') as f:
+                pickle.dump(self.scaler, f)
+        except Exception as e:
+            print("Unable to save the scaler file", e)
+            return
+
+        self.model_filepath = save_folder
+
+
+    @classmethod
+    def self_describe(cls):
+        # Returns a dictionary with model info, useful for initializing model
+        system_model_info = ModelInfo(
+            name = f"{cls.__module__}.{cls.__qualname__}",
+            default_loss_function= "ELBO LOSS",
+            description= "A Tabular Variational Autoencoder for Time Series Generation",
+            allowed_data= [
+                AllowedData("List[float32]", False),
+                AllowedData("List[int32]", False),
+                AllowedData("List[int64]", False),
+            ]
+        ).get_model_info()
+
+        return system_model_info
+
+
+

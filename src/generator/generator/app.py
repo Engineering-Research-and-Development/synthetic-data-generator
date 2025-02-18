@@ -17,6 +17,7 @@ from services.model_services import save_trained_model, save_system_model, delet
 from utils.parsing import parse_model_to_registry
 from generator.input_schema import TrainRequest, InferRequestData, InferRequestNoData
 from generator.output_schema import Response
+from utils.structure import create_folder_structure
 
 
 def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
@@ -44,6 +45,7 @@ def elaborate_request(body: dict) -> tuple[dict, list, list, int]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    create_folder_structure()
 
     config_file = pkgutil.get_data("generator", "config.yaml")
     config = safe_load(config_file)
@@ -64,9 +66,9 @@ async def lifespan(app: FastAPI):
         try:
             # TODO: refine with correct APIs
             response = save_system_model(Class.self_describe())
+            print(response.status_code, response.text)
             id_list.append(response["id"])
         except ModelException as e:
-            print(e)
             for mod_id in id_list:
                 delete_sys_model_by_id(mod_id)
             #exit(-1)

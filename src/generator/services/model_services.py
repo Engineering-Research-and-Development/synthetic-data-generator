@@ -96,6 +96,8 @@ def save_system_model(model: dict):
     except RequestException:
         raise ModelException("Impossible to reach Model Repository")
 
+    return response
+
 
 def delete_sys_model_by_id(model_id: int):
     """

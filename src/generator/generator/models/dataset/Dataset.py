@@ -6,6 +6,7 @@ from exceptions.DataException import DataException
 
 NUMERICAL = "continuous"
 CATEGORICAL = "categorical"
+OTHER = "none"
 
 
 class Dataset:
@@ -15,6 +16,7 @@ class Dataset:
         self.columns: list[str] = []
         self.continuous_columns = []
         self.categorical_columns = []
+        self.unrecognized_columns = []
         self.continuous_data: pd.DataFrame = pd.DataFrame()
         self.categorical_data: pd.DataFrame = pd.DataFrame()
         self.input_shape: str = ""
@@ -37,6 +39,7 @@ class Dataset:
         column_names = []
         categorical_columns = []
         numerical_columns = []
+        unrecognized_columns = []
         data_structure = []
         for col in data:
             content = col.get("column_data", [])
@@ -49,10 +52,13 @@ class Dataset:
                 numerical_columns.append(column_name)
             elif column_type == CATEGORICAL:
                 categorical_columns.append(column_name)
+            else:
+                unrecognized_columns.append(column_name)
 
         # Transposing array. Since columns are appended row-wise, by transposing we obtain a column-wise data structure
-        data_structure = np.array(data_structure).T
-        data_frame = pd.DataFrame(data=data_structure, columns=column_names)
+        data_structure = np.array(data_structure)
+        data_structure = np.moveaxis(data_structure,0,1)
+        data_frame = pd.DataFrame(data=data_structure.tolist(), columns=column_names)
 
         if len(column_names) < 1:
             raise DataException("No column names are passed to the input data")
@@ -63,7 +69,15 @@ class Dataset:
         self.continuous_columns = numerical_columns
         self.continuous_data = data_frame[numerical_columns]
         self.categorical_data = data_frame[categorical_columns]
-        self.input_shape = str(data_frame.shape[1:])
+        self.input_shape = str(data_structure.shape[1:])
+
+
+    def categorize_column(self, col):
+        if col in self.continuous_columns:
+            return NUMERICAL
+        if col in self.categorical_columns:
+            return CATEGORICAL
+        return OTHER
 
 
     def parse_tabular_data_json(self) -> list[dict]:
@@ -81,8 +95,7 @@ class Dataset:
             {
                 "column_data" : self.dataframe[col].to_numpy().tolist(),
                 "column_name": col,
-                "column_type": NUMERICAL if col in self.continuous_columns else CATEGORICAL if col in self.categorical_columns
-                else "None",
+                "column_type": self.categorize_column(col),
                 "column_datatype": str(self.dataframe[col].dtype)
             }
             for col in self.dataframe.columns

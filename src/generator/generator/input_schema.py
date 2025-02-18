@@ -3,10 +3,10 @@ from typing import List, Literal
 
 
 class DatasetIn(BaseModel):
-    column_data: List[float | int]
+    column_data: List[float | int] | List
     column_name: str
     column_datatype: Literal["float32", "float64", "int32", "int64"]
-    column_type: Literal["continuous", "categorical"]
+    column_type: Literal["continuous", "categorical", "time_series"]
 
 
 class TrainModelInfo(BaseModel):
