@@ -1,12 +1,12 @@
-FROM python:3.11-slim-bullseye
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 LABEL authors="emiliocimino"
 
 WORKDIR /home
 
 COPY . .
 
-RUN pip3 install --upgrade pip
-RUN pip3 install -r ./requirements.txt
+RUN uv init
+RUN uv add -r ./requirements.txt
 
 
-CMD ["fastapi", "run", "generator/app.py", "--port", "8010"]
+CMD [".venv/bin/fastapi", "run", "generator/app.py", "--port", "8010"]
