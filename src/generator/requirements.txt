@@ -7,6 +7,4 @@ requests
 keras==3.6.0
 tensorflow==2.18.0
 pyaml
-fastapi==0.115.5
-uvicorn
-setuptools
+fastapi[standard]

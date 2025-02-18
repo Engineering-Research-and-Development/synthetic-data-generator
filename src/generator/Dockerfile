@@ -1,5 +1,5 @@
 FROM python:3.11-slim-bullseye
-LABEL authors="fabcassano"
+LABEL authors="emiliocimino"
 
 WORKDIR /home
 
@@ -9,4 +9,4 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -r ./requirements.txt
 
 
-CMD ["uvicorn", "generator.app:generator", "--host", "0.0.0.0", "--port", "8010"]
+CMD ["fastapi", "run", "generator/app.py", "--port", "8010"]
