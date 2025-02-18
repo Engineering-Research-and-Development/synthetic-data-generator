@@ -3,9 +3,7 @@ from starlette.responses import JSONResponse
 
 from database.validation.schema import CreateAlgorithm,Algorithm as PydanticAlgorithm, CreateAllowedData\
     ,AlgorithmAndAllowedDatatypes
-from database.schema import DataType, AllowedDataType, db, Algorithm, TrainedModel
-
-from routers.trained_models import delete_train_model
+from database.schema import DataType, AllowedDataType, db, Algorithm
 
 from peewee import DoesNotExist,IntegrityError,fn,JOIN
 
@@ -50,7 +48,7 @@ async def add_algorithm_and_datatype(algorithm: CreateAlgorithm, allowed_data: l
             name="Get all algorithms",
             response_model=list[PydanticAlgorithm] | list[AlgorithmAndAllowedDatatypes])
 async def get_all_algorithms(include_allowed_datatypes: bool | None = Query(description="Include the allowed datatypes"
-                              "for each algorithm present in the system",default=False)):
+                              " for each algorithm present in the system",default=False)):
 
     """
         This method returns all the algorithms that are present in the model registry. The query parameter

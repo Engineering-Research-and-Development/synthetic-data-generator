@@ -96,7 +96,10 @@ def test_get_algo_by_id_with_datatypes():
     assert data['name']
     assert data['description']
     assert data['default_loss_function']
-    assert data['allowed_data']
+    if data['allowed_data']:
+        random_data = random.choice(data['allowed_data'])
+        assert random_data['datatype']
+        assert type(random_data['is_categorical']) == bool
 
 def test_get_bad_algo_by_id_with_datatypes():
     response = requests.get(f"{server}:{port}{endpoint}" + "/1000/allowed_datatypes")

@@ -62,9 +62,10 @@ def test_get_all_trained_models():
     assert rand_tr["dataset_name"]
     assert rand_tr["input_shape"]
     assert rand_tr["algorithm_id"]
+    assert rand_tr["algorithm_name"]
     assert rand_tr["size"]
 
-def test_get_train_models_and_versions_ids():
+def test_get_train_model_and_versions_ids():
     data = requests.get(f"{server}:{port}{endpoint}" + "?include_version_ids=True")
     assert data.status_code == 200,print(data.json())
     payload = data.json()
@@ -76,12 +77,109 @@ def test_get_train_models_and_versions_ids():
         assert elem["dataset_name"]
         assert elem["input_shape"]
         assert elem["algorithm_id"]
+        assert elem["algorithm_name"]
         assert elem["size"]
         if elem["version_ids"]:
             assert len(elem["version_ids"]) > 0
 
+def test_get_train_model_and_versions():
+    data = requests.get(f"{server}:{port}{endpoint}" + "/1?include_versions=True")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    # Checking that they are not empty
+    assert len(payload) > 0
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["algorithm_name"]
+    assert payload["size"]
+    assert payload["versions"]
+    assert payload['versions'][0].get('training_info') is None,print(payload)
+    assert payload['feature_schema']
+
+def test_get_train_model_versions_training_info():
+    data = requests.get(f"{server}:{port}{endpoint}" + "/1?include_versions=True&include_training_info=True")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    # Checking that they are not empty
+    assert len(payload) > 0
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["algorithm_name"]
+    assert payload["size"]
+    assert payload["versions"]
+    assert payload['versions'][0]['training_info']
+    assert payload['feature_schema']
+
+def test_get_train_model_id_with_versions_training_info():
+    data = requests.get(f"{server}:{port}{endpoint}" + "/2?version_id=1&include_training_info=True")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    # Checking that they are not empty
+    assert len(payload) > 0
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["algorithm_name"]
+    assert payload["size"]
+    assert payload["versions"]
+    assert payload['versions'][0]['training_info']
+    assert payload['feature_schema']
+
+def test_get_train_model_id_with_bad_versions_training_info():
+    data = requests.get(f"{server}:{port}{endpoint}" + "/1?version_id=100&include_training_info=True")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    assert len(payload) > 0
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["algorithm_name"]
+    assert payload["size"]
+    assert len(payload["versions"]) == 0
+    assert payload['feature_schema']
+
+def test_get_train_model_id_with_bad_versions_good_training_info():
+    data = requests.get(f"{server}:{port}{endpoint}" + "/1?version_id=1000&include_training_info=True")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    assert len(payload) > 0
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["algorithm_name"]
+    assert payload["size"]
+    assert len(payload["versions"]) == 0
+    assert payload['feature_schema']
+
+def test_get_train_model_id_with_bad_versions_bad_training_info():
+    data = requests.get(f"{server}:{port}{endpoint}" + "/1?version_id=1000&include_training_info=False")
+    assert data.status_code == 200,print(data.json())
+    payload = data.json()
+    assert len(payload) > 0
+    assert payload["name"]
+    assert payload["id"]
+    assert payload["dataset_name"]
+    assert payload["input_shape"]
+    assert payload["algorithm_id"]
+    assert payload["algorithm_name"]
+    assert payload["size"]
+    assert len(payload["versions"]) == 0
+    assert payload['feature_schema']
+
 def test_get_train_model_id():
-    payload = '/1'
+    payload = ('/1')
     data = requests.get(f"{server}:{port}{endpoint}"+ payload)
     assert data.status_code == 200
     payload = data.json()
@@ -97,21 +195,6 @@ def test_get_bad_id():
     # Now we try an id that does not exist
     data = requests.get(f"{server}:{port}{endpoint}" + "/1000")
     assert data.status_code == 404
-
-
-def test_get_trained_models_and_versions():
-    data = requests.get(f"{server}:{port}{endpoint}" + "/1" + "?include_versions=True")
-    assert data.status_code == 200
-    payload = data.json()
-    assert payload["name"]
-    assert payload["id"]
-    assert payload["dataset_name"]
-    assert payload["input_shape"]
-    assert payload["algorithm_id"]
-    assert payload["size"]
-    assert payload["versions"]
-    assert payload["feature_schema"]
-
 
 
 def test_get_bad_trained_models_and_versions():
