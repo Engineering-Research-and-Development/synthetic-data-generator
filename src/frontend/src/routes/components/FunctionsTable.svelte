@@ -10,12 +10,13 @@
         MultiSelect,
     } from "flowbite-svelte";
     import { BACKEND_URL } from "../../stores/shared";
+    import Error from "./Error.svelte";
 
     export let featuresName: string[] = [];
     export let featureFunction: FeatureFunction = {};
 
     let shownFunctions: { value: string; name: string;}[] = [];
-
+    let errorMessage: string
     onMount(async () => {
         try {
             const response = await fetch(BACKEND_URL +'/functions');
@@ -33,7 +34,7 @@
                 }));
             }
         } catch (error) {
-            console.error("Error fetching Functions:", error);
+            errorMessage="Error fetching Functions"+ error;
         }
     });
 
@@ -41,6 +42,10 @@
         featureFunction[feature] = functions;
     }
 </script>
+
+{#if errorMessage}
+<Error message={errorMessage}/>
+{/if}
 
 <Table class="w-3/4 text-gray-500 self-center dark:text-gray-400">
     <TableHead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

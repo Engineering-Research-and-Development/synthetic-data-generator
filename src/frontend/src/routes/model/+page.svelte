@@ -8,6 +8,7 @@
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
     import { BACKEND_URL } from "../../stores/shared";
+    import Error from "../components/Error.svelte";
 
     let useNewModel = true;
     let selectedModel: SelectedModel;
@@ -15,17 +16,18 @@
     let trained_models: PreTrainedModel[];
     let algorithms: NewAlgorithm[];
     let isLoading = true; // Add a loading state
-
+    let errorMessage: string;
+    
     onMount(async () => {
         try {
             const response = await fetch(BACKEND_URL + '/algorithms/?include_allowed_datatypes=true')
             if (response.ok) {
                 algorithms = await response.json()
             } else {
-                console.error('Failed to fetch data:', response.statusText);
+                errorMessage='Failed to fetch data:'+ response.statusText;
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            errorMessage='Error fetching data:'+ error;
 
         }
         try {
@@ -33,10 +35,10 @@
             if (response.ok) {
                 trained_models = await response.json();
             } else {
-                console.error('Failed to fetch data:', response.statusText);
+                errorMessage='Failed to fetch data:'+ response.statusText;
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
+            errorMessage='Error fetching data:'+ error;
         } finally {
             isLoading = false; // Set loading to false after fetching data
         }
@@ -50,8 +52,11 @@
     }
 </script>
 
-<h1 class="text-2xl font-bold text-center my-6">Choose the AI model to use</h1>
+{#if errorMessage}
+    <Error message={errorMessage}/>
+{/if}
 
+<h1 class="text-2xl font-bold text-center my-6">Choose the AI model to use</h1>
 <div class="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
     <form on:submit|preventDefault={submitModels}
           class="w-full max-w-4xl p-6 bg-white rounded-lg shadow-md dark:bg-gray-800"

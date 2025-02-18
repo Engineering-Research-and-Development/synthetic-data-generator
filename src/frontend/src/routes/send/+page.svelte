@@ -1,6 +1,7 @@
 <script lang="ts">
     import {BACKEND_URL} from "../../stores/shared";
     import {onMount} from "svelte";
+    import Error from "../components/Error.svelte";
 
     type RowData = { [key: string]: any };
 
@@ -15,7 +16,7 @@
     let selectedModel: SelectedModel;
     let selectedVersion: number = 0;
     let featuresCreated: FeaturesCreated[] = [];
-
+    let errorMessage: string;
     function generateOutFunctions(featureFunctions: Record<string, { functionName: string; functionId: number,parameters: Parameter[] }[]>): OutFunction[] {
         let outFunctions: OutFunction[] = [];
 
@@ -81,13 +82,17 @@
                 body: JSON.stringify(postData),
             });
             if (!response.ok) {
-                console.log("An error occurred");
+                errorMessage="An error occurred";
             }
             const result = await response.json();
             console.log("Data sent successfully:", result);
             sessionStorage.clear();
         } catch (error) {
-            console.error("Error sending data:", error);
+            errorMessage="Error sending data:"+ error;
         }
     }
 </script>
+
+{#if errorMessage}
+    <Error message={errorMessage}/>
+{/if}

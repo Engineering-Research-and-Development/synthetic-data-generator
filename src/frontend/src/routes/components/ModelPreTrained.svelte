@@ -2,6 +2,7 @@
     import { Label, Select, Table, TableHead, TableBody, TableBodyCell, TableBodyRow, TableHeadCell } from 'flowbite-svelte';
     import { onMount } from 'svelte';
     import {BACKEND_URL} from "../../stores/shared";
+    import Error from "./Error.svelte";
 
     export let trainedModels:PreTrainedModel[];
     export let selectedModel: SelectedModel;
@@ -16,6 +17,7 @@
 
     let trainingInfo: TrainingInfo | null = null;
     let featureSchema: FeatureSchema[] = [];
+    let errorMessage:string;
 
     onMount(async () => {
         try {
@@ -24,7 +26,7 @@
                 name: model.name
             }));
         } catch (error) {
-            console.error('Error fetching trained models:', error);
+            errorMessage='Error fetching trained models:' + error;
         }
     });
 
@@ -51,10 +53,15 @@
                 featureSchema = data.feature_schema as FeatureSchema[];
             }
         } catch (error) {
-            console.error('Error fetching training info and feature schema:', error);
+            errorMessage='Error fetching training info and feature schema:'+ error;
         }
     }
 </script>
+
+
+{#if errorMessage}
+    <Error message={errorMessage}/>
+{/if}
 
 <div class="w-full">
     <!-- Dropdown for model selection -->

@@ -15,9 +15,11 @@
     import BackButton from "../components/BackButton.svelte";
     import CancelButton from "../components/CancelButton.svelte";
     import { goto } from "$app/navigation";
+    import Error from "../components/Error.svelte";
 
     let selectedFunctions: FeatureFunction = {};
     let functionData: Record<string, FunctionParameter[]> = {};
+    let errorMessage: string;
 
     onMount(async () => {
         selectedFunctions = JSON.parse(sessionStorage.getItem("featureFunction") || "{}");
@@ -39,7 +41,7 @@
                     const response = await fetch(`${BACKEND_URL}/functions/${id}`);
 
                     if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
+                        errorMessage=`HTTP error! Status: ${response.status}`;
                     }
 
                     return response.json();
@@ -61,7 +63,7 @@
 
             functionData = fetchedData;
         } catch (error) {
-            console.error("Error fetching data:", error);
+            errorMessage="Error fetching data:"+ error;
         }
     });
 
@@ -102,6 +104,10 @@
         goto("/model");
     }
 </script>
+
+{#if errorMessage}
+    <Error message={errorMessage}/>
+{/if}
 
 <h1 class="flex justify-center text-2xl font-bold my-4">Function Composition</h1>
 <div class="flex items-center justify-center bg-gray-100 dark:bg-gray-900">

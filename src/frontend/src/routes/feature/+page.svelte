@@ -13,6 +13,7 @@
 	let headers: string[] = []; // Array of column headers
 	let selectedColumns: string[] = []; // Array of selected column names
 	let showAlert: boolean = false; // Control visibility of the Alert
+	let errorMessage:string;
 
 	onMount(() => {
 		const savedData = sessionStorage.getItem('userFile');
@@ -24,10 +25,10 @@
 					tableData = parsedData;
 				}
 			} catch (error) {
-				console.error("Error parsing saved data:", error);
+				errorMessage="Error parsing saved data:"+ error;
 			}
 		} else {
-			console.error("No data found in sessionStorage.");
+			errorMessage="No data found in sessionStorage.";
 		}
 	});
 
@@ -49,6 +50,10 @@
 		goto("/function");
 	}
 </script>
+
+{#if errorMessage}
+	<Error message={errorMessage}/>
+{/if}
 
 <h1 class="flex justify-center text-2xl fon0t-bold my-4">Uploaded CSV Data</h1>
 <div class="flex items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">

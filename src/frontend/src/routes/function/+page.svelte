@@ -7,10 +7,12 @@
     import { Label, Input, InputAddon, ButtonGroup } from 'flowbite-svelte';
     import { PlusOutline } from 'flowbite-svelte-icons';
     import { goto } from "$app/navigation";
+    import Error from "../components/Error.svelte";
 
     let featuresName: string[] = [];
     let featureFunction: FeatureFunction = {};
     let additionalRows: number = 0;
+    let errorMessage: string;
 
     onMount(() => {
         const features = sessionStorage.getItem("selectedColumns");
@@ -23,7 +25,7 @@
                     }
                 });
             } catch (error) {
-                console.error("Error parsing selected columns:", error);
+                errorMessage="Error parsing selected columns:"+ error;
             }
         }
     });
@@ -34,6 +36,10 @@
         goto("/parameters");
     }
 </script>
+
+{#if errorMessage}
+    <Error message={errorMessage}/>
+{/if}
 
 <h1 class="flex justify-center text-2xl font-bold my-4">Functions Selection</h1>
 <div class="flex items-center justify-center bg-white dark:bg-gray-900">
