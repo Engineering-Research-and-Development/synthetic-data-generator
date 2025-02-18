@@ -92,7 +92,7 @@ def train(request: TrainRequest):
             model_to_save = parse_model_to_registry(model, data)
             save_trained_model(model_to_save)
         except ModelException as e:
-            model.rollback_latest_version()
+            # model.rollback_latest_version()
             raise ModelException(e)
 
         return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})

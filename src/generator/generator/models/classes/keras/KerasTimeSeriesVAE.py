@@ -53,9 +53,7 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(
-                ops.sum(keras.losses.binary_crossentropy(data, reconstruction), axis=(1,))
-            )
+            reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=(-1,)))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
@@ -81,7 +79,6 @@ class KerasTimeSeriesVAE(UnspecializedModel):
 
 
     def build(self, input_shape:tuple[int,...]):
-        print(input_shape)
         encoder_inputs = keras.Input(shape=input_shape)
         encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
         x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
@@ -99,7 +96,7 @@ class KerasTimeSeriesVAE(UnspecializedModel):
         y = layers.Reshape((shape_out, 64))(y)
         y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(y)
         y = layers.Conv1DTranspose(32,3, activation="relu", strides=2, padding="same")(y)
-        decoder_outputs = layers.Conv1DTranspose(input_shape[0], 3, activation="sigmoid", padding="same")(y)
+        decoder_outputs = layers.Conv1DTranspose(input_shape[0], 3, activation="relu", padding="same")(y)
         decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
@@ -144,8 +141,8 @@ class KerasTimeSeriesVAE(UnspecializedModel):
     def train(self, data: Dataset, **kwargs):
         data  = self.pre_process(data)
 
-        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
-        history = self.model.fit(data, epochs=200, batch_size=8)
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=3e-3))
+        history = self.model.fit(data, epochs=300, batch_size=8)
         self.training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
