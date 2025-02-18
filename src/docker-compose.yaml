@@ -1,8 +1,12 @@
 services:
-  frontend:
-    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:frontend
+  database:
+    image: "postgres:latest"
     ports:
-      - "5173:5173"
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
 
   sdg-middleware:
     depends_on:
@@ -18,15 +22,6 @@ services:
       INIT_DB: True
       allowed_origins: '*'
 
-  database:
-    image: "postgres:latest"
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "postgres"
-
   generator:
     depends_on:
       - sdg-middleware
@@ -34,3 +29,8 @@ services:
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:generator
     ports:
       - "8010:8010"
+
+  frontend:
+    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:frontend
+    ports:
+      - "5173:5173"
