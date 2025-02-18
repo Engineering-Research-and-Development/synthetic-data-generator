@@ -17,6 +17,9 @@ class TabularComparisonEvaluator:
 
 
     def compute(self):
+        if len(self.numerical_columns) <= 1 and len(self.categorical_columns) <= 1:
+            return {"available": False}
+
         report = {
             "statistical_metrics": self._evaluate_statistical_properties(),
             "adherence_metrics": self._evaluate_adherence(),

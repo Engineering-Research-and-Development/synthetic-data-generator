@@ -25,7 +25,7 @@ class TrainRequest(BaseModel):
 class TrainingDataInfo(BaseModel):
     column_name: str
     column_datatype: Literal["float32", "float64", "int32", "int64"]
-    column_type: Literal["continuous", "categorical"]
+    column_type: Literal["continuous", "categorical", "time_series"]
 
 
 class InferModelInfoNodata(BaseModel):

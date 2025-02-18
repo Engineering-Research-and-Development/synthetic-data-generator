@@ -10,7 +10,7 @@ from generator.models.classes.Model import UnspecializedModel
 from generator.models.classes.ModelInfo import ModelInfo, AllowedData
 from generator.models.classes.TrainingInfo import TrainingInfo
 from generator.models.dataset.Dataset import Dataset
-from generator.models.preprocess.scale import standardize_input
+from generator.models.preprocess.scale import standardize_time_series
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
@@ -54,7 +54,7 @@ class VAE(keras.Model):
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
             reconstruction_loss = ops.mean(
-                ops.sum(keras.losses.binary_crossentropy(data, reconstruction), axis=(1, 2))
+                ops.sum(keras.losses.binary_crossentropy(data, reconstruction), axis=(1,))
             )
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
@@ -83,8 +83,9 @@ class KerasTimeSeriesVAE(UnspecializedModel):
     def build(self, input_shape:tuple[int,...]):
         print(input_shape)
         encoder_inputs = keras.Input(shape=input_shape)
-        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same", data_format="channels_first")(encoder_inputs)
-        x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same",  data_format="channels_first")(x)
+        encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
+        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
+        x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same")(x)
         x = layers.Flatten()(x)
         x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
@@ -92,12 +93,14 @@ class KerasTimeSeriesVAE(UnspecializedModel):
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
-        shape_out = np.round(input_shape[1]/4, 0)
+        shape_out = int(np.round(input_shape[1]/4, 0))
         latent_inputs = keras.Input(shape=(self.latent_dim,))
         y = layers.Dense(shape_out*64, activation="relu")(latent_inputs)
-        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same", data_format="channels_first")(y)
-        y = layers.Conv1DTranspose(32,3, activation="relu", strides=2, padding="same", data_format="channels_first")(y)
-        decoder_outputs = layers.Conv1DTranspose(input_shape[1], 3, activation="sigmoid", padding="same", data_format="channels_first")(y)
+        y = layers.Reshape((shape_out, 64))(y)
+        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(y)
+        y = layers.Conv1DTranspose(32,3, activation="relu", strides=2, padding="same")(y)
+        decoder_outputs = layers.Conv1DTranspose(input_shape[0], 3, activation="sigmoid", padding="same")(y)
+        decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
         vae = VAE(encoder, decoder)
@@ -117,13 +120,24 @@ class KerasTimeSeriesVAE(UnspecializedModel):
         return model, scaler
 
 
+    def scale(self, data: np.array):
+        batch, feats, steps = data.shape
+        return self.scaler.transform(data.reshape(-1, feats*steps)).reshape(-1, feats, steps)
+
+
+    def inverse_scale(self, data):
+        batch, feats, steps = data.shape
+        return self.scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
+
+
     def pre_process(self, data: Dataset, **kwargs):
-        cont_np_data = data.continuous_data.to_numpy()
+        np_data = np.array(data.dataframe.values.tolist())
         if not self.scaler:
-            scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
+            scaler, np_input_scaled, _ = standardize_time_series(train_data=np_data)
             self.scaler = scaler
         else:
-            np_input_scaled = self.scaler.transform(cont_np_data)
+            np_input_scaled = self.scale(np_data)
+
         return np_input_scaled
 
 

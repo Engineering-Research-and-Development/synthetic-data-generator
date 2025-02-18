@@ -63,6 +63,17 @@ class UnspecializedModel(ABC):
 
 
     @abstractmethod
+    def scale(self, data):
+        """Scale inputs with its logic"""
+        pass
+
+    @abstractmethod
+    def inverse_scale(self, data):
+        """Inverse scale inputs with its logic"""
+        pass
+
+
+    @abstractmethod
     def pre_process(self, data, **kwargs):
         """Pre-process data"""
 

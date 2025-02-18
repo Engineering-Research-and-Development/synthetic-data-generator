@@ -112,13 +112,21 @@ class KerasTabularVAE(UnspecializedModel):
         return model, scaler
 
 
+    def scale(self, data: np.array):
+        return self.scaler.transform(data)
+
+
+    def inverse_scale(self, data: np.array):
+        return self.scaler.inverse_transform(data)
+
+
     def pre_process(self, data: Dataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
         if not self.scaler:
             scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
             self.scaler = scaler
         else:
-            np_input_scaled = self.scaler.transform(cont_np_data)
+            np_input_scaled = self.scale(cont_np_data)
         return np_input_scaled
 
 

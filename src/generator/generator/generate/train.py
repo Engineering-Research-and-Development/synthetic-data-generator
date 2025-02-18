@@ -23,9 +23,9 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     m.save()
 
     predicted_data = m.infer(n_rows)
-    predicted_data = m.scaler.inverse_transform(predicted_data)
+    predicted_data = m.inverse_scale(predicted_data)
 
-    df_predict = pd.DataFrame(data=predicted_data,
+    df_predict = pd.DataFrame(data=predicted_data.tolist(),
                               columns=data.columns)
 
     evaluator = TabularComparisonEvaluator(real_data=data.dataframe,
