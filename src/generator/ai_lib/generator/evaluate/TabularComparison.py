@@ -1,7 +1,6 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import scipy.stats as ss
-from scipy.stats import wasserstein_distance
 
 
 class TabularComparisonEvaluator:

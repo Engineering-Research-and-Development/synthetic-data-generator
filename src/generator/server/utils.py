@@ -1,10 +1,6 @@
-import importlib
-import pkgutil
-
+import json
 import os
-from yaml import safe_load
-from ai_lib.Exceptions import  ModelException
-from server.middleware_handlers import save_system_model, delete_sys_model_by_id
+import pandas as pd
 
 ROOT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUTPUT_FOLDER = os.path.join(ROOT_FOLDER, "outputs")
@@ -20,31 +16,17 @@ def create_folder_structure():
     if not os.path.isdir(GENERATION_FOLDER):
         os.mkdir(GENERATION_FOLDER)
 
-def server_startup():
-    create_folder_structure()
 
-    config_file = pkgutil.get_data("generator", "config.yaml")
-    config = safe_load(config_file)
+def store_files(gen_name: str, dataset: pd.DataFrame, metrics: dict):
+    dir_path = os.path.join(GENERATION_FOLDER, gen_name)
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
 
-    id_list = []
+    dataset_path = os.path.join(dir_path, "generation.csv")
+    report_path = os.path.join(dir_path, "report.json")
 
-    print(config)
-    list_models = []
-    for pkg in config["system_models"]:
-        root = pkg["root_lib"]
-        for model in pkg["models"]:
-            list_models.append(root+model)
+    dataset.to_csv(dataset_path)
 
-    for model in list_models:
-        module_name, class_name = model.rsplit('.', 1)
-        module = importlib.import_module(module_name)
-        Class = getattr(module, class_name)
-        try:
-            # TODO: refine with correct APIs
-            response = save_system_model(Class.self_describe())
-            print(response.status_code, response.text)
-            id_list.append(response["id"])
-        except ModelException as e:
-            for mod_id in id_list:
-                delete_sys_model_by_id(mod_id)
-            #exit(-1)
+    if metrics is not None:
+        with open(report_path, "w") as f:
+            json.dump(metrics, f, indent=6)

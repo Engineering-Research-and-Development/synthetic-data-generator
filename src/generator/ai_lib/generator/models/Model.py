@@ -4,7 +4,6 @@ import shutil
 from abc import ABC, abstractmethod
 
 from ai_lib.Exceptions import ModelException
-from server.utils import MODEL_FOLDER
 
 
 class UnspecializedModel(ABC):
@@ -19,28 +18,28 @@ class UnspecializedModel(ABC):
         self.model_misc = None  # Placeholder for model miscellaneous info
         self._parse_shape(input_shape)
 
-    def rollback_latest_version(self):
-        last_folder = os.path.join(MODEL_FOLDER, self.get_last_folder())
+    def rollback_latest_version(self, model_folder: str):
+        last_folder = os.path.join(model_folder, self.get_last_folder(model_folder))
         print(last_folder)
         if os.path.isdir(last_folder):
             shutil.rmtree(last_folder)
             print("Deleted")
 
-    def check_folder_latest_version(self):
+    def check_folder_latest_version(self, model_folder: str):
         root_folder = self._get_model_root_folder()
-        my_folders_versions = [int(fold.split(":")[1]) for fold in os.listdir(MODEL_FOLDER) if root_folder in fold]
+        my_folders_versions = [int(fold.split(":")[1]) for fold in os.listdir(model_folder) if root_folder in fold]
         if len(my_folders_versions) > 0:
             return max(my_folders_versions)
         else:
             return 0
 
-    def get_last_folder(self):
+    def get_last_folder(self, model_folder: str):
         """
         Returns the name of the latest version image of the model
         :return:
         """
         root_folder = self._get_model_root_folder()
-        version = self.check_folder_latest_version()
+        version = self.check_folder_latest_version(model_folder)
         latest_version_folder = f"{root_folder}:{version}"
         return latest_version_folder
 
@@ -103,11 +102,11 @@ class UnspecializedModel(ABC):
         root_folder = f"{class_name}__{self.model_name}"
         return root_folder
 
-    def _create_new_version_folder(self):
-        new_version = self.check_folder_latest_version() + 1
+    def _create_new_version_folder(self, model_folder:str):
+        new_version = self.check_folder_latest_version(model_folder) + 1
         root_folder = self._get_model_root_folder()
         new_version_folder = f"{root_folder}:{new_version}"
-        save_folder = os.path.join(MODEL_FOLDER, new_version_folder)
+        save_folder = os.path.join(model_folder, new_version_folder)
 
         if not os.path.isdir(save_folder):
             os.makedirs(save_folder)

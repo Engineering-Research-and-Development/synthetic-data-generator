@@ -4,12 +4,11 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
+from server.middleware_handlers import model_to_middleware
+from server.validation_schema import InferRequestData, TrainRequest, GeneratedResponse
+
 from ai_lib.generator.generate.train import run_train_inference_job
 from ai_lib.generator.generate.infer import run_infer_job
-from ai_lib.utils.parsing import parse_model_to_registry
-
-from server.middleware_handlers import save_trained_model
-from server.validation_schema import InferRequestData, TrainRequest, GeneratedResponse
 
 
 @asynccontextmanager
@@ -28,17 +27,13 @@ def train(request: TrainRequest):
     :param request: a request for train and infer
     :return:
     """
-    try:
-        request = request.model_dump()
-        results, metrics, model, data = run_train_inference_job(request["model"], [], request["dataset"],
-                                                                request["n_rows"])
-        model_to_save = parse_model_to_registry(model, data)
-        save_trained_model(model_to_save)
 
-        return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
-    except Exception as e:
-        print(e)
-        return JSONResponse(status_code=500, content={"error": "An error occurred while processing the output"})
+    request = request.model_dump()
+    results, metrics, model, data = run_train_inference_job(request["model"], [], request["dataset"],
+                                                            request["n_rows"])
+    model_to_middleware(model, data)
+
+    return JSONResponse(status_code=200,content={"result_data":results, "metrics": metrics})
 
 
 @generator.post("/infer",
