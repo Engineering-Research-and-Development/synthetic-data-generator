@@ -6,7 +6,7 @@ from ai_lib.Exceptions import ModelException
 from ai_lib.generator.evaluate.TabularComparison import TabularComparisonEvaluator
 from ai_lib.Dataset import Dataset
 from ai_lib.generator.model_factory import model_factory
-from server.utils import store_files
+from server.utils import store_files, MODEL_FOLDER
 
 
 def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
@@ -38,7 +38,7 @@ def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int
     results = generated.parse_tabular_data_json()
 
     # Remove after debug
-    store_files(m.get_last_folder(), df_predict, report)
+    store_files(m.get_last_folder(MODEL_FOLDER), df_predict, report)
     ######
 
     return results, report

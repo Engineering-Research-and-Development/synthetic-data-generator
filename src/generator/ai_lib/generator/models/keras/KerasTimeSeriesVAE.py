@@ -5,7 +5,7 @@ from ai_lib.Dataset import Dataset
 from .BaseVAE import BaseVAE, VAE
 from keras import layers
 
-from ai_lib.generator.preprocess.scale import standardize_time_series
+from ai_lib.preprocess.scale import standardize_time_series
 from .Sampling import Sampling
 
 

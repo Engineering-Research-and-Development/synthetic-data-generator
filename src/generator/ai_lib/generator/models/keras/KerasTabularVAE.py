@@ -3,7 +3,7 @@ from keras import layers
 
 from ai_lib.Dataset import Dataset
 from .BaseVAE import BaseVAE, VAE
-from ai_lib.generator.preprocess.scale import standardize_input
+from ai_lib.preprocess.scale import standardize_input
 from .Sampling import Sampling
 
 
