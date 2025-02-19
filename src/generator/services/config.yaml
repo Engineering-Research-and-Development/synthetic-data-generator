@@ -1,7 +1,0 @@
-model_registry:
-  url: "http://sdg-middleware:8001/"
-  apis:
-    trained_model_by_id: "trained_models/{}"
-    trained_model_version_by_id: "trained_models/{}/version/{}"
-    trained_models: "trained_models/"
-    system_models: "algorithms/"

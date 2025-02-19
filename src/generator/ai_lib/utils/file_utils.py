@@ -2,7 +2,7 @@ import json
 import pandas as pd
 import os
 
-from utils.structure import GENERATION_FOLDER
+from server.utils import GENERATION_FOLDER
 
 
 def store_files(gen_name: str, dataset: pd.DataFrame, metrics: dict):

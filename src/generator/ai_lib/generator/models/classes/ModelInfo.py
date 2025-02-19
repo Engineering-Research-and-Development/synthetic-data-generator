@@ -1,6 +1,3 @@
-from pandas.core.indexes.multi import names_compat
-
-
 class AllowedData:
     def __init__(self, dtype:str, is_categorical:bool):
         self.dtype = dtype

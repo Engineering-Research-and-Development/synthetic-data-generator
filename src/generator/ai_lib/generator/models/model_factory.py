@@ -1,8 +1,8 @@
-from exceptions.ModelException import ModelException
-from generator.models.classes.Model import UnspecializedModel
 import importlib
 
-from utils.parsing import parse_model_info
+from ai_lib.Exceptions import ModelException
+from ai_lib.generator.models.classes.Model import UnspecializedModel
+from ai_lib.utils.parsing import parse_model_info
 
 
 def dynamic_import(class_name:str):

@@ -1,5 +1,5 @@
-from generator.models.classes.Model import UnspecializedModel
-from generator.models.dataset.Dataset import Dataset
+from ai_lib.generator.models.classes.Model import UnspecializedModel
+from ai_lib.generator.models.dataset.Dataset import Dataset
 
 
 def parse_model_info(model_dict :dict):

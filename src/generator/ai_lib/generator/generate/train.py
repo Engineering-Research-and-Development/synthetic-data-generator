@@ -1,12 +1,13 @@
 import copy
 
-from exceptions.DataException import DataException
-from generator.models.classes.Model import UnspecializedModel
-from generator.models.dataset.Dataset import Dataset
-from generator.models.model_factory import model_factory
-from utils.file_utils import store_files
 import pandas as pd
-from generator.evaluate.tabular_evaluate import TabularComparisonEvaluator
+
+from ai_lib.Exceptions import DataException
+from ai_lib.generator.evaluate.tabular_evaluate import TabularComparisonEvaluator
+from ai_lib.generator.models.classes.Model import UnspecializedModel
+from ai_lib.generator.models.dataset.Dataset import Dataset
+from ai_lib.generator.models.model_factory import model_factory
+from ai_lib.utils.file_utils import store_files
 
 
 def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) \

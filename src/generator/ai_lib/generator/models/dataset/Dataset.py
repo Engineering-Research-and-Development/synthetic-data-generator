@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from exceptions.DataException import DataException
-
+from ai_lib.Exceptions import DataException
 
 NUMERICAL = "continuous"
 CATEGORICAL = "categorical"

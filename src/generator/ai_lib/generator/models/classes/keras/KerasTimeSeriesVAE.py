@@ -6,11 +6,11 @@ import keras
 from keras import layers, saving, ops
 import tensorflow as tf
 
-from generator.models.classes.Model import UnspecializedModel
-from generator.models.classes.ModelInfo import ModelInfo, AllowedData
-from generator.models.classes.TrainingInfo import TrainingInfo
-from generator.models.dataset.Dataset import Dataset
-from generator.models.preprocess.scale import standardize_input
+from ai_lib.generator.models.classes.Model import UnspecializedModel
+from ai_lib.generator.models.classes.ModelInfo import ModelInfo, AllowedData
+from ai_lib.generator.models.classes.TrainingInfo import TrainingInfo
+from ai_lib.generator.models.dataset.Dataset import Dataset
+from ai_lib.generator.models.preprocess.scale import standardize_input, standardize_time_series
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
@@ -53,7 +53,7 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=-1))
+            reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=(-1,)))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
@@ -70,7 +70,7 @@ class VAE(keras.Model):
 
 
 
-class KerasTabularVAE(UnspecializedModel):
+class KerasTimeSeriesVAE(UnspecializedModel):
 
     def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
         super().__init__(metadata, model_name, input_shape, model_filepath)
@@ -80,19 +80,24 @@ class KerasTabularVAE(UnspecializedModel):
 
     def build(self, input_shape:tuple[int,...]):
         encoder_inputs = keras.Input(shape=input_shape)
-        x = layers.Dense(32, activation="relu")(encoder_inputs)
-        x = layers.Dense(64, activation="relu")(x)
+        encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
+        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
+        x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same")(x)
+        x = layers.Flatten()(x)
         x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
         z_log_var = layers.Dense(self.latent_dim,  name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
+        shape_out = int(np.round(input_shape[1]/4, 0))
         latent_inputs = keras.Input(shape=(self.latent_dim,))
-        y = layers.Dense(16, activation="relu")(latent_inputs)
-        y = layers.Dense(64, activation="relu")(y)
-        y = layers.Dense(32, activation="relu")(y)
-        decoder_outputs = layers.Dense(input_shape[0], activation="linear")(y)
+        y = layers.Dense(shape_out*64, activation="relu")(latent_inputs)
+        y = layers.Reshape((shape_out, 64))(y)
+        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(y)
+        y = layers.Conv1DTranspose(32,3, activation="relu", strides=2, padding="same")(y)
+        decoder_outputs = layers.Conv1DTranspose(input_shape[0], 3, activation="relu", padding="same")(y)
+        decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
         vae = VAE(encoder, decoder)
@@ -113,28 +118,31 @@ class KerasTabularVAE(UnspecializedModel):
 
 
     def scale(self, data: np.array):
-        return self.scaler.transform(data)
+        batch, feats, steps = data.shape
+        return self.scaler.transform(data.reshape(-1, feats*steps)).reshape(-1, feats, steps)
 
 
-    def inverse_scale(self, data: np.array):
-        return self.scaler.inverse_transform(data)
+    def inverse_scale(self, data):
+        batch, feats, steps = data.shape
+        return self.scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
 
 
     def pre_process(self, data: Dataset, **kwargs):
-        cont_np_data = data.continuous_data.to_numpy()
+        np_data = np.array(data.dataframe.values.tolist())
         if not self.scaler:
-            scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
+            scaler, np_input_scaled, _ = standardize_time_series(train_data=np_data)
             self.scaler = scaler
         else:
-            np_input_scaled = self.scale(cont_np_data)
+            np_input_scaled = self.scale(np_data)
+
         return np_input_scaled
 
 
     def train(self, data: Dataset, **kwargs):
         data  = self.pre_process(data)
 
-        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
-        history = self.model.fit(data, epochs=200, batch_size=8)
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=3e-3))
+        history = self.model.fit(data, epochs=300, batch_size=8)
         self.training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
@@ -183,11 +191,11 @@ class KerasTabularVAE(UnspecializedModel):
         system_model_info = ModelInfo(
             name = f"{cls.__module__}.{cls.__qualname__}",
             default_loss_function= "ELBO LOSS",
-            description= "A Tabular Variational Autoencoder for continuous numerical data generation",
+            description= "A Tabular Variational Autoencoder for Time Series Generation",
             allowed_data= [
-                AllowedData("float32", False),
-                AllowedData("int32", False),
-                AllowedData("int64", False),
+                AllowedData("List[float32]", False),
+                AllowedData("List[int32]", False),
+                AllowedData("List[int64]", False),
             ]
         ).get_model_info()
 

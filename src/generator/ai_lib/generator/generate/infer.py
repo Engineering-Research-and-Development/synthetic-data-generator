@@ -1,12 +1,12 @@
 import copy
 
-from generator.evaluate.tabular_evaluate import TabularComparisonEvaluator
-from exceptions.ModelException import ModelException
-from generator.models.dataset.Dataset import Dataset
-from generator.models.model_factory import model_factory
 import pandas as pd
 
-from utils.file_utils import store_files
+from ai_lib.Exceptions import ModelException
+from ai_lib.generator.evaluate.tabular_evaluate import TabularComparisonEvaluator
+from ai_lib.generator.models.dataset.Dataset import Dataset
+from ai_lib.generator.models.model_factory import model_factory
+from ai_lib.utils.file_utils import store_files
 
 
 def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
