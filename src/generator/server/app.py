@@ -7,8 +7,8 @@ from starlette.responses import RedirectResponse
 from server.middleware_handlers import model_to_middleware
 from server.validation_schema import InferRequestData, TrainRequest, GeneratedResponse
 
-from ai_lib.generator.generate.train import run_train_inference_job
-from ai_lib.generator.generate.infer import run_infer_job
+from ai_lib.data_generator.generate.train import run_train_inference_job
+from ai_lib.data_generator.generate.infer import run_infer_job
 
 
 @asynccontextmanager

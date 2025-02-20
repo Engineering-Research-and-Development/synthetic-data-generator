@@ -3,10 +3,9 @@ import copy
 import pandas as pd
 
 from ai_lib.Exceptions import ModelException
-from ai_lib.generator.evaluate.TabularComparison import TabularComparisonEvaluator
+from ai_lib.data_generator.evaluate.TabularComparison import TabularComparisonEvaluator
 from ai_lib.Dataset import Dataset
-from ai_lib.generator.model_factory import model_factory
-from server.utils import store_files, MODEL_FOLDER
+from ai_lib.data_generator.model_factory import model_factory
 
 
 def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
@@ -20,7 +19,7 @@ def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int
 
     m = model_factory(model, data.input_shape)
     predicted_data = m.infer(n_rows)
-    predicted_data = m.inverse_scale(predicted_data)
+    predicted_data = m._inverse_scale(predicted_data)
     df_predict = pd.DataFrame(data=predicted_data.tolist(),
                               columns=data.columns)
 
@@ -36,9 +35,5 @@ def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int
     generated.dataframe = df_predict
 
     results = generated.parse_tabular_data_json()
-
-    # Remove after debug
-    store_files(m.get_last_folder(MODEL_FOLDER), df_predict, report)
-    ######
 
     return results, report

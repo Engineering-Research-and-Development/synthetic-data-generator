@@ -1,7 +1,7 @@
 import importlib
 
 from ai_lib.Exceptions import ModelException
-from ai_lib.generator.models.Model import UnspecializedModel
+from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 
 
 def dynamic_import(class_name:str):

@@ -9,7 +9,7 @@ import os
 from yaml import safe_load
 
 from ai_lib.Exceptions import ModelException
-from ai_lib.generator.models.Model import UnspecializedModel
+from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from ai_lib.Dataset import Dataset
 from .utils import MODEL_FOLDER, create_folder_structure
 

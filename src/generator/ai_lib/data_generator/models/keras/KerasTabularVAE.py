@@ -2,14 +2,14 @@ import keras
 from keras import layers
 
 from ai_lib.Dataset import Dataset
-from .BaseVAE import BaseVAE, VAE
+from .BaseKerasVAE import BaseKerasVAE, VAE
 from ai_lib.preprocess.scale import standardize_input
 from .Sampling import Sampling
 
 
-class KerasTabularVAE(BaseVAE):
-    def __init__(self, metadata: dict, model_name: str, input_shape: str = "", model_filepath: str = None, latent_dim: int = 2):
-        super().__init__(metadata, model_name, input_shape, model_filepath, latent_dim)
+class KerasTabularKerasVAE(BaseKerasVAE):
+    def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
+        super().__init__(metadata, model_name, input_shape, latent_dim)
 
     def build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -32,11 +32,11 @@ class KerasTabularVAE(BaseVAE):
         vae.summary()
         return vae
 
-    def pre_process(self, data: Dataset, **kwargs):
+    def _pre_process(self, data: Dataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
         if not self.scaler:
             scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
             self.scaler = scaler
         else:
-            np_input_scaled = self.scale(cont_np_data)
+            np_input_scaled = self._scale(cont_np_data)
         return np_input_scaled
