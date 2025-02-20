@@ -2,16 +2,16 @@ import keras
 from keras import layers
 
 from ai_lib.Dataset import Dataset
-from .BaseKerasVAE import BaseKerasVAE, VAE
+from ai_lib.data_generator.models.base.KerasBaseVAE import BaseKerasVAE, VAE
 from ai_lib.preprocess.scale import standardize_input
-from .Sampling import Sampling
+from ai_lib.data_generator.models.Sampling import Sampling
 
 
 class KerasTabularKerasVAE(BaseKerasVAE):
     def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
         super().__init__(metadata, model_name, input_shape, latent_dim)
 
-    def build(self, input_shape: tuple[int, ...]):
+    def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
         x = layers.Dense(32, activation="relu")(encoder_inputs)
         x = layers.Dense(64, activation="relu")(x)

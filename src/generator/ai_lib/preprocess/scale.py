@@ -12,8 +12,6 @@ def standardize_input(train_data:np.array, test_data:np.array=None) -> tuple[np.
 
 def standardize_time_series(train_data:np.array, test_data:np.array=None) -> tuple[np.array, np.array, StandardScaler]:
     scaler = StandardScaler()
-
-    print(train_data.shape)
     batch, features, steps = train_data.shape
     train_data = train_data.reshape(-1, features*steps)
 

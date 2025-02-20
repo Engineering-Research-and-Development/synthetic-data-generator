@@ -5,9 +5,9 @@ from keras.api import layers, ops
 class Sampling(layers.Layer):
     """Uses (z_mean, z_log_var) to sample z, the vector encoding a digit."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, seed: int = 42, **kwargs):
         super().__init__(**kwargs)
-        self.seed_generator = keras.random.SeedGenerator(42)
+        self.seed_generator = keras.random.SeedGenerator(seed)
 
     def call(self, inputs):
         z_mean, z_log_var = inputs

@@ -8,7 +8,7 @@ import tensorflow as tf
 
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
-from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
+from ai_lib.data_generator.generate.TrainingInfo import TrainingInfo
 from ai_lib.Dataset import Dataset
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
@@ -20,7 +20,7 @@ class BaseKerasVAE(UnspecializedModel):
         self.latent_dim = latent_dim
         self.scaler = None
         if not self.model and self.input_shape:
-            self.model = self.build(self.input_shape)
+            self.model = self._build(self.input_shape)
 
 
     def load(self, folder_path: str):
@@ -34,7 +34,7 @@ class BaseKerasVAE(UnspecializedModel):
         with open(scaler_filename, "rb") as f:
             self.scaler = pickle.load(f)
 
-    def save(self, folder_path: str, **kwargs):
+    def save(self, folder_path: str):
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         saving.save_model(self.model.encoder, encoder_filename)
@@ -47,7 +47,7 @@ class BaseKerasVAE(UnspecializedModel):
     def fine_tune(self, data: np.array, **kwargs):
         pass
 
-    def build(self, input_shape: str):
+    def _build(self, input_shape: str):
         pass
 
     def _scale(self, data: np.array):

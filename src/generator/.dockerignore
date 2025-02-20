@@ -34,5 +34,4 @@ wheels/
 *.egg
 
 Dockerfile
-setup.py
 test

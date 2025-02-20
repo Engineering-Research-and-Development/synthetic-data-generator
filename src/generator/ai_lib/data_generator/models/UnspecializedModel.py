@@ -2,7 +2,6 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 from ai_lib.Dataset import Dataset
-from ai_lib.Exceptions import ModelException
 
 
 class UnspecializedModel(ABC):
@@ -17,7 +16,7 @@ class UnspecializedModel(ABC):
         self._parse_shape(self.input_shape)
 
     @abstractmethod
-    def build(self, input_shape: str):
+    def _build(self, input_shape: str):
         raise NotImplementedError
 
     @abstractmethod
@@ -56,7 +55,7 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def save(self, **kwargs):
+    def save(self, folder_path):
         """Save Model."""
         raise NotImplementedError
 
@@ -78,8 +77,4 @@ class UnspecializedModel(ABC):
         return tuple([int(n) for n in stringed_shape.split(",") if n != ""])
 
     def _parse_shape(self, input_shape: str):
-        try:
-            tuple_shape = self._parse_stringed_input_shape(input_shape)
-            self.input_shape = tuple_shape
-        except ValueError:
-            raise ModelException("Cannot build the model, missing input shape")
+        self.input_shape = self._parse_stringed_input_shape(input_shape)

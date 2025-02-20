@@ -11,7 +11,7 @@ from yaml import safe_load
 from ai_lib.Exceptions import ModelException
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from ai_lib.Dataset import Dataset
-from .utils import MODEL_FOLDER, create_folder_structure
+from .file_utils import MODEL_FOLDER, create_folder_structure
 
 middleware = os.getenv("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 

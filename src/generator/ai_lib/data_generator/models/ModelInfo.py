@@ -11,7 +11,6 @@ class ModelInfo:
         self.allowed_data = allowed_data
 
     def get_model_info(self):
-
         allowed_data = [
             {
                 "data_type": ad.dtype,
