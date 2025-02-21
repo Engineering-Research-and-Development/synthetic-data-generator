@@ -12,6 +12,8 @@ from generator.models.classes.TrainingInfo import TrainingInfo
 from generator.models.dataset.Dataset import Dataset
 from generator.models.preprocess.scale import standardize_time_series
 
+
+
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
@@ -56,12 +58,14 @@ class VAE(keras.Model):
             reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=(-1,)))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
-            total_loss = reconstruction_loss + kl_loss
+            total_loss = reconstruction_loss + 0.15*kl_loss
         grads = tape.gradient(total_loss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
+
+
         return {
             "loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
@@ -69,22 +73,39 @@ class VAE(keras.Model):
         }
 
 
+    def _test_latent_space(self, data):
+
+        from sklearn.decomposition import PCA
+        import matplotlib.pyplot as plt
+        from utils.structure import GENERATION_FOLDER
+
+        z_means, z_log_vars, _ = self.encoder.predict(data)
+        pca = PCA(n_components=2)
+        z_pca = pca.fit_transform(z_means)
+        plt.scatter(z_pca[:, 0], z_pca[:, 1])
+        plt.title("Latent Space Distribution")
+        plt.savefig(os.path.join(GENERATION_FOLDER, "plot.png"))
+        print(f"z_mean mean: {np.mean(z_means)}, std: {np.std(z_means)}")
+        print(f"z_log_var mean: {np.mean(z_log_vars)}, std: {np.std(z_log_vars)}")
+
+
 
 class KerasTimeSeriesVAE(UnspecializedModel):
 
     def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
         super().__init__(metadata, model_name, input_shape, model_filepath)
-        self.latent_dim = 2
+        self.latent_dim = 6
         self._initialize()
 
 
     def build(self, input_shape:tuple[int,...]):
+
         encoder_inputs = keras.Input(shape=input_shape)
         encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
         x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
         x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same")(x)
         x = layers.Flatten()(x)
-        x = layers.Dense(16, activation="relu")(x)
+        x = layers.Dense(64, activation="relu")(x)
         z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
         z_log_var = layers.Dense(self.latent_dim,  name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
@@ -142,7 +163,7 @@ class KerasTimeSeriesVAE(UnspecializedModel):
         data  = self.pre_process(data)
 
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=3e-3))
-        history = self.model.fit(data, epochs=300, batch_size=8)
+        history = self.model.fit(data, shuffle=True, epochs=100, batch_size=16)
         self.training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
@@ -151,6 +172,8 @@ class KerasTimeSeriesVAE(UnspecializedModel):
             validation_samples=0
 
         )
+
+        self.model._test_latent_space(data)
 
 
     def fine_tune(self, data: np.array, **kwargs):
