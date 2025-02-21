@@ -22,7 +22,7 @@ jobs:
 
       - name: Run SonarQube Scan
         env:
-          SONAR_HOST_URL: "http://bmax:9000"
+          SONAR_HOST_URL: "http://sonarqube:9000"
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           curl -o sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
