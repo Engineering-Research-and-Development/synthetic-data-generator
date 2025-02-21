@@ -22,10 +22,15 @@ jobs:
 
       - name: Run SonarQube Scan
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
+          SONAR_HOST_URL: "http://100.117.166.97:9000"
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           curl -o sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner.zip -d $HOME/
           export PATH=$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH
           sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+
+      - name: Remove from Tailscale
+        if: always()
+        run: |
+          sudo tailscale down
