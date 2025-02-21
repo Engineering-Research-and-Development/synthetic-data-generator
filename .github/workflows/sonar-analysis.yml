@@ -14,8 +14,7 @@ jobs:
     steps:
       - name: Set up Tailscale Docker container
         run: |
-            docker run -d --name tailscale --network host --privileged \
-              -v /dev/net/tun:/dev/net/tun \
+            docker run -d \
               -e TS_AUTH_ONCE=True          
               -e TS_AUTHKEY=${{ secrets.TAILSCALE_AUTHKEY }} \
               tailscale/tailscale:latest
