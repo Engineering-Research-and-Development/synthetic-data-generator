@@ -1,0 +1,31 @@
+name: SonarQube Analysis
+
+on:
+  schedule:
+    - cron: "0 4 * * 1-5"  # Runs at 4 AM UTC (Monday-Friday)
+  push:
+    branches:
+      - "**"  # Runs on all branches
+  workflow_dispatch:
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+          sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run SonarQube Scan
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          curl -o sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner.zip -d $HOME/
+          export PATH=$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH
+          sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
