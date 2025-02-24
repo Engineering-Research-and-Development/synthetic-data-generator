@@ -1,4 +1,5 @@
 import pickle
+from abc import ABC
 
 import numpy as np
 import os
@@ -14,8 +15,8 @@ from ai_lib.Dataset import Dataset
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
-class BaseKerasVAE(UnspecializedModel):
-    def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
+class BaseKerasVAE(UnspecializedModel, ABC):
+    def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int):
         super().__init__(metadata, model_name, input_shape)
         self.latent_dim = latent_dim
         self.scaler = None
@@ -45,10 +46,10 @@ class BaseKerasVAE(UnspecializedModel):
             pickle.dump(self.scaler, f)
 
     def fine_tune(self, data: np.array, **kwargs):
-        pass
+        raise NotImplementedError
 
     def _build(self, input_shape: str):
-        pass
+        raise NotImplementedError
 
     def _scale(self, data: np.array):
         return self.scaler.transform(data)
@@ -57,7 +58,7 @@ class BaseKerasVAE(UnspecializedModel):
         return self.scaler.inverse_transform(data)
 
     def _pre_process(self, data: Dataset, **kwargs):
-        return data
+        raise NotImplementedError
 
     def train(self, data: Dataset, **kwargs):
         data = self._pre_process(data)

@@ -8,12 +8,11 @@ class UnspecializedModel(ABC):
     def __init__(self, metadata: dict, model_name: str, input_shape: str = None):
         self.metadata = metadata
         self.model_name = model_name
-        self.input_shape = input_shape
+        self.input_shape = self._parse_stringed_input_shape(input_shape)
         self.model = None  # Placeholder for the model instance
         self.scaler = None  # Placeholder for model scaler
         self.training_info = None  # Placeholder for training info
         self.model_misc = None  # Placeholder for model miscellaneous info
-        self._parse_shape(self.input_shape)
 
     @abstractmethod
     def _build(self, input_shape: str):
@@ -75,6 +74,3 @@ class UnspecializedModel(ABC):
         for b in brackets:
             stringed_shape = stringed_shape.replace(b, "")
         return tuple([int(n) for n in stringed_shape.split(",") if n != ""])
-
-    def _parse_shape(self, input_shape: str):
-        self.input_shape = self._parse_stringed_input_shape(input_shape)
