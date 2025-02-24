@@ -55,7 +55,6 @@ async def collect_user_input(input_data: UserDataInput):
                 model=model
             )
 
-    # This is aligned with Fabio's work on the generator
     if data.get('ai_model').get('new_model') and data.get('user_file'):
         url=generator_url+"/train"
     else:

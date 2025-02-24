@@ -24,7 +24,7 @@ def insert_data():
     # Insert TrainedModel
     trained_models = [
         TrainedModel.create(name=f"TrainedModel_{i}", dataset_name=f"Dataset_{i}", size=f"{(i+1)*15}MB",
-                            input_shape=f"({i+1}x{i+2}x{i+3})", algorithm_id=systems[(i+1) % 5])
+                            input_shape=f"({i+1},{i+2},{i+3})", algorithm_id=systems[(i+1) % 5])
         for i in range(5)
     ]
 
