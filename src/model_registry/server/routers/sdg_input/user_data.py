@@ -5,7 +5,7 @@ import requests
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
-from .handlers import check_function_parameters, check_user_file, check_ai_model
+from .handlers import check_function_parameters, check_user_file, check_ai_model,check_features_created_types
 from .schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input", tags=['SDG Input'])
@@ -35,7 +35,6 @@ async def collect_user_input(input_data: UserDataInput):
         user_file = check_user_file(data.get('user_file'))
         if not user_file:
             return JSONResponse(status_code=400, content="Error parsing input dataset")
-
         body=GeneratorDataOutput(
                             functions_id=functions_id,
                             n_rows=data.get('additional_rows'),
@@ -43,19 +42,25 @@ async def collect_user_input(input_data: UserDataInput):
                             dataset=user_file,
                             )
 
-    #Todo: Check and implement features_created controls
-    if data.get('features_created') is not None:
-        pass
 
-    if data.get('ai_model').get('new_model'):
+    if data.get('features_created') is not None:
+        result,error = check_features_created_types(data.get('features_created'), functions_id)
+        if not result:
+            return JSONResponse(status_code=400, content="The functions chosen are not compatible with the following"
+                                                         f' feature that you want to create ({error})')
+        else:
+            body = GeneratorDataOutput(
+                functions_id=functions_id,
+                n_rows=data.get('additional_rows'),
+                model=model
+            )
+
+    # This is aligned with Fabio's work on the generator
+    if data.get('ai_model').get('new_model') and data.get('user_file'):
         url=generator_url+"/train"
     else:
-        url=generator_url+"/fine_tune"
+        url=generator_url+"/infer"
 
-    response = requests.post(url, json=body.model_dump())
-    if response.status_code == 200:
-        return JSONResponse(status_code=200, content="Data augmentation started")
-    else:
-        return JSONResponse(status_code=response.status_code, content=json.loads(response.text))
+    return JSONResponse(status_code=200, content="Invoking training/infer endpoint")
 
 

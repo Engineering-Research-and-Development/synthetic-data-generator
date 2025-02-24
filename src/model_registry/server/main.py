@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     db.create_tables([Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion,
                       Function, Parameter, FunctionParameter])
 
-    if init_db:
+    if (type(init_db) == bool and init_db) or init_db == 'True':
         insert_data()
 
     yield
@@ -58,3 +58,8 @@ app.include_router(models.router)
 @app.get("/", include_in_schema=False)
 async def home_to_docs():
     return RedirectResponse(url="/docs")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

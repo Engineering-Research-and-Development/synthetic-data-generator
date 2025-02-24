@@ -2,7 +2,7 @@ from typing import Dict
 
 import peewee
 
-from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion
+from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion, Parameter, DataType
 from .schema import DatasetOutput, SupportedDatatypes, ModelOutput
 
 def check_function_parameters(functions: list[dict]) -> list:
@@ -19,6 +19,9 @@ def check_function_parameters(functions: list[dict]) -> list:
                          .where(FunctionParameter.function == function.get('function_id')))
         parameter_ids_list = [p.parameter_id for p in parameter_ids]
         input_param = [item['param_id'] for item in function.get('parameters')]
+        # If the functions are passed they must have parameters
+        if len(input_param) != len(parameter_ids_list):
+            return []
         if all(p in parameter_ids_list for p in input_param):
             functions_id.append(function['function_id'])
             continue
@@ -123,3 +126,22 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
             )
 
     return dataset_outputs
+
+def  check_features_created_types(features: list[dict],function_ids: list[int]):
+    """
+    This function checks if the features that the user has created and passed in input are
+    consistent with the functions' parameters tha have been selected
+    :return:
+    """
+    functions_param_types = (Parameter
+             .select()
+             .join(FunctionParameter)
+             .where(FunctionParameter.function << function_ids))
+
+    function_params_dict = {elem['parameter_type']:'' for elem in functions_param_types.dicts()}
+    for feature in features:
+        if function_params_dict.get(feature['type']) is None:
+            return False,feature['type']
+    return True,None
+
+

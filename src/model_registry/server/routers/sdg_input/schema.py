@@ -1,26 +1,37 @@
 from enum import Enum
 from typing import List, Optional, Dict
-from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel, PositiveInt, model_validator, Field
 
 
 class ParametersInput(BaseModel):
-    param_id: int
+    param_id: PositiveInt
     value: float
 
 class FunctionData(BaseModel):
-    feature: str
-    function_id: int
+    feature: str = Field(pattern="^[^ ](.*[^ ])?$",
+                         description="This field does NOT allow strings that"
+                                     " start or end with spaces or are empty",
+                         examples=["A feature name"])
+    function_id: PositiveInt
     parameters: List[ParametersInput]
 
 class AiModel(BaseModel):
-    selected_model_id: int
+    selected_model_id: PositiveInt
     new_model: Optional[bool] = False
-    new_model_name: Optional[str] = None
-    model_version: Optional[str] = None
+    new_model_name: Optional[str] = Field(pattern="^[^ ](.*[^ ])?$",
+                         description="The name of the new AI model.\n"
+                                     "This field does NOT allow strings that"
+                                     " start or end with spaces or are empty",
+                         examples=["A name of a new model"])
+    model_version: Optional[str] = Field(pattern="^[^ ](.*[^ ])?$",
+                         description="The name of the version of the AI model.\n"
+                                     "This field does NOT allow strings that"
+                                     " start or end with spaces or are empty",
+                         examples=["The name of a version"])
 
 class SupportedDatatypes(str, Enum):
-    float = "float32"
-    int = "int32"
+    float = "float"
+    int = "int"
 
 class SupportedDatatypesCategory(str, Enum):
     continuous = "continuous"
@@ -39,17 +50,14 @@ class UserDataInput(BaseModel):
     functions: List[FunctionData]
     ai_model: AiModel
     user_file: Optional[List[Dict]] = None
-    features_created: Optional[FeaturesCreated] = None
+    features_created: Optional[List[FeaturesCreated]] = None
 
-    @classmethod
-    def validate_either_present(cls, v, values, field):
-        if field.name == "user_file":
-            if v is None and not values.get("features_created"):
-                raise ValueError("Either 'user_file' or 'features_created' must be provided.")
-        elif field.name == "features_created":
-            if v is None and not values.get("user_file"):
-                raise ValueError("Either 'user_file' or 'features_created' must be provided.")
-        return v
+    @model_validator(mode='after')
+    def validate_either_present(self):
+        if (self.user_file is None) != (self.features_created is None):
+            return self
+        else:
+            raise ValueError("Either 'user_file' or 'features_created' must be provided. Not both")
 
 
 class ModelOutput(BaseModel):
@@ -71,4 +79,4 @@ class GeneratorDataOutput(BaseModel):
     functions_id: List[PositiveInt]
     model: ModelOutput
     n_rows: PositiveInt
-    dataset: List[DatasetOutput]
+    dataset: List[DatasetOutput] | None = None
