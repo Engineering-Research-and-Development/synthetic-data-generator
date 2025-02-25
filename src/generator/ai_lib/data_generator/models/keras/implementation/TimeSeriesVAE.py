@@ -2,6 +2,7 @@ import numpy as np
 import keras
 
 from ai_lib.Dataset import Dataset
+from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
 from keras import layers
 
@@ -48,11 +49,9 @@ class KerasTimeSeriesKerasVAE(BaseKerasVAE):
         batch, feats, steps = data.shape
         return self.scaler.transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
 
-
     def inverse_scale(self, data: np.array):
         batch, feats, steps = data.shape
         return self.scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
-
 
     def _pre_process(self, data: Dataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
@@ -62,3 +61,16 @@ class KerasTimeSeriesKerasVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(np_data)
         return np_input_scaled
+
+    @classmethod
+    def self_describe(cls):
+        return ModelInfo(
+            name=f"{cls.__module__}.{cls.__qualname__}",
+            default_loss_function="ELBO LOSS",
+            description="A Beta-Variational Autoencoder for time series generation",
+            allowed_data=[
+                AllowedData("float32", False),
+                AllowedData("int32", False),
+                AllowedData("int64", False),
+            ]
+        ).get_model_info()

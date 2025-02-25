@@ -8,7 +8,6 @@ from keras import saving, ops
 import tensorflow as tf
 
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
-from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
 from ai_lib.Dataset import Dataset
 
@@ -84,16 +83,7 @@ class BaseKerasVAE(UnspecializedModel, ABC):
 
     @classmethod
     def self_describe(cls):
-        return ModelInfo(
-            name=f"{cls.__module__}.{cls.__qualname__}",
-            default_loss_function="ELBO LOSS",
-            description="A Variational Autoencoder for data generation",
-            allowed_data=[
-                AllowedData("float32", False),
-                AllowedData("int32", False),
-                AllowedData("int64", False),
-            ]
-        ).get_model_info()
+        raise NotImplementedError
 
 
 class VAE(keras.Model):

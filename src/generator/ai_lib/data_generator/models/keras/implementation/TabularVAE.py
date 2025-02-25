@@ -2,6 +2,7 @@ import keras
 from keras import layers
 
 from ai_lib.Dataset import Dataset
+from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
 from ai_lib.preprocess.scale import standardize_input
 from ai_lib.data_generator.models.keras.Sampling import Sampling
@@ -44,3 +45,17 @@ class KerasTabularKerasVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(cont_np_data)
         return np_input_scaled
+
+
+    @classmethod
+    def self_describe(cls):
+        return ModelInfo(
+            name=f"{cls.__module__}.{cls.__qualname__}",
+            default_loss_function="ELBO LOSS",
+            description="A Variational Autoencoder for data generation",
+            allowed_data=[
+                AllowedData("float32", False),
+                AllowedData("int32", False),
+                AllowedData("int64", False),
+            ]
+        ).get_model_info()
