@@ -7,35 +7,46 @@ class ParametersInput(BaseModel):
     param_id: PositiveInt
     value: float
 
+
 class FunctionData(BaseModel):
-    feature: str = Field(pattern="^[^ ](.*[^ ])?$",
-                         description="This field does NOT allow strings that"
-                                     " start or end with spaces or are empty",
-                         examples=["A feature name"])
+    feature: str = Field(
+        pattern="^[^ ](.*[^ ])?$",
+        description="This field does NOT allow strings that"
+        " start or end with spaces or are empty",
+        examples=["A feature name"],
+    )
     function_id: PositiveInt
     parameters: List[ParametersInput]
+
 
 class AiModel(BaseModel):
     selected_model_id: PositiveInt
     new_model: Optional[bool] = False
-    new_model_name: Optional[str] = Field(pattern="^[^ ](.*[^ ])?$",
-                         description="The name of the new AI model.\n"
-                                     "This field does NOT allow strings that"
-                                     " start or end with spaces or are empty",
-                         examples=["A name of a new model"])
-    model_version: Optional[str] = Field(pattern="^[^ ](.*[^ ])?$",
-                         description="The name of the version of the AI model.\n"
-                                     "This field does NOT allow strings that"
-                                     " start or end with spaces or are empty",
-                         examples=["The name of a version"])
+    new_model_name: Optional[str] = Field(
+        pattern="^[^ ](.*[^ ])?$",
+        description="The name of the new AI model.\n"
+        "This field does NOT allow strings that"
+        " start or end with spaces or are empty",
+        examples=["A name of a new model"],
+    )
+    model_version: Optional[str] = Field(
+        pattern="^[^ ](.*[^ ])?$",
+        description="The name of the version of the AI model.\n"
+        "This field does NOT allow strings that"
+        " start or end with spaces or are empty",
+        examples=["The name of a version"],
+    )
+
 
 class SupportedDatatypes(str, Enum):
     float = "float"
     int = "int"
 
+
 class SupportedDatatypesCategory(str, Enum):
     continuous = "continuous"
     categorical = "categorical"
+
 
 class FeaturesCreated(BaseModel):
     feature: str
@@ -45,6 +56,7 @@ class FeaturesCreated(BaseModel):
     class Config:
         use_enum_values = True
 
+
 class UserDataInput(BaseModel):
     additional_rows: PositiveInt
     functions: List[FunctionData]
@@ -52,12 +64,14 @@ class UserDataInput(BaseModel):
     user_file: Optional[List[Dict]] = None
     features_created: Optional[List[FeaturesCreated]] = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_either_present(self):
         if (self.user_file is None) != (self.features_created is None):
             return self
         else:
-            raise ValueError("Either 'user_file' or 'features_created' must be provided. Not both")
+            raise ValueError(
+                "Either 'user_file' or 'features_created' must be provided. Not both"
+            )
 
 
 class ModelOutput(BaseModel):
@@ -65,6 +79,7 @@ class ModelOutput(BaseModel):
     model_name: Optional[str]
     input_shape: Optional[str] = None
     image: Optional[str] = None
+
 
 class DatasetOutput(BaseModel):
     column_data: List[float | int]
@@ -74,6 +89,7 @@ class DatasetOutput(BaseModel):
 
     class Config:
         use_enum_values = True
+
 
 class GeneratorDataOutput(BaseModel):
     functions_id: List[PositiveInt]
