@@ -19,7 +19,7 @@ def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int
 
     m = model_factory(model, data.input_shape)
     predicted_data = m.infer(n_rows)
-    predicted_data = m._inverse_scale(predicted_data)
+    predicted_data = m.inverse_scale(predicted_data)
     df_predict = pd.DataFrame(data=predicted_data.tolist(),
                               columns=data.columns)
 

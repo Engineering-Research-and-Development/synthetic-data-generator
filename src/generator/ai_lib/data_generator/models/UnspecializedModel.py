@@ -19,7 +19,7 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def load(self, model_filepath: str):
+    def _load(self, model_filepath: str):
         """Load pre-trained weights."""
         raise NotImplementedError
 
@@ -29,7 +29,7 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _inverse_scale(self, data: np.array):
+    def inverse_scale(self, data: np.array):
         """Inverse scale inputs with its logic"""
         raise NotImplementedError
 
@@ -39,7 +39,7 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def train(self, data, **kwargs):
+    def train(self, data):
         """Train the model."""
         raise NotImplementedError
 

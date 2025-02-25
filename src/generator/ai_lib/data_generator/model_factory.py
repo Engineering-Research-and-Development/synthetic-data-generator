@@ -1,6 +1,5 @@
 import importlib
 
-from ai_lib.Exceptions import ModelException
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 
 
@@ -21,7 +20,7 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
     {
         "image" -> contains the possible path where to find the model image. If not none, model will be loaded from there
         "metadata" -> a dictionary itself, containing miscellaneous information
-        "algorithm_name" -> includes the model class module to load
+        "algorithm_name" -> includes the model class module to _load
         "model_name" -> the model name, used to identify the model itself
         "input_shape" [optional] -> contains a stringed tuple that identifies the input layer shape
     }
@@ -33,11 +32,6 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
     if input_shape is None:
         input_shape = input_shape_model
 
-    if model_type is None:
-        raise ModelException(f"Model algorithm not provided")
-    elif model_name is None:
-        raise ModelException(f"Model name not provided")
-
     ModelClass = dynamic_import(model_type)
     model = ModelClass(metadata, model_name, input_shape, model_file)
     return model
@@ -46,8 +40,8 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
 def parse_model_info(model_dict :dict):
     model_file = model_dict.get("image", None)
     metadata = model_dict.get("metadata", {})
-    model_type = model_dict.get("algorithm_name", None)
-    model_name = model_dict.get("model_name", None)
+    model_type = model_dict.get("algorithm_name")
+    model_name = model_dict.get("model_name")
     input_shape = model_dict.get("input_shape", "")
 
     return model_file, metadata, model_type, model_name, input_shape

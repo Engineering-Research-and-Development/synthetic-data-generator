@@ -18,7 +18,7 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     model.save()
 
     predicted_data = model.infer(n_rows)
-    predicted_data = model._inverse_scale(predicted_data)
+    predicted_data = model.inverse_scale(predicted_data)
 
     df_predict = pd.DataFrame(data=predicted_data.tolist(), columns=data.columns)
 

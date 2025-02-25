@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
-from ai_lib.data_generator.generate.TrainingInfo import TrainingInfo
+from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
 from ai_lib.Dataset import Dataset
 
 os.environ["KERAS_BACKEND"] = "tensorflow"
@@ -20,17 +20,22 @@ class BaseKerasVAE(UnspecializedModel, ABC):
         super().__init__(metadata, model_name, input_shape)
         self.latent_dim = latent_dim
         self.scaler = None
+        self.beta = None
+        self.learning_rate = None
+        self.batch_size = None
+        self.epochs = None
+
         if not self.model and self.input_shape:
             self.model = self._build(self.input_shape)
 
 
-    def load(self, folder_path: str):
+    def _load(self, folder_path: str):
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         scaler_filename = os.path.join(folder_path, "scaler.pkl")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
-        self.model = VAE(encoder, decoder)
+        self.model = VAE(encoder, decoder, self.beta)
 
         with open(scaler_filename, "rb") as f:
             self.scaler = pickle.load(f)
@@ -54,16 +59,16 @@ class BaseKerasVAE(UnspecializedModel, ABC):
     def _scale(self, data: np.array):
         return self.scaler.transform(data)
 
-    def _inverse_scale(self, data: np.array):
+    def inverse_scale(self, data: np.array):
         return self.scaler.inverse_transform(data)
 
     def _pre_process(self, data: Dataset, **kwargs):
         raise NotImplementedError
 
-    def train(self, data: Dataset, **kwargs):
+    def train(self, data: Dataset):
         data = self._pre_process(data)
-        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=kwargs.get('learning_rate', 1e-3)))
-        history = self.model.fit(data, epochs=kwargs.get('epochs', 200), batch_size=kwargs.get('batch_size', 8))
+        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate))
+        history = self.model.fit(data, epochs=self.epochs, batch_size=self.batch_size)
         self.training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
@@ -92,10 +97,11 @@ class BaseKerasVAE(UnspecializedModel, ABC):
 
 
 class VAE(keras.Model):
-    def __init__(self, encoder, decoder, **kwargs):
+    def __init__(self, encoder, decoder, beta=1, **kwargs):
         super().__init__(**kwargs)
         self.encoder = encoder
         self.decoder = decoder
+        self.beta = beta
         self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = keras.metrics.Mean(name="reconstruction_loss")
         self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
@@ -115,7 +121,7 @@ class VAE(keras.Model):
             reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=-1))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
-            total_loss = reconstruction_loss + kl_loss
+            total_loss = reconstruction_loss + self.beta * kl_loss
         grads = tape.gradient(total_loss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         self.total_loss_tracker.update_state(total_loss)

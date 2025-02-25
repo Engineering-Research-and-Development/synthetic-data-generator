@@ -2,16 +2,20 @@ import numpy as np
 import keras
 
 from ai_lib.Dataset import Dataset
-from ai_lib.data_generator.models.base.KerasBaseVAE import BaseKerasVAE, VAE
+from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
 from keras import layers
 
 from ai_lib.preprocess.scale import standardize_time_series
-from ai_lib.data_generator.models.Sampling import Sampling
+from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 
 class KerasTimeSeriesKerasVAE(BaseKerasVAE):
     def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
         super().__init__(metadata, model_name, input_shape, latent_dim)
+        self.beta = 0.15
+        self.learning_rate = 3e-3
+        self.epochs = 100
+        self.batch_size = 16
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -35,9 +39,20 @@ class KerasTimeSeriesKerasVAE(BaseKerasVAE):
         decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
-        vae = VAE(encoder, decoder)
+        vae = VAE(encoder, decoder, self.beta)
         vae.summary()
         return vae
+
+
+    def _scale(self, data: np.array):
+        batch, feats, steps = data.shape
+        return self.scaler.transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
+
+
+    def inverse_scale(self, data: np.array):
+        batch, feats, steps = data.shape
+        return self.scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
+
 
     def _pre_process(self, data: Dataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
