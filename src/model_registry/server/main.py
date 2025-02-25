@@ -1,5 +1,6 @@
 """This module is the main entry point of FASTApi. It also defines the life-cycle of the application as well as
 the database initialization on startup"""
+
 import os
 from contextlib import asynccontextmanager
 
@@ -7,16 +8,27 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
-from database.schema import Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion, \
-    db, Parameter, Function, FunctionParameter
+from database.schema import (
+    Algorithm,
+    DataType,
+    AllowedDataType,
+    TrainedModel,
+    Features,
+    TrainingInfo,
+    ModelVersion,
+    db,
+    Parameter,
+    Function,
+    FunctionParameter,
+)
 from dummy_data_generator import insert_data
-from routers import datatypes, functions,trained_models, algorithm, models
+from routers import datatypes, functions, trained_models, algorithm, models
 from routers.sdg_input import user_data
 
-allowed_origins = os.environ.get('allowed_origins', '*').split(',')
+allowed_origins = os.environ.get("allowed_origins", "*").split(",")
 allow_credentials = os.environ.get("allow_credentials", True)
-allow_methods = os.environ.get("allow_methods", '*').split(',')
-allow_headers = os.environ.get("allow_headers", '*').split(',')
+allow_methods = os.environ.get("allow_methods", "*").split(",")
+allow_headers = os.environ.get("allow_headers", "*").split(",")
 init_db = os.environ.get("INIT_DB", False)
 
 
@@ -27,10 +39,22 @@ async def lifespan(app: FastAPI):
     BEFORE the application is launched while the code after the yield is run AFTER the app execution. The code
     is run only once.
     """
-    db.create_tables([Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion,
-                      Function, Parameter, FunctionParameter])
+    db.create_tables(
+        [
+            Algorithm,
+            DataType,
+            AllowedDataType,
+            TrainedModel,
+            Features,
+            TrainingInfo,
+            ModelVersion,
+            Function,
+            Parameter,
+            FunctionParameter,
+        ]
+    )
 
-    if (isinstance(init_db,bool) and init_db) or init_db == 'True':
+    if (isinstance(init_db, bool) and init_db) or init_db == "True":
         insert_data()
 
     yield
@@ -55,6 +79,7 @@ app.include_router(algorithm.router)
 app.include_router(trained_models.router)
 app.include_router(models.router)
 
+
 @app.get("/", include_in_schema=False)
 async def home_to_docs():
     return RedirectResponse(url="/docs")
@@ -62,4 +87,5 @@ async def home_to_docs():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8001)
