@@ -9,8 +9,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: psf/black@stable
 
-  code_optimization:
-      - uses: actions/checkout@v4
       - uses: creyD/autoflake_action@v1.1
         with:
         options: --in-place --remove-all-unused-imports -r
