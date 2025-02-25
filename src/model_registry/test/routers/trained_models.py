@@ -1,8 +1,7 @@
 """This module tests the trained models router of all his methods"""
 import random
-
 import requests
-
+from copy import deepcopy
 from ..conftest import server,port
 
 
@@ -214,7 +213,7 @@ def test_create_trained_model():
     assert data['name'] == model['trained_model']['name']
     assert len(data['feature_schema']) == len(model['feature_schema'])
 
-from copy import deepcopy
+
 
 def test_bad_algo_id_create_trained_model():
     bad_data = deepcopy(model)
@@ -238,9 +237,6 @@ def test_delete_train_model():
     # We do a get so that we obtain the ids of training infos and model versions
     response = requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id) + "?include_versions=True&include_training_info=True")
     assert response.status_code == 200
-    data = response.json()
-    version_id = data['versions'][0]['version']['id']
-    training_id = data['versions'][0]['training_info']['id']
     # Now we delete the model and check if it has deleted both the versions and training infos
     assert requests.delete(f"{server}:{port}{endpoint}" + "/" + str(model_id)).status_code == 200
     assert requests.get(f"{server}:{port}{endpoint}" + "/" + str(model_id)).status_code == 404

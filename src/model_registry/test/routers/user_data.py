@@ -1,6 +1,3 @@
-import json
-from http.client import responses
-
 import requests
 from ..conftest import server,port
 from copy import deepcopy

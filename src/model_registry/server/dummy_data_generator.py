@@ -16,7 +16,7 @@ def insert_data():
     ]
 
     # Insert AllowedDataType
-    allowed_data_types = [
+    _ = [
         AllowedDataType.create(algorithm_id=systems[i], datatype=data_types[(i+1) % 5])
         for i in range(5)
     ]
@@ -29,7 +29,7 @@ def insert_data():
     ]
 
     # Insert Features
-    features = [
+    _ = [
         Features.create(feature_name=f"Feature_{i}", datatype=data_types[(i+3) % 5], feature_position=i+10,
                         trained_model=trained_models[(i+4) % 5])
         for i in range(5)
@@ -52,7 +52,7 @@ def insert_data():
     all_versions = model_versions + multiple_model_versions
 
     # Insert TrainingInfo
-    training_infos = [
+    _ = [
         TrainingInfo.create(loss_function=f"LossFunction_{index}", train_loss=0.1*index + 0.05, val_loss=0.2*index + 0.1,
                             train_samples=100*index + 10, val_samples=50*index + 5,model_version_id=i)
         for index,i in enumerate(all_versions)
@@ -72,8 +72,8 @@ def insert_data():
     ]
 
     # Insert FunctionParameter
-    parameter_types = ['int', 'float', 'string']
-    function_parameters = [
+    _ = ['int', 'float', 'string']
+    _ = [
         FunctionParameter.create(function=functions[i], parameter=parameters[(i+1) % 5])
         for i in range(5)
     ]

@@ -2,7 +2,7 @@ from typing import Dict
 
 import peewee
 
-from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion, Parameter, DataType
+from database.schema import FunctionParameter, Algorithm, TrainedModel, ModelVersion, Parameter
 from .schema import DatasetOutput, SupportedDatatypes, ModelOutput
 
 def check_function_parameters(functions: list[dict]) -> list:

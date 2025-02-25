@@ -1,7 +1,10 @@
 import os
 
-from peewee import *
+
 from datetime import datetime
+
+from peewee import PostgresqlDatabase, Model, AutoField, CharField, BooleanField, ForeignKeyField, DateTimeField, \
+    IntegerField, DoubleField, SQL, CompositeKey
 
 username = os.environ.get("db_username", "postgres")
 password = os.environ.get("db_password", "postgres")

@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     db.create_tables([Algorithm, DataType, AllowedDataType, TrainedModel, Features, TrainingInfo, ModelVersion,
                       Function, Parameter, FunctionParameter])
 
-    if (type(init_db) == bool and init_db) or init_db == 'True':
+    if (isinstance(init_db,bool) and init_db) or init_db == 'True':
         insert_data()
 
     yield

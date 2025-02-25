@@ -30,7 +30,8 @@ async def get_all_trained_models(include_version_ids: bool | None = Query(descri
         results = [PydanticTrainedModel(**trained_models) for trained_models in
                    TrainedModel.select(TrainedModel,Algorithm.name.alias('algorithm_name')).join(Algorithm).dicts()]
         return results
-    else: return db_handler.get_models_and_version_ids()
+    else:
+        return db_handler.get_models_and_version_ids()
 
 
 @router.get("/{trained_model_id}",

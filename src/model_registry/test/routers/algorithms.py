@@ -1,7 +1,7 @@
 import requests
-
 from ..conftest import server,port
-
+import random
+from copy import deepcopy
 
 endpoint =  "/algorithms"
 
@@ -26,10 +26,6 @@ test_algorithm = {
   ]
 
 }
-
-
-import random
-from copy import deepcopy
 
 def test_create_algorithm():
     local_algo = deepcopy(test_algorithm)
@@ -72,7 +68,7 @@ def test_get_all_datatypes():
     if random_algo['allowed_data']:
         random_data = random.choice(random_algo['allowed_data'])
         assert random_data['datatype']
-        assert type(random_data['is_categorical']) == bool
+        assert isinstance(random_data['is_categorical'],bool)
 
 
 def test_get_algo_by_id():
@@ -99,7 +95,7 @@ def test_get_algo_by_id_with_datatypes():
     if data['allowed_data']:
         random_data = random.choice(data['allowed_data'])
         assert random_data['datatype']
-        assert type(random_data['is_categorical']) == bool
+        assert isinstance(random_data['is_categorical'],bool)
 
 def test_get_bad_algo_by_id_with_datatypes():
     response = requests.get(f"{server}:{port}{endpoint}" + "/1000/allowed_datatypes")
