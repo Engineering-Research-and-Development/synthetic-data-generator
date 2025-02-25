@@ -2,16 +2,12 @@ import random
 
 import requests
 
-from ..conftest import server,port
+from ..conftest import server, port
 
 
 endpoint = "/datatypes"
 
-test_datatype = {
-          "type":"TestDatatype",
-          "is_categorical":"false"
-}
-
+test_datatype = {"type": "TestDatatype", "is_categorical": "false"}
 
 
 def test_get_all_datatypes():
@@ -65,5 +61,9 @@ def test_wrong_datatype_payload():
     response = requests.get(f"{server}:{port}{endpoint}" + payload)
     assert response.status_code == 422
 
+
 def test_create_datatype():
-    assert requests.post(f"{server}:{port}{endpoint}",json=test_datatype).status_code == 201
+    assert (
+        requests.post(f"{server}:{port}{endpoint}", json=test_datatype).status_code
+        == 201
+    )

@@ -2,12 +2,15 @@ from fastapi import APIRouter
 from routers import algorithm, trained_models
 from database.validation.schema import AlgorithmsAndTrainedModels
 
-router = APIRouter(prefix="/models", tags=['All models'])
+router = APIRouter(prefix="/models", tags=["All models"])
+
 
 # The following functions will serve as the mains interface for the client layer
-@router.get("/",
-            name="Get all the algorithms and trained model in the registry",
-            summary="This function returns all the algorithm and trained models present in the registry")
+@router.get(
+    "/",
+    name="Get all the algorithms and trained model in the registry",
+    summary="This function returns all the algorithm and trained models present in the registry",
+)
 async def controller_get_all_models() -> AlgorithmsAndTrainedModels:
     """
     This returns all the algorithms and trained models present in the registry,
@@ -15,5 +18,6 @@ async def controller_get_all_models() -> AlgorithmsAndTrainedModels:
     """
     algorithms = await algorithm.get_all_algorithms(include_allowed_datatypes=True)
     train_models = await trained_models.get_all_trained_models(include_version_ids=True)
-    return AlgorithmsAndTrainedModels(algorithms=algorithms , trained_models=train_models)
-
+    return AlgorithmsAndTrainedModels(
+        algorithms=algorithms, trained_models=train_models
+    )
