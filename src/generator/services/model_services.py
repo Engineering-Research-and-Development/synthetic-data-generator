@@ -12,7 +12,7 @@ config_file = pkgutil.get_data("services", "config.yaml")
 config = safe_load(config_file)
 model_registry = config["model_registry"]
 
-model_registry_url = os.getenv("MODEL_REGISTRY_URL",  model_registry["url"])
+model_registry_url = os.getenv("MODEL_REGISTRY_URL", model_registry["url"])
 
 
 def get_trained_model_version_by_id(model_id: int, version_id: int) -> dict:
@@ -22,8 +22,9 @@ def get_trained_model_version_by_id(model_id: int, version_id: int) -> dict:
     :param version_id: the unique identifier of the version
     :return:
     """
-    api = model_registry_url + model_registry["apis"]["trained_model_version_by_id"].format(str(model_id),
-                                                                                               str(version_id))
+    api = model_registry_url + model_registry["apis"][
+        "trained_model_version_by_id"
+    ].format(str(model_id), str(version_id))
     try:
         response = requests.get(api)
     except RequestException:
@@ -38,7 +39,9 @@ def get_trained_model_by_id(model_id: int) -> dict:
     :param model_id: the unique identifier of the model
     :return: a dictionary containing model information
     """
-    api = model_registry_url + model_registry["apis"]["trained_model_by_id"].format(str(model_id))
+    api = model_registry_url + model_registry["apis"]["trained_model_by_id"].format(
+        str(model_id)
+    )
     try:
         response = requests.get(api)
     except RequestException:
@@ -74,10 +77,13 @@ def save_trained_model(model_to_send: dict):
     try:
         response = requests.post(api, headers=headers, data=body)
         if response.status_code > 300:
-            raise ModelException("Something went wrong in saving the model, rollback to latest version")
+            raise ModelException(
+                "Something went wrong in saving the model, rollback to latest version"
+            )
     except RequestException:
-        raise ModelException("Impossible to reach Model Repository, rollback to latest version")
-
+        raise ModelException(
+            "Impossible to reach Model Repository, rollback to latest version"
+        )
 
 
 def save_system_model(model: dict):

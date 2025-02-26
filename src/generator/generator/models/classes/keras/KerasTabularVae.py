@@ -53,7 +53,9 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=-1))
+            reconstruction_loss = ops.mean(
+                ops.sum(ops.abs(data - reconstruction), axis=-1)
+            )
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
             total_loss = reconstruction_loss + kl_loss
@@ -69,22 +71,26 @@ class VAE(keras.Model):
         }
 
 
-
 class KerasTabularVAE(UnspecializedModel):
 
-    def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
+    def __init__(
+        self,
+        metadata: dict,
+        model_name: str,
+        input_shape: str = "",
+        model_filepath: str = None,
+    ):
         super().__init__(metadata, model_name, input_shape, model_filepath)
         self.latent_dim = 2
         self._initialize()
 
-
-    def build(self, input_shape:tuple[int,...]):
+    def build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
         x = layers.Dense(32, activation="relu")(encoder_inputs)
         x = layers.Dense(64, activation="relu")(x)
         x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
-        z_log_var = layers.Dense(self.latent_dim,  name="z_log_var")(x)
+        z_log_var = layers.Dense(self.latent_dim, name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
@@ -99,7 +105,6 @@ class KerasTabularVAE(UnspecializedModel):
         vae.summary()
         return vae
 
-
     def load(self):
         encoder_filename = os.path.join(self.model_filepath, "encoder.keras")
         decoder_filename = os.path.join(self.model_filepath, "decoder.keras")
@@ -111,14 +116,11 @@ class KerasTabularVAE(UnspecializedModel):
             scaler = pickle.load(f)
         return model, scaler
 
-
     def scale(self, data: np.array):
         return self.scaler.transform(data)
 
-
     def inverse_scale(self, data: np.array):
         return self.scaler.inverse_transform(data)
-
 
     def pre_process(self, data: Dataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
@@ -129,9 +131,8 @@ class KerasTabularVAE(UnspecializedModel):
             np_input_scaled = self.scale(cont_np_data)
         return np_input_scaled
 
-
     def train(self, data: Dataset, **kwargs):
-        data  = self.pre_process(data)
+        data = self.pre_process(data)
 
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=1e-3))
         history = self.model.fit(data, epochs=200, batch_size=8)
@@ -140,20 +141,16 @@ class KerasTabularVAE(UnspecializedModel):
             train_loss=history.history["loss"][-1].numpy().item(),
             train_samples=data.shape[0],
             validation_loss=-1,
-            validation_samples=0
-
+            validation_samples=0,
         )
-
 
     def fine_tune(self, data: np.array, **kwargs):
         pass
 
-
-    def infer(self, n_rows:int, **kwargs):
+    def infer(self, n_rows: int, **kwargs):
         z_random = np.random.normal(size=(n_rows, self.latent_dim))
         results = self.model.decoder.predict(z_random)
         return results
-
 
     def save(self, **kwargs):
         save_folder = self._create_new_version_folder()
@@ -168,7 +165,7 @@ class KerasTabularVAE(UnspecializedModel):
 
         try:
             scaler_filename = os.path.join(save_folder, "scaler.pkl")
-            with open(scaler_filename, 'wb') as f:
+            with open(scaler_filename, "wb") as f:
                 pickle.dump(self.scaler, f)
         except Exception as e:
             print("Unable to save the scaler file", e)
@@ -176,22 +173,18 @@ class KerasTabularVAE(UnspecializedModel):
 
         self.model_filepath = save_folder
 
-
     @classmethod
     def self_describe(cls):
         # Returns a dictionary with model info, useful for initializing model
         system_model_info = ModelInfo(
-            name = f"{cls.__module__}.{cls.__qualname__}",
-            default_loss_function= "ELBO LOSS",
-            description= "A Tabular Variational Autoencoder for continuous numerical data generation",
-            allowed_data= [
+            name=f"{cls.__module__}.{cls.__qualname__}",
+            default_loss_function="ELBO LOSS",
+            description="A Tabular Variational Autoencoder for continuous numerical data generation",
+            allowed_data=[
                 AllowedData("float32", False),
                 AllowedData("int32", False),
                 AllowedData("int64", False),
-            ]
+            ],
         ).get_model_info()
 
         return system_model_info
-
-
-

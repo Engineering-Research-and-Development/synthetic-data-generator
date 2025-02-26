@@ -13,7 +13,6 @@ from generator.models.dataset.Dataset import Dataset
 from generator.models.preprocess.scale import standardize_time_series
 
 
-
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
@@ -55,23 +54,23 @@ class VAE(keras.Model):
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
             reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=(-1,)))
+            reconstruction_loss = ops.mean(
+                ops.sum(ops.abs(data - reconstruction), axis=(-1,))
+            )
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
-            total_loss = reconstruction_loss + 0.15*kl_loss
+            total_loss = reconstruction_loss + 0.15 * kl_loss
         grads = tape.gradient(total_loss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         self.total_loss_tracker.update_state(total_loss)
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
 
-
         return {
             "loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "kl_loss": self.kl_loss_tracker.result(),
         }
-
 
     def _test_latent_space(self, data):
 
@@ -89,42 +88,53 @@ class VAE(keras.Model):
         print(f"z_log_var mean: {np.mean(z_log_vars)}, std: {np.std(z_log_vars)}")
 
 
-
 class KerasTimeSeriesVAE(UnspecializedModel):
 
-    def __init__(self, metadata:dict, model_name:str, input_shape:str="", model_filepath:str=None):
+    def __init__(
+        self,
+        metadata: dict,
+        model_name: str,
+        input_shape: str = "",
+        model_filepath: str = None,
+    ):
         super().__init__(metadata, model_name, input_shape, model_filepath)
         self.latent_dim = 6
         self._initialize()
 
-
-    def build(self, input_shape:tuple[int,...]):
+    def build(self, input_shape: tuple[int, ...]):
 
         encoder_inputs = keras.Input(shape=input_shape)
         encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
-        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
+        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(
+            encoder_inputs
+        )
         x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same")(x)
         x = layers.Flatten()(x)
         x = layers.Dense(64, activation="relu")(x)
         z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
-        z_log_var = layers.Dense(self.latent_dim,  name="z_log_var")(x)
+        z_log_var = layers.Dense(self.latent_dim, name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
-        shape_out = int(np.round(input_shape[1]/4, 0))
+        shape_out = int(np.round(input_shape[1] / 4, 0))
         latent_inputs = keras.Input(shape=(self.latent_dim,))
-        y = layers.Dense(shape_out*64, activation="relu")(latent_inputs)
+        y = layers.Dense(shape_out * 64, activation="relu")(latent_inputs)
         y = layers.Reshape((shape_out, 64))(y)
-        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(y)
-        y = layers.Conv1DTranspose(32,3, activation="relu", strides=2, padding="same")(y)
-        decoder_outputs = layers.Conv1DTranspose(input_shape[0], 3, activation="relu", padding="same")(y)
+        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(
+            y
+        )
+        y = layers.Conv1DTranspose(32, 3, activation="relu", strides=2, padding="same")(
+            y
+        )
+        decoder_outputs = layers.Conv1DTranspose(
+            input_shape[0], 3, activation="relu", padding="same"
+        )(y)
         decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
         vae = VAE(encoder, decoder)
         vae.summary()
         return vae
-
 
     def load(self):
         encoder_filename = os.path.join(self.model_filepath, "encoder.keras")
@@ -137,16 +147,17 @@ class KerasTimeSeriesVAE(UnspecializedModel):
             scaler = pickle.load(f)
         return model, scaler
 
-
     def scale(self, data: np.array):
         batch, feats, steps = data.shape
-        return self.scaler.transform(data.reshape(-1, feats*steps)).reshape(-1, feats, steps)
-
+        return self.scaler.transform(data.reshape(-1, feats * steps)).reshape(
+            -1, feats, steps
+        )
 
     def inverse_scale(self, data):
         batch, feats, steps = data.shape
-        return self.scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
-
+        return self.scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(
+            -1, feats, steps
+        )
 
     def pre_process(self, data: Dataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
@@ -158,9 +169,8 @@ class KerasTimeSeriesVAE(UnspecializedModel):
 
         return np_input_scaled
 
-
     def train(self, data: Dataset, **kwargs):
-        data  = self.pre_process(data)
+        data = self.pre_process(data)
 
         self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=3e-3))
         history = self.model.fit(data, shuffle=True, epochs=100, batch_size=16)
@@ -169,22 +179,18 @@ class KerasTimeSeriesVAE(UnspecializedModel):
             train_loss=history.history["loss"][-1].numpy().item(),
             train_samples=data.shape[0],
             validation_loss=-1,
-            validation_samples=0
-
+            validation_samples=0,
         )
 
         self.model._test_latent_space(data)
 
-
     def fine_tune(self, data: np.array, **kwargs):
         pass
 
-
-    def infer(self, n_rows:int, **kwargs):
+    def infer(self, n_rows: int, **kwargs):
         z_random = np.random.normal(size=(n_rows, self.latent_dim))
         results = self.model.decoder.predict(z_random)
         return results
-
 
     def save(self, **kwargs):
         save_folder = self._create_new_version_folder()
@@ -199,7 +205,7 @@ class KerasTimeSeriesVAE(UnspecializedModel):
 
         try:
             scaler_filename = os.path.join(save_folder, "scaler.pkl")
-            with open(scaler_filename, 'wb') as f:
+            with open(scaler_filename, "wb") as f:
                 pickle.dump(self.scaler, f)
         except Exception as e:
             print("Unable to save the scaler file", e)
@@ -207,22 +213,18 @@ class KerasTimeSeriesVAE(UnspecializedModel):
 
         self.model_filepath = save_folder
 
-
     @classmethod
     def self_describe(cls):
         # Returns a dictionary with model info, useful for initializing model
         system_model_info = ModelInfo(
-            name = f"{cls.__module__}.{cls.__qualname__}",
-            default_loss_function= "ELBO LOSS",
-            description= "A Tabular Variational Autoencoder for Time Series Generation",
-            allowed_data= [
+            name=f"{cls.__module__}.{cls.__qualname__}",
+            default_loss_function="ELBO LOSS",
+            description="A Tabular Variational Autoencoder for Time Series Generation",
+            allowed_data=[
                 AllowedData("List[float32]", False),
                 AllowedData("List[int32]", False),
                 AllowedData("List[int64]", False),
-            ]
+            ],
         ).get_model_info()
 
         return system_model_info
-
-
-

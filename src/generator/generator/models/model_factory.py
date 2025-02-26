@@ -5,13 +5,13 @@ import importlib
 from utils.parsing import parse_model_info
 
 
-def dynamic_import(class_name:str):
-    module_name, class_name = class_name.rsplit('.', 1)
+def dynamic_import(class_name: str):
+    module_name, class_name = class_name.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
 
 
-def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
+def model_factory(model_dict: dict, input_shape: str = None) -> UnspecializedModel:
     """
     This function is a generic model factory. Takes a dictionary containing useful model information and plugs
     them in the model itself.
@@ -30,7 +30,9 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
     :return: An instance of a BaseModel class or any subclass
     :raises: ModelException
     """
-    model_file, metadata, model_type, model_name, input_shape_model = parse_model_info(model_dict)
+    model_file, metadata, model_type, model_name, input_shape_model = parse_model_info(
+        model_dict
+    )
     if input_shape is None:
         input_shape = input_shape_model
 
@@ -42,8 +44,3 @@ def model_factory(model_dict: dict, input_shape:str=None) -> UnspecializedModel:
     ModelClass = dynamic_import(model_type)
     model = ModelClass(metadata, model_name, input_shape, model_file)
     return model
-
-
-
-
-

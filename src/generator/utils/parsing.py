@@ -2,7 +2,7 @@ from generator.models.classes.Model import UnspecializedModel
 from generator.models.dataset.Dataset import Dataset
 
 
-def parse_model_info(model_dict :dict):
+def parse_model_info(model_dict: dict):
     model_file = model_dict.get("image", None)
     metadata = model_dict.get("metadata", {})
     model_type = model_dict.get("algorithm_name", None)
@@ -23,14 +23,13 @@ def parse_model_to_registry(model: UnspecializedModel, data: Dataset):
         "name": model.model_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm_name": model.self_describe().get("name", None)
+        "algorithm_name": model.self_describe().get("name", None),
     }
 
     model_to_save = {
         "trained_model": trained_model_misc,
         "version": version_info,
         "training_info": training_info,
-        "feature_schema": feature_list
+        "feature_schema": feature_list,
     }
     return model_to_save
-
