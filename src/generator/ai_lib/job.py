@@ -8,8 +8,9 @@ from ai_lib.data_generator.model_factory import model_factory
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 
 
-def job(model_info: dict, dataset: list, n_rows:int, save_filepath:str, train:bool) \
-        -> tuple[list[dict], dict, UnspecializedModel, Dataset]:
+def job(
+    model_info: dict, dataset: list, n_rows: int, save_filepath: str, train: bool
+) -> tuple[list[dict], dict, UnspecializedModel, Dataset]:
 
     if len(dataset) == 0:
         data_info = model_info.get("training_data_info", [])
@@ -25,15 +26,16 @@ def job(model_info: dict, dataset: list, n_rows:int, save_filepath:str, train:bo
         model.save(save_filepath)
 
     predicted_data = model.infer(n_rows)
-    df_predict = pd.DataFrame(data=predicted_data.tolist(),
-                              columns=data.columns)
+    df_predict = pd.DataFrame(data=predicted_data.tolist(), columns=data.columns)
 
     report = {"available": False}
     if len(data.dataframe) > 0:
-        evaluator = TabularComparisonEvaluator(real_data=data.dataframe,
-                                               synthetic_data=df_predict,
-                                               numerical_columns=data.continuous_columns,
-                                               categorical_columns=data.categorical_columns)
+        evaluator = TabularComparisonEvaluator(
+            real_data=data.dataframe,
+            synthetic_data=df_predict,
+            numerical_columns=data.continuous_columns,
+            categorical_columns=data.categorical_columns,
+        )
         report = evaluator.compute()
 
     generated = copy.deepcopy(data)

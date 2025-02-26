@@ -11,7 +11,9 @@ from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 
 class TimeSeriesVAE(BaseKerasVAE):
-    def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
+    def __init__(
+        self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2
+    ):
         super().__init__(metadata, model_name, input_shape, latent_dim)
         self._beta = 0.15
         self._learning_rate = 3e-3
@@ -21,7 +23,9 @@ class TimeSeriesVAE(BaseKerasVAE):
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
         encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
-        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(encoder_inputs)
+        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(
+            encoder_inputs
+        )
         x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same")(x)
         x = layers.Flatten()(x)
         x = layers.Dense(16, activation="relu")(x)
@@ -34,9 +38,15 @@ class TimeSeriesVAE(BaseKerasVAE):
         latent_inputs = keras.Input(shape=(self._latent_dim,))
         y = layers.Dense(shape_out * 64, activation="relu")(latent_inputs)
         y = layers.Reshape((shape_out, 64))(y)
-        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(y)
-        y = layers.Conv1DTranspose(32, 3, activation="relu", strides=2, padding="same")(y)
-        decoder_outputs = layers.Conv1DTranspose(input_shape[0], 3, activation="relu", padding="same")(y)
+        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(
+            y
+        )
+        y = layers.Conv1DTranspose(32, 3, activation="relu", strides=2, padding="same")(
+            y
+        )
+        decoder_outputs = layers.Conv1DTranspose(
+            input_shape[0], 3, activation="relu", padding="same"
+        )(y)
         decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
@@ -44,14 +54,17 @@ class TimeSeriesVAE(BaseKerasVAE):
         vae.summary()
         return vae
 
-
     def _scale(self, data: np.array):
         batch, feats, steps = data.shape
-        return self._scaler.transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
+        return self._scaler.transform(data.reshape(-1, feats * steps)).reshape(
+            -1, feats, steps
+        )
 
     def _inverse_scale(self, data: np.array):
         batch, feats, steps = data.shape
-        return self._scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(-1, feats, steps)
+        return self._scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(
+            -1, feats, steps
+        )
 
     def _pre_process(self, data: Dataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
@@ -72,5 +85,5 @@ class TimeSeriesVAE(BaseKerasVAE):
                 AllowedData("float32", False),
                 AllowedData("int32", False),
                 AllowedData("int64", False),
-            ]
+            ],
         ).get_model_info()

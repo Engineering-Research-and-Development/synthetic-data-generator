@@ -9,7 +9,9 @@ from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 
 class TabularVAE(BaseKerasVAE):
-    def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
+    def __init__(
+        self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2
+    ):
         super().__init__(metadata, model_name, input_shape, latent_dim)
         self._beta = 1
         self._learning_rate = 1e-3
@@ -37,7 +39,6 @@ class TabularVAE(BaseKerasVAE):
         vae.summary()
         return vae
 
-
     def _pre_process(self, data: Dataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
         if not self._scaler:
@@ -46,7 +47,6 @@ class TabularVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(cont_np_data)
         return np_input_scaled
-
 
     @classmethod
     def self_describe(cls):
@@ -58,5 +58,5 @@ class TabularVAE(BaseKerasVAE):
                 AllowedData("float32", False),
                 AllowedData("int32", False),
                 AllowedData("int64", False),
-            ]
+            ],
         ).get_model_info()

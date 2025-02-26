@@ -4,11 +4,15 @@ import importlib
 from typing import Generator
 
 base_path = "data_generator/models/"
-model_paths = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_generator/models/")
+model_paths = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data_generator/models/"
+)
 model_package = base_path.replace("/", ".")
 
 
-def find_implementations(root_path: str, implementation_folder: str = "implementation") -> list[str]:
+def find_implementations(
+    root_path: str, implementation_folder: str = "implementation"
+) -> list[str]:
     """
     Takes a root path and a name of a folder. Returns all modules existing in each of the so-named folders
     :param implementation_folder: folder name where implemented modules exist
@@ -16,11 +20,15 @@ def find_implementations(root_path: str, implementation_folder: str = "implement
     :return: list of stringed modules represented in py-like dot-notation
     """
     root_dir = Path(root_path).resolve()  # Ensure absolute path
-    implementation_dirs = root_dir.rglob(implementation_folder)  # Find all 'implementation' folders
+    implementation_dirs = root_dir.rglob(
+        implementation_folder
+    )  # Find all 'implementation' folders
     module_paths = []
 
     for impl_dir in implementation_dirs:
-        py_files = [file for file in impl_dir.glob("*.py") if file.name != "__init__.py"]
+        py_files = [
+            file for file in impl_dir.glob("*.py") if file.name != "__init__.py"
+        ]
 
         for file in py_files:
             rel_path = file.relative_to(root_dir).with_suffix("")  # Remove extension
