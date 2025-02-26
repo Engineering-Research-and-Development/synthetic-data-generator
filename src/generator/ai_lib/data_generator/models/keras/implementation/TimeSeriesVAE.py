@@ -10,7 +10,7 @@ from ai_lib.preprocess.scale import standardize_time_series
 from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 
-class KerasTimeSeriesKerasVAE(BaseKerasVAE):
+class TimeSeriesVAE(BaseKerasVAE):
     def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
         super().__init__(metadata, model_name, input_shape, latent_dim)
         self.beta = 0.15
