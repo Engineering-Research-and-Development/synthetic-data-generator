@@ -5,13 +5,47 @@ on:
     branches: [ "generator" ]
 
 jobs:
-  lint:
+  check_with_black:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false  # Prevents pushing directly to protected branches
+
+      - name: Run Black
+        uses: psf/black@stable
+        with:
+          options: "."
+          src: './src/'
+
+      - name: Commit and Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "Apply Black formatting"
+          branch: "black-auto-format"
+          delete-branch: true
+          title: "Auto-format code with Black"
+          body: "This PR contains automatic formatting fixes applied by Black."
+          labels: "auto-format, black"
+          assignees: ${{ github.actor }}
+
+  format_autoflake:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: creyD/autoflake_action@v1.1
+        with:
+          options: --in-place --remove-all-unused-imports -r
+
+  lint_tools:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.12"]
 
-    name: Lint
+    name: Linting
     steps:
       - name: Check out source repository
         uses: actions/checkout@v4
