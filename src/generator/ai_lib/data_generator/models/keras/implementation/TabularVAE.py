@@ -11,37 +11,38 @@ from ai_lib.data_generator.models.keras.Sampling import Sampling
 class TabularVAE(BaseKerasVAE):
     def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2):
         super().__init__(metadata, model_name, input_shape, latent_dim)
-        self.beta = 1
-        self.learning_rate = 1e-3
-        self.epochs = 200
-        self.batch_size = 8
+        self._beta = 1
+        self._learning_rate = 1e-3
+        self._epochs = 200
+        self._batch_size = 8
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
         x = layers.Dense(32, activation="relu")(encoder_inputs)
         x = layers.Dense(64, activation="relu")(x)
         x = layers.Dense(16, activation="relu")(x)
-        z_mean = layers.Dense(self.latent_dim, name="z_mean")(x)
-        z_log_var = layers.Dense(self.latent_dim, name="z_log_var")(x)
+        z_mean = layers.Dense(self._latent_dim, name="z_mean")(x)
+        z_log_var = layers.Dense(self._latent_dim, name="z_log_var")(x)
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
-        latent_inputs = keras.Input(shape=(self.latent_dim,))
+        latent_inputs = keras.Input(shape=(self._latent_dim,))
         y = layers.Dense(16, activation="relu")(latent_inputs)
         y = layers.Dense(64, activation="relu")(y)
         y = layers.Dense(32, activation="relu")(y)
         decoder_outputs = layers.Dense(input_shape[0], activation="linear")(y)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
-        vae = VAE(encoder, decoder, self.beta)
+        vae = VAE(encoder, decoder, self._beta)
         vae.summary()
         return vae
 
+
     def _pre_process(self, data: Dataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
-        if not self.scaler:
+        if not self._scaler:
             scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
-            self.scaler = scaler
+            self._scaler = scaler
         else:
             np_input_scaled = self._scale(cont_np_data)
         return np_input_scaled

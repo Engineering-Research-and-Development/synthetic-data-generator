@@ -17,15 +17,14 @@ os.environ["KERAS_BACKEND"] = "tensorflow"
 class BaseKerasVAE(UnspecializedModel, ABC):
     def __init__(self, metadata: dict, model_name: str, input_shape: str, latent_dim: int):
         super().__init__(metadata, model_name, input_shape)
-        self.latent_dim = latent_dim
-        self.scaler = None
-        self.beta = None
-        self.learning_rate = None
-        self.batch_size = None
-        self.epochs = None
+        self._latent_dim = latent_dim
+        self._beta = None
+        self._learning_rate = None
+        self._batch_size = None
+        self._epochs = None
 
-        if not self.model and self.input_shape:
-            self.model = self._build(self.input_shape)
+        if not self._model and self._input_shape:
+            self.model = self._build(self._input_shape)
 
 
     def _load(self, folder_path: str):
@@ -34,20 +33,20 @@ class BaseKerasVAE(UnspecializedModel, ABC):
         scaler_filename = os.path.join(folder_path, "scaler.pkl")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
-        self.model = VAE(encoder, decoder, self.beta)
+        self._model = VAE(encoder, decoder, self._beta)
 
         with open(scaler_filename, "rb") as f:
-            self.scaler = pickle.load(f)
+            self._scaler = pickle.load(f)
 
     def save(self, folder_path: str):
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
-        saving.save_model(self.model.encoder, encoder_filename)
-        saving.save_model(self.model.decoder, decoder_filename)
+        saving.save_model(self._model.encoder, encoder_filename)
+        saving.save_model(self._model.decoder, decoder_filename)
         scaler_filename = os.path.join(folder_path, "scaler.pkl")
 
         with open(scaler_filename, 'wb') as f:
-            pickle.dump(self.scaler, f)
+            pickle.dump(self._scaler, f)
 
     def fine_tune(self, data: np.array, **kwargs):
         raise NotImplementedError
@@ -56,19 +55,19 @@ class BaseKerasVAE(UnspecializedModel, ABC):
         raise NotImplementedError
 
     def _scale(self, data: np.array):
-        return self.scaler.transform(data)
+        return self._scaler.transform(data)
 
-    def inverse_scale(self, data: np.array):
-        return self.scaler.inverse_transform(data)
+    def _inverse_scale(self, data: np.array):
+        return self._scaler.inverse_transform(data)
 
     def _pre_process(self, data: Dataset, **kwargs):
         raise NotImplementedError
 
     def train(self, data: Dataset):
         data = self._pre_process(data)
-        self.model.compile(optimizer=keras.optimizers.Adam(learning_rate=self.learning_rate))
-        history = self.model.fit(data, epochs=self.epochs, batch_size=self.batch_size)
-        self.training_info = TrainingInfo(
+        self._model.compile(optimizer=keras.optimizers.Adam(learning_rate=self._learning_rate))
+        history = self._model.fit(data, epochs=self._epochs, batch_size=self._batch_size)
+        self._training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
             train_samples=data.shape[0],
@@ -77,8 +76,9 @@ class BaseKerasVAE(UnspecializedModel, ABC):
         )
 
     def infer(self, n_rows: int, **kwargs):
-        z_random = np.random.normal(size=(n_rows, self.latent_dim))
-        results = self.model.decoder.predict(z_random)
+        z_random = np.random.normal(size=(n_rows, self._latent_dim))
+        results = self._model.decoder.predict(z_random)
+        results = self._inverse_scale(results)
         return results
 
     @classmethod
@@ -91,7 +91,7 @@ class VAE(keras.Model):
         super().__init__(**kwargs)
         self.encoder = encoder
         self.decoder = decoder
-        self.beta = beta
+        self._beta = beta
         self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
         self.reconstruction_loss_tracker = keras.metrics.Mean(name="reconstruction_loss")
         self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
@@ -111,7 +111,7 @@ class VAE(keras.Model):
             reconstruction_loss = ops.mean(ops.sum(ops.abs(data - reconstruction), axis=-1))
             kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
             kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
-            total_loss = reconstruction_loss + self.beta * kl_loss
+            total_loss = reconstruction_loss + self._beta * kl_loss
         grads = tape.gradient(total_loss, self.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
         self.total_loss_tracker.update_state(total_loss)

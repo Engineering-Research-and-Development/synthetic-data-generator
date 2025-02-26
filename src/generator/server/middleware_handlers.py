@@ -52,14 +52,14 @@ def delete_sys_model_by_id(model_id: int):
 
 def model_to_middleware(model: UnspecializedModel, data: Dataset):
     feature_list = data.parse_data_to_registry()
-    training_info = model.training_info.to_dict()
+    training_info = model._training_info.to_dict()
     model_image = model.model_filepath
     model_version = model.check_folder_latest_version(MODEL_FOLDER)
     version_info = {"version_name": model_version, "model_image_path": model_image}
     trained_model_misc = {
-        "name": model.model_name,
+        "name": model._model_name,
         "size": model.self_describe().get("size", "Not Available"),
-        "input_shape": str(model.input_shape),
+        "input_shape": str(model._input_shape),
         "algorithm_name": model.self_describe().get("name", None)
     }
 

@@ -9,14 +9,14 @@ class TabularComparisonEvaluator:
                  numerical_columns:list[str],
                  categorical_columns:list[str]
                  ):
-        self.real_data = real_data
-        self.synthetic_data = synthetic_data
-        self.numerical_columns = numerical_columns
-        self.categorical_columns = categorical_columns
+        self._real_data = real_data
+        self._synthetic_data = synthetic_data
+        self._numerical_columns = numerical_columns
+        self._categorical_columns = categorical_columns
 
 
     def compute(self):
-        if len(self.numerical_columns) <= 1 and len(self.categorical_columns) <= 1:
+        if len(self._numerical_columns) <= 1 and len(self._categorical_columns) <= 1:
             return {"available": False}
 
         report = {
@@ -28,7 +28,7 @@ class TabularComparisonEvaluator:
 
 
     @staticmethod
-    def compute_cramer_v(data1:np.array, data2:np.array):
+    def _compute_cramer_v(data1:np.array, data2:np.array):
         """
         Computes Cramer's V on a pair of categorical columns
         :param data1: first column
@@ -56,14 +56,14 @@ class TabularComparisonEvaluator:
         :return: A score ranging from 0 to 1. A score of 0 is the worst possible score, while 1 is the best possible score,
         meaning that category pairs are perfectly balanced
         """
-        if len(self.categorical_columns) < 2:
+        if len(self._categorical_columns) < 2:
             return 0
 
         contingency_scores_distances = []
-        for idx, col in enumerate(self.categorical_columns[:-1]):
-            for col2 in self.categorical_columns[idx+1:]:
-                V_real = self.compute_cramer_v(self.real_data[col].to_numpy(), self.real_data[col2].to_numpy())
-                V_synth = self.compute_cramer_v(self.synthetic_data[col].to_numpy(), self.synthetic_data[col2].to_numpy())
+        for idx, col in enumerate(self._categorical_columns[:-1]):
+            for col2 in self._categorical_columns[idx + 1:]:
+                V_real = self._compute_cramer_v(self._real_data[col].to_numpy(), self._real_data[col2].to_numpy())
+                V_synth = self._compute_cramer_v(self._synthetic_data[col].to_numpy(), self._synthetic_data[col2].to_numpy())
                 contingency_scores_distances.append(np.abs(V_real - V_synth))
 
         final_score = 1 - np.mean(contingency_scores_distances)
@@ -79,13 +79,13 @@ class TabularComparisonEvaluator:
         are related to the real dataset distribution. In the end, the score is scaled between 0 and 1
         :return: A single score, computed as 1 - mean(scores)
         """
-        if len(self.numerical_columns) < 1:
+        if len(self._numerical_columns) < 1:
             return 0
 
         wass_distance_scores = []
-        for col in self.numerical_columns:
-            real_data = self.real_data[col].to_numpy()
-            synth_data = self.synthetic_data[col].to_numpy()
+        for col in self._numerical_columns:
+            real_data = self._real_data[col].to_numpy()
+            synth_data = self._synthetic_data[col].to_numpy()
             distance = np.abs(np.max(real_data) - np.min(real_data))
             wass_dist = ss.wasserstein_distance(real_data, synth_data)
             wass_dist = np.clip(wass_dist, 0, distance) / distance
@@ -102,9 +102,9 @@ class TabularComparisonEvaluator:
         """
         cramer_v = self._evaluate_cramer_v_distance()
         wass_distance = self._evaluate_wasserstein_distance()
-        n_features = len(self.real_data.columns)
-        stat_compliance = (len(self.categorical_columns) * cramer_v +
-                           len(self.numerical_columns) * wass_distance) / n_features
+        n_features = len(self._real_data.columns)
+        stat_compliance = (len(self._categorical_columns) * cramer_v +
+                           len(self._numerical_columns) * wass_distance) / n_features
 
         report = {
             "Total Statistical Compliance [%]": np.round(stat_compliance*100, 2).item(),
@@ -122,12 +122,12 @@ class TabularComparisonEvaluator:
         2) The number of duplicated samples in the synthetic dataset
         :return: a dictionary report with percentage of duplicated data
         """
-        synth_len = self.synthetic_data.shape[0]
+        synth_len = self._synthetic_data.shape[0]
 
-        synth_unique = self.synthetic_data.drop_duplicates()
+        synth_unique = self._synthetic_data.drop_duplicates()
         synth_unique_len = synth_unique.shape[0]
 
-        real_unique = self.real_data.drop_duplicates()
+        real_unique = self._real_data.drop_duplicates()
         real_unique_len = real_unique.shape[0]
 
         concat_df = pd.concat([real_unique, synth_unique], axis=0)
@@ -152,23 +152,23 @@ class TabularComparisonEvaluator:
         :return:
         """
         category_adherence_score = {}
-        real_categorical = self.real_data[self.categorical_columns]
-        synth_categorical = self.synthetic_data[self.categorical_columns]
-        for col in self.categorical_columns:
+        real_categorical = self._real_data[self._categorical_columns]
+        synth_categorical = self._synthetic_data[self._categorical_columns]
+        for col in self._categorical_columns:
             item_diff = set(synth_categorical[col].unique()) - set(real_categorical[col].unique())
             n_items = synth_categorical[col].isin(item_diff)
-            category_adherence_score[col] = np.round(n_items/self.synthetic_data.shape[0]*100, 2).item()
+            category_adherence_score[col] = np.round(n_items / self._synthetic_data.shape[0] * 100, 2).item()
 
         boundary_adherence_score = {}
-        real_numerical = self.real_data[self.numerical_columns]
-        synth_numerical = self.synthetic_data[self.numerical_columns]
-        for col in self.numerical_columns:
+        real_numerical = self._real_data[self._numerical_columns]
+        synth_numerical = self._synthetic_data[self._numerical_columns]
+        for col in self._numerical_columns:
             report = real_numerical[col].describe()
             max_boundary = report["max"]
             min_boundary = report["min"]
             df_filtered = synth_numerical[(synth_numerical[col] <= max_boundary) & (synth_numerical[col] >= min_boundary)]
             n_items_in = df_filtered.shape[0]
-            boundary_adherence_score[col] = np.round(n_items_in/self.synthetic_data.shape[0]*100, 2).item()
+            boundary_adherence_score[col] = np.round(n_items_in / self._synthetic_data.shape[0] * 100, 2).item()
 
         report = {
             "category_adherence_score [%]": category_adherence_score,

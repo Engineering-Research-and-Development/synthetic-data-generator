@@ -6,13 +6,13 @@ from ai_lib.Dataset import Dataset
 
 class UnspecializedModel(ABC):
     def __init__(self, metadata: dict, model_name: str, input_shape: str = None):
-        self.metadata = metadata
-        self.model_name = model_name
-        self.input_shape = self._parse_stringed_input_shape(input_shape)
-        self.model = None  # Placeholder for the model instance
-        self.scaler = None  # Placeholder for model scaler
-        self.training_info = None  # Placeholder for training info
-        self.model_misc = None  # Placeholder for model miscellaneous info
+        self._metadata = metadata
+        self._model_name = model_name
+        self._input_shape = self._parse_stringed_input_shape(input_shape)
+        self._model = None  # Placeholder for the model instance
+        self._scaler = None  # Placeholder for model scaler
+        self._training_info = None  # Placeholder for training info
+        self._model_misc = None  # Placeholder for model miscellaneous info
 
     @abstractmethod
     def _build(self, input_shape: str):
@@ -29,7 +29,7 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def inverse_scale(self, data: np.array):
+    def _inverse_scale(self, data: np.array):
         """Inverse scale inputs with its logic"""
         raise NotImplementedError
 

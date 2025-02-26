@@ -71,7 +71,7 @@ class Dataset:
         self.input_shape = str(data_structure.shape[1:])
 
 
-    def categorize_column(self, col):
+    def _categorize_column(self, col):
         if col in self.continuous_columns:
             return NUMERICAL
         if col in self.categorical_columns:
@@ -94,7 +94,7 @@ class Dataset:
             {
                 "column_data" : self.dataframe[col].to_numpy().tolist(),
                 "column_name": col,
-                "column_type": self.categorize_column(col),
+                "column_type": self._categorize_column(col),
                 "column_datatype": str(self.dataframe[col].dtype)
             }
             for col in self.dataframe.columns

@@ -25,7 +25,6 @@ def job(model_info: dict, dataset: list, n_rows:int, save_filepath:str, train:bo
         model.save(save_filepath)
 
     predicted_data = model.infer(n_rows)
-    predicted_data = model.inverse_scale(predicted_data)
     df_predict = pd.DataFrame(data=predicted_data.tolist(),
                               columns=data.columns)
 
