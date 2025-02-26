@@ -9,7 +9,9 @@ import pandas as pd
 from utils.file_utils import store_files
 
 
-def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) -> tuple[list[dict], dict]:
+def run_infer_job(
+    model: dict, behaviours: list[dict], dataset: list, n_rows: int
+) -> tuple[list[dict], dict]:
     if len(dataset) == 0:
         dataset = model.get("training_data_info", [])
         print(dataset)
@@ -21,15 +23,16 @@ def run_infer_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int
     m = model_factory(model, data.input_shape)
     predicted_data = m.infer(n_rows)
     predicted_data = m.inverse_scale(predicted_data)
-    df_predict = pd.DataFrame(data=predicted_data.tolist(),
-                              columns=data.columns)
+    df_predict = pd.DataFrame(data=predicted_data.tolist(), columns=data.columns)
 
     report = {"available": False}
     if len(data.dataframe) > 0:
-        evaluator = TabularComparisonEvaluator(real_data=data.dataframe,
-                                               synthetic_data=df_predict,
-                                               numerical_columns=data.continuous_columns,
-                                               categorical_columns=data.categorical_columns)
+        evaluator = TabularComparisonEvaluator(
+            real_data=data.dataframe,
+            synthetic_data=df_predict,
+            numerical_columns=data.continuous_columns,
+            categorical_columns=data.categorical_columns,
+        )
         report = evaluator.compute()
 
     generated = copy.deepcopy(data)

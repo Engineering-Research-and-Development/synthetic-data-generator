@@ -15,11 +15,10 @@ class TrainModelInfo(BaseModel):
 
 
 class TrainRequest(BaseModel):
-    model : TrainModelInfo
-    dataset : List[DatasetIn]
-    functions_id : list[PositiveInt]
-    n_rows : PositiveInt
-
+    model: TrainModelInfo
+    dataset: List[DatasetIn]
+    functions_id: list[PositiveInt]
+    n_rows: PositiveInt
 
 
 class TrainingDataInfo(BaseModel):
@@ -43,16 +42,14 @@ class InferModelInfoData(BaseModel):
     input_shape: str = Field(pattern=r"\([0-9]+,(([0-9]+,?)+)?\)")
 
 
-
 class InferRequestData(BaseModel):
-    model : InferModelInfoData
-    dataset : List[DatasetIn]
-    functions_id : list[PositiveInt]
-    n_rows : PositiveInt
+    model: InferModelInfoData
+    dataset: List[DatasetIn]
+    functions_id: list[PositiveInt]
+    n_rows: PositiveInt
 
 
 class InferRequestNoData(BaseModel):
-    model : InferModelInfoNodata
-    functions_id : list[PositiveInt]
-    n_rows : PositiveInt
-
+    model: InferModelInfoNodata
+    functions_id: list[PositiveInt]
+    n_rows: PositiveInt

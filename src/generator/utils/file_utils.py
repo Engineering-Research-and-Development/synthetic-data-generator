@@ -18,5 +18,3 @@ def store_files(gen_name: str, dataset: pd.DataFrame, metrics: dict):
     if metrics is not None:
         with open(report_path, "w") as f:
             json.dump(metrics, f, indent=6)
-
-

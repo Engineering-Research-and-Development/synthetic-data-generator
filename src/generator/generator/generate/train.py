@@ -9,11 +9,14 @@ import pandas as pd
 from generator.evaluate.tabular_evaluate import TabularComparisonEvaluator
 
 
-def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, n_rows:int) \
-        -> tuple[list[dict], dict, UnspecializedModel, Dataset]:
+def run_train_inference_job(
+    model: dict, behaviours: list[dict], dataset: list, n_rows: int
+) -> tuple[list[dict], dict, UnspecializedModel, Dataset]:
 
     if len(dataset) == 0:
-        raise DataException("To run a training instance it is necessary to pass training data")
+        raise DataException(
+            "To run a training instance it is necessary to pass training data"
+        )
 
     data = Dataset(dataset=dataset)
     input_shape = data.input_shape
@@ -25,13 +28,14 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     predicted_data = m.infer(n_rows)
     predicted_data = m.inverse_scale(predicted_data)
 
-    df_predict = pd.DataFrame(data=predicted_data.tolist(),
-                              columns=data.columns)
+    df_predict = pd.DataFrame(data=predicted_data.tolist(), columns=data.columns)
 
-    evaluator = TabularComparisonEvaluator(real_data=data.dataframe,
-                                           synthetic_data=df_predict,
-                                           numerical_columns=data.continuous_columns,
-                                           categorical_columns=data.categorical_columns)
+    evaluator = TabularComparisonEvaluator(
+        real_data=data.dataframe,
+        synthetic_data=df_predict,
+        numerical_columns=data.continuous_columns,
+        categorical_columns=data.categorical_columns,
+    )
     report = evaluator.compute()
 
     generated_data = copy.deepcopy(data)
@@ -43,4 +47,3 @@ def run_train_inference_job(model: dict, behaviours: list[dict], dataset: list, 
     ######
 
     return results, report, m, data
-

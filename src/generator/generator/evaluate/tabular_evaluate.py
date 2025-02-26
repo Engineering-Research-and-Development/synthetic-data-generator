@@ -5,16 +5,17 @@ from scipy.stats import wasserstein_distance
 
 
 class TabularComparisonEvaluator:
-    def __init__(self, real_data:pd.DataFrame,
-                 synthetic_data:pd.DataFrame,
-                 numerical_columns:list[str],
-                 categorical_columns:list[str]
-                 ):
+    def __init__(
+        self,
+        real_data: pd.DataFrame,
+        synthetic_data: pd.DataFrame,
+        numerical_columns: list[str],
+        categorical_columns: list[str],
+    ):
         self.real_data = real_data
         self.synthetic_data = synthetic_data
         self.numerical_columns = numerical_columns
         self.categorical_columns = categorical_columns
-
 
     def compute(self):
         if len(self.numerical_columns) <= 1 and len(self.categorical_columns) <= 1:
@@ -23,13 +24,12 @@ class TabularComparisonEvaluator:
         report = {
             "statistical_metrics": self._evaluate_statistical_properties(),
             "adherence_metrics": self._evaluate_adherence(),
-            "novelty_metrics": self._evaluate_novelty()
+            "novelty_metrics": self._evaluate_novelty(),
         }
         return report
 
-
     @staticmethod
-    def compute_cramer_v(data1:np.array, data2:np.array):
+    def compute_cramer_v(data1: np.array, data2: np.array):
         """
         Computes Cramer's V on a pair of categorical columns
         :param data1: first column
@@ -47,7 +47,6 @@ class TabularComparisonEvaluator:
         V = np.sqrt(phi2_corr / min((k_corr - 1), (r_corr - 1)))
         return V
 
-
     def _evaluate_cramer_v_distance(self) -> float:
         """
         Evaluates Cramer's v with Bias Correction https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V on categorical data,
@@ -62,14 +61,18 @@ class TabularComparisonEvaluator:
 
         contingency_scores_distances = []
         for idx, col in enumerate(self.categorical_columns[:-1]):
-            for col2 in self.categorical_columns[idx+1:]:
-                V_real = self.compute_cramer_v(self.real_data[col].to_numpy(), self.real_data[col2].to_numpy())
-                V_synth = self.compute_cramer_v(self.synthetic_data[col].to_numpy(), self.synthetic_data[col2].to_numpy())
+            for col2 in self.categorical_columns[idx + 1 :]:
+                V_real = self.compute_cramer_v(
+                    self.real_data[col].to_numpy(), self.real_data[col2].to_numpy()
+                )
+                V_synth = self.compute_cramer_v(
+                    self.synthetic_data[col].to_numpy(),
+                    self.synthetic_data[col2].to_numpy(),
+                )
                 contingency_scores_distances.append(np.abs(V_real - V_synth))
 
         final_score = 1 - np.mean(contingency_scores_distances)
         return np.clip(final_score, 0, 1)
-
 
     def _evaluate_wasserstein_distance(self) -> float:
         """
@@ -94,7 +97,6 @@ class TabularComparisonEvaluator:
 
         return 1 - np.mean(wass_distance_scores)
 
-
     def _evaluate_statistical_properties(self) -> dict:
         """
         This function evaluates both Wasserstein distance for numerical features and Cramer's V for categorical ones,
@@ -104,17 +106,22 @@ class TabularComparisonEvaluator:
         cramer_v = self._evaluate_cramer_v_distance()
         wass_distance = self._evaluate_wasserstein_distance()
         n_features = len(self.real_data.columns)
-        stat_compliance = (len(self.categorical_columns) * cramer_v +
-                           len(self.numerical_columns) * wass_distance) / n_features
+        stat_compliance = (
+            len(self.categorical_columns) * cramer_v
+            + len(self.numerical_columns) * wass_distance
+        ) / n_features
 
         report = {
-            "Total Statistical Compliance [%]": np.round(stat_compliance*100, 2).item(),
-            "Categorical Features Cramer's V [%]": np.round(cramer_v*100, 2).item(),
-            "Numerical Features Wasserstein Distance [%]": np.round(wass_distance*100, 2).item()
+            "Total Statistical Compliance [%]": np.round(
+                stat_compliance * 100, 2
+            ).item(),
+            "Categorical Features Cramer's V [%]": np.round(cramer_v * 100, 2).item(),
+            "Numerical Features Wasserstein Distance [%]": np.round(
+                wass_distance * 100, 2
+            ).item(),
         }
 
         return report
-
 
     def _evaluate_novelty(self):
         """
@@ -135,14 +142,19 @@ class TabularComparisonEvaluator:
         concat_unique = concat_df.drop_duplicates()
         conc_unique_len = concat_unique.shape[0]
 
-        new_synt_data = synth_len - ((real_unique_len + synth_unique_len) - conc_unique_len)
+        new_synt_data = synth_len - (
+            (real_unique_len + synth_unique_len) - conc_unique_len
+        )
 
         report = {
-            "Unique Synthetic Data [%]": np.round(synth_unique_len/synth_len*100, 2).item(),
-            "New Synthetic Data [%]:": np.round(new_synt_data/synth_len*100, 2).item()
+            "Unique Synthetic Data [%]": np.round(
+                synth_unique_len / synth_len * 100, 2
+            ).item(),
+            "New Synthetic Data [%]:": np.round(
+                new_synt_data / synth_len * 100, 2
+            ).item(),
         }
         return report
-
 
     def _evaluate_adherence(self):
         """
@@ -156,9 +168,13 @@ class TabularComparisonEvaluator:
         real_categorical = self.real_data[self.categorical_columns]
         synth_categorical = self.synthetic_data[self.categorical_columns]
         for col in self.categorical_columns:
-            item_diff = set(synth_categorical[col].unique()) - set(real_categorical[col].unique())
+            item_diff = set(synth_categorical[col].unique()) - set(
+                real_categorical[col].unique()
+            )
             n_items = synth_categorical[col].isin(item_diff)
-            category_adherence_score[col] = np.round(n_items/self.synthetic_data.shape[0]*100, 2).item()
+            category_adherence_score[col] = np.round(
+                n_items / self.synthetic_data.shape[0] * 100, 2
+            ).item()
 
         boundary_adherence_score = {}
         real_numerical = self.real_data[self.numerical_columns]
@@ -167,15 +183,17 @@ class TabularComparisonEvaluator:
             report = real_numerical[col].describe()
             max_boundary = report["max"]
             min_boundary = report["min"]
-            df_filtered = synth_numerical[(synth_numerical[col] <= max_boundary) & (synth_numerical[col] >= min_boundary)]
+            df_filtered = synth_numerical[
+                (synth_numerical[col] <= max_boundary)
+                & (synth_numerical[col] >= min_boundary)
+            ]
             n_items_in = df_filtered.shape[0]
-            boundary_adherence_score[col] = np.round(n_items_in/self.synthetic_data.shape[0]*100, 2).item()
+            boundary_adherence_score[col] = np.round(
+                n_items_in / self.synthetic_data.shape[0] * 100, 2
+            ).item()
 
         report = {
             "category_adherence_score [%]": category_adherence_score,
-            "boundary_adherence_score [%]": boundary_adherence_score
+            "boundary_adherence_score [%]": boundary_adherence_score,
         }
         return report
-
-
-
