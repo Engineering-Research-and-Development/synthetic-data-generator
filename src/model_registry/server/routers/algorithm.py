@@ -74,26 +74,32 @@ async def add_algorithm_and_datatype(
     "/",
     status_code=200,
     name="Get all algorithms",
-    response_model=list[PydanticAlgorithm] | list[AlgorithmAndAllowedDatatypes],
+    response_model=list[PydanticAlgorithm] | list[AlgorithmAndAllowedDatatypes] | dict[str,PydanticAlgorithm] |
+                   dict[str,AlgorithmAndAllowedDatatypes],
 )
 async def get_all_algorithms(
     include_allowed_datatypes: bool | None = Query(
         description="Include the allowed datatypes"
         " for each algorithm present in the system",
         default=False,
+    ),
+    indexed_by_names: bool | None = Query(
+        description="Returns the algorithms as a dictionary, keyed by the algorithm name.",
+        default=False,
     )
 ):
     """
     This method returns all the algorithms that are present in the model registry. The query parameter
     `include_allowed_datatypes` (default ***False***) if ***True*** will let the model registry return for each
-    algorithm the list of allowed datatypes it deals with
+    algorithm the list of allowed datatypes it deals with. The value `indexed_by_names` (default ***False***)
+    if ***True*** returns the algorithms in the repo as a dictionary keyed by each algorithm name (since it is unique)
     """
     if not include_allowed_datatypes:
-        results = [
-            PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()
-        ]
-        return results
-    else:
+        if not indexed_by_names:
+            return [PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()]
+        else:
+            return {sys_model['name']:PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()}
+    elif include_allowed_datatypes:
         query = (
             Algorithm.select(
                 Algorithm,
@@ -110,7 +116,12 @@ async def get_all_algorithms(
             .join(DataType, JOIN.LEFT_OUTER)
             .group_by(Algorithm.id)
         )
-        return [AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()]
+        if indexed_by_names:
+            return {row['name']:AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()}
+        else:
+            return [AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()]
+
+
 
 
 @router.get(
