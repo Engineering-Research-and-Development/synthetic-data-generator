@@ -74,8 +74,10 @@ async def add_algorithm_and_datatype(
     "/",
     status_code=200,
     name="Get all algorithms",
-    response_model=list[PydanticAlgorithm] | list[AlgorithmAndAllowedDatatypes] | dict[str,PydanticAlgorithm] |
-                   dict[str,AlgorithmAndAllowedDatatypes],
+    response_model=list[PydanticAlgorithm]
+    | list[AlgorithmAndAllowedDatatypes]
+    | dict[str, PydanticAlgorithm]
+    | dict[str, AlgorithmAndAllowedDatatypes],
 )
 async def get_all_algorithms(
     include_allowed_datatypes: bool | None = Query(
@@ -86,7 +88,7 @@ async def get_all_algorithms(
     indexed_by_names: bool | None = Query(
         description="Returns the algorithms as a dictionary, keyed by the algorithm name.",
         default=False,
-    )
+    ),
 ):
     """
     This method returns all the algorithms that are present in the model registry. The query parameter
@@ -96,9 +98,15 @@ async def get_all_algorithms(
     """
     if not include_allowed_datatypes:
         if not indexed_by_names:
-            return [PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()]
+            return [
+                PydanticAlgorithm(**sys_model)
+                for sys_model in Algorithm.select().dicts()
+            ]
         else:
-            return {sys_model['name']:PydanticAlgorithm(**sys_model) for sys_model in Algorithm.select().dicts()}
+            return {
+                sys_model["name"]: PydanticAlgorithm(**sys_model)
+                for sys_model in Algorithm.select().dicts()
+            }
     elif include_allowed_datatypes:
         query = (
             Algorithm.select(
@@ -117,11 +125,12 @@ async def get_all_algorithms(
             .group_by(Algorithm.id)
         )
         if indexed_by_names:
-            return {row['name']:AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()}
+            return {
+                row["name"]: AlgorithmAndAllowedDatatypes(**row)
+                for row in query.dicts()
+            }
         else:
             return [AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()]
-
-
 
 
 @router.get(
