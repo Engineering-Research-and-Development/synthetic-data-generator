@@ -1,3 +1,5 @@
+from peewee import fn, JOIN
+
 from ..schema import (
     TrainedModel,
     TrainingInfo,
@@ -13,7 +15,6 @@ from ..validation.schema import (
     ModelVersion as PydanticModelVersion,
     TrainingInfo as PydanticTrainingInfo,
 )
-from peewee import fn, JOIN
 
 
 def get_trained_model_versions(
@@ -78,7 +79,7 @@ def get_trained_model_versions(
         return PydanticTrainedModelAndVersions(**train_and_features, versions=versions)
 
 
-def get_models_and_version_ids() -> list[TrainedModelAndVersionIds]:
+def get_models_and_version_ids(index_by_id: bool = False) -> list[TrainedModelAndVersionIds]:
     query = (
         TrainedModel.select(
             TrainedModel,
@@ -89,5 +90,8 @@ def get_models_and_version_ids() -> list[TrainedModelAndVersionIds]:
         .join(Algorithm, JOIN.LEFT_OUTER, on=TrainedModel.algorithm_id == Algorithm.id)
         .group_by(TrainedModel.id, Algorithm.name.alias("algorithm_name"))
     )
-    payload = [TrainedModelAndVersionIds(**row) for row in query.dicts()]
+    if not index_by_id:
+        payload = [TrainedModelAndVersionIds(**row) for row in query.dicts()]
+    else:
+        payload = {row['id']:TrainedModelAndVersionIds(**row) for row in query.dicts()}
     return payload

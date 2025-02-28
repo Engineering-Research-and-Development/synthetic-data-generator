@@ -34,31 +34,50 @@ router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
     status_code=200,
     summary="Get all the trained model in the repository",
     name="Get all trained models",
-    response_model=list[PydanticTrainedModel] | list[TrainedModelAndVersionIds],
+    response_model=list[PydanticTrainedModel]
+    | list[TrainedModelAndVersionIds]
+    | dict[int, PydanticTrainedModel]
+    | dict[int, TrainedModelAndVersionIds],
 )
 async def get_all_trained_models(
     include_version_ids: bool | None = Query(
         description="Include a list of version ids" " for each trained model",
         default=False,
-    )
+    ),
+    index_by_id: bool | None = Query(
+        description="If true, a dictionary will be returned where each trained model is keyed by their id",
+        default=False,
+    ),
 ):
     """
     This method returns all the trained models present in the registry, if the query parameter
     `include_versions_ids` = ***True*** then for each model it is returned a list having all the ids of the versions
-    that it has
+    that it has. The query parameter `index_by_id` (default ***False***) if set to ***True*** will return all the
+    trained models in registry as a dictionary keyed by each trained model key.
     """
     if not include_version_ids:
-        results = [
-            PydanticTrainedModel(**trained_models)
-            for trained_models in TrainedModel.select(
-                TrainedModel, Algorithm.name.alias("algorithm_name")
-            )
-            .join(Algorithm)
-            .dicts()
-        ]
+        if not index_by_id:
+            results = [
+                PydanticTrainedModel(**trained_models)
+                for trained_models in TrainedModel.select(
+                    TrainedModel, Algorithm.name.alias("algorithm_name")
+                )
+                .join(Algorithm)
+                .dicts()
+            ]
+        else:
+            results = {
+                trained_models["id"]: PydanticTrainedModel(**trained_models)
+                for trained_models in TrainedModel.select(
+                    TrainedModel, Algorithm.name.alias("algorithm_name")
+                )
+                .join(Algorithm)
+                .dicts()
+            }
         return results
+
     else:
-        return db_handler.get_models_and_version_ids()
+        return db_handler.get_models_and_version_ids(index_by_id)
 
 
 @router.get(
