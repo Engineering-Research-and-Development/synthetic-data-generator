@@ -79,7 +79,9 @@ def get_trained_model_versions(
         return PydanticTrainedModelAndVersions(**train_and_features, versions=versions)
 
 
-def get_models_and_version_ids(index_by_id: bool = False) -> list[TrainedModelAndVersionIds]:
+def get_models_and_version_ids(
+    index_by_id: bool = False,
+) -> list[TrainedModelAndVersionIds]:
     query = (
         TrainedModel.select(
             TrainedModel,
@@ -93,5 +95,5 @@ def get_models_and_version_ids(index_by_id: bool = False) -> list[TrainedModelAn
     if not index_by_id:
         payload = [TrainedModelAndVersionIds(**row) for row in query.dicts()]
     else:
-        payload = {row['id']:TrainedModelAndVersionIds(**row) for row in query.dicts()}
+        payload = {row["id"]: TrainedModelAndVersionIds(**row) for row in query.dicts()}
     return payload
