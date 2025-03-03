@@ -64,13 +64,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pytest
-        pip install -r src/model_registry/test/requirements.txt
+        pip install -r src/generator/requirements.txt
 
     - name: Run GENERATOR tests
-      run: pytest src/generator/test/
+      run: pytest src/generator/ai_lib/test/
 
     - name: Run SERVER tests
-      run: pytest src/test
+      run: pytest src/generator/test
 
     - name: Stop and remove container
       run: |
