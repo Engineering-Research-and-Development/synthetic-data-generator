@@ -80,3 +80,20 @@ def rollback_latest_version(model_folder: str):
     if os.path.isdir(last_folder):
         shutil.rmtree(last_folder)
         logger.info(f"Deleted {last_folder}")
+
+
+def create_server_repo_folder_structure() -> None:
+    """
+    This function finds creates a folder structure for the all the models that are being saved on the server
+    """
+    server_folder = os.path.dirname(os.path.abspath(__file__))
+    saved_root = server_folder + '\\saved_models'
+    if not os.path.isdir(saved_root):
+        os.mkdir(saved_root)
+        os.mkdir(saved_root + "\\algorithms")
+        os.mkdir(saved_root + "\\trained_models")
+    elif os.path.isdir(saved_root + "\\algorithms") and not os.path.isdir(saved_root + "\\trained_models"):
+        os.mkdir(saved_root + "\\trained_models")
+    elif not os.path.isdir(saved_root + "\\algorithms"):
+        os.mkdir(saved_root + "\\algorithms")
+

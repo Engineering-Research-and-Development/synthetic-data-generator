@@ -20,7 +20,7 @@ class UnspecializedModel(ABC):
 
     @abstractmethod
     def _load(self, model_filepath: str):
-        """Load pre-trained weights."""
+        """Load trained_models weights."""
         raise NotImplementedError
 
     @abstractmethod
