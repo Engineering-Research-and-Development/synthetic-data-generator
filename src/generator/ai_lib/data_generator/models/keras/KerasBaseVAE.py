@@ -36,6 +36,13 @@ class BaseKerasVAE(UnspecializedModel, ABC):
         with open(scaler_filename, "rb") as f:
             self._scaler = pickle.load(f)
 
+    def _instantiate(self):
+        if self._load_path is not None:
+            self._load(self._load_path)
+            return
+        if not self._model and self._input_shape:
+            self._model = self._build(self._input_shape)
+
     def save(self, folder_path: str):
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
@@ -60,6 +67,7 @@ class BaseKerasVAE(UnspecializedModel, ABC):
 
     def _pre_process(self, data: Dataset, **kwargs):
         raise NotImplementedError
+
 
     def train(self, data: Dataset):
         data = self._pre_process(data)

@@ -19,11 +19,7 @@ class TimeSeriesVAE(BaseKerasVAE):
         self._learning_rate = 3e-3
         self._epochs = 100
         self._batch_size = 16
-
-        if not self._model and self._input_shape:
-            self._model = self._build(self._input_shape)
-        if self._load_path is not None:
-            self._load(self._load_path)
+        self._instantiate()
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -79,6 +75,8 @@ class TimeSeriesVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(np_data)
         return np_input_scaled
+
+
 
     @classmethod
     def self_describe(cls):

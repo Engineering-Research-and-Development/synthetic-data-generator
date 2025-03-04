@@ -25,6 +25,10 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def _instantiate(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def _scale(self, data: np.array):
         """Scale inputs with its logic"""
         raise NotImplementedError

@@ -17,11 +17,7 @@ class TabularVAE(BaseKerasVAE):
         self._learning_rate = 1e-3
         self._epochs = 200
         self._batch_size = 8
-
-        if not self._model and self._input_shape:
-            self._model = self._build(self._input_shape)
-        if self._load_path is not None:
-            self._load(self._load_path)
+        self._instantiate()
 
 
     def _build(self, input_shape: tuple[int, ...]):
@@ -53,6 +49,7 @@ class TabularVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(cont_np_data)
         return np_input_scaled
+
 
     @classmethod
     def self_describe(cls):
