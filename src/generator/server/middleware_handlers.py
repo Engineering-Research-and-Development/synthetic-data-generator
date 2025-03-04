@@ -1,21 +1,17 @@
-import importlib
 import json
-import pkgutil
-import requests
-from requests.exceptions import RequestException
 import os
+import pickle
+from pathlib import Path
 
-from yaml import safe_load
+import requests
+from bplustree import BPlusTree, StrSerializer, IntSerializer
+from requests.exceptions import RequestException
+
+from ai_lib.Dataset import Dataset
 from ai_lib.Exceptions import ModelException
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
-from ai_lib.Dataset import Dataset
-from server.file_utils import MODEL_FOLDER, create_folder_structure
+from server.file_utils import MODEL_FOLDER
 from server.file_utils import create_server_repo_folder_structure
-
-from bplustree import BPlusTree, StrSerializer, IntSerializer
-from pathlib import Path
-import pickle
-from datetime import time
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 
@@ -93,33 +89,21 @@ def model_to_middleware(model: UnspecializedModel, data: Dataset):
 
 
 def server_startup():
-    create_folder_structure()
-
-    config_file = pkgutil.get_data("generator", "config.yaml")
-    config = safe_load(config_file)
-
-    id_list = []
-
-    print(config)
-    list_models = []
-    for pkg in config["system_models"]:
-        root = pkg["root_lib"]
-        for model in pkg["models"]:
-            list_models.append(root + model)
-
-    for model in list_models:
-        module_name, class_name = model.rsplit(".", 1)
-        module = importlib.import_module(module_name)
-        Class = getattr(module, class_name)
-        try:
-            # TODO: refine with correct APIs
-            response = save_system_model(Class.self_describe())
-            print(response.status_code, response.text)
-            id_list.append(response["id"])
-        except ModelException as e:
-            for mod_id in id_list:
-                delete_sys_model_by_id(mod_id)
-            # exit(-1)
+    # Pre-work: we fetch the B+Trees for algorithms and trained models
+    tree_algorithms,tree_trained_models = load_trees()
+    # 1.  Analyse the existing folders, looking for trained_models models *
+    mock_generator_trained_models = []
+    server_sync_trained(tree_trained_models,mock_generator_trained_models)
+    # 2. Synchronize (POST/DELETE) with the middleware for existing trained_models models
+    remote_sync(tree_trained_models,'trained_models/?include_version_ids=False&index_by_id=True')
+    # 3.  Analyse the existing folders, looking for algorithms
+    # This is mock data at the moment
+    mock_generator_algorithms = [{'name':'System_' + str(i), 'description': 'A description'
+                                     , 'default_loss_function':'A loss function','folder_path':'server/saved_models/algorithms/i'} for i in range(10)]
+    # 3.a We sync with local algorithm that the generator has
+    server_sync_algorithms(tree_algorithms,mock_generator_algorithms)
+    # 4. Synchronize (POST/DELETE) with the middleware for existing algorithms
+    remote_sync(tree_algorithms,'algorithms/?include_allowed_datatypes=False&indexed_by_names=True')
 
 
 ### Methods for dealing with server saved models

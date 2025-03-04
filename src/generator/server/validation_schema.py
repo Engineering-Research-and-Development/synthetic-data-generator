@@ -54,3 +54,6 @@ class GeneratedData(BaseModel):
 class GeneratedResponse(BaseModel):
     result_data: GeneratedData
     metrics: dict
+
+class CouchEntry(BaseModel):
+    doc_id: str
