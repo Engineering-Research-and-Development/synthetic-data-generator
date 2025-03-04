@@ -5,10 +5,11 @@ from ai_lib.Dataset import Dataset
 
 
 class UnspecializedModel(ABC):
-    def __init__(self, metadata: dict, model_name: str, input_shape: str = None):
+    def __init__(self, metadata: dict, model_name: str, input_shape: str = None, load_path: str = None):
         self._metadata = metadata
         self._model_name = model_name
         self._input_shape = self._parse_stringed_input_shape(input_shape)
+        self._load_path = load_path
         self._model = None  # Placeholder for the model instance
         self._scaler = None  # Placeholder for model scaler
         self._training_info = None  # Placeholder for training info
@@ -21,6 +22,10 @@ class UnspecializedModel(ABC):
     @abstractmethod
     def _load(self, model_filepath: str):
         """Load trained_models weights."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def _instantiate(self):
         raise NotImplementedError
 
     @abstractmethod

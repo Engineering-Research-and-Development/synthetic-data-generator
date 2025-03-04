@@ -45,6 +45,7 @@ async def train(request: TrainRequest):
 
 
 
+
 @generator.post("/infer",
                 responses={400: {"model":str}, 500: {"model": str}},
                 response_model=CouchEntry)

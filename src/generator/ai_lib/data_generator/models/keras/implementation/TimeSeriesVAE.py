@@ -12,13 +12,14 @@ from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 class TimeSeriesVAE(BaseKerasVAE):
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2
+        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 6
     ):
-        super().__init__(metadata, model_name, input_shape, latent_dim)
+        super().__init__(metadata, model_name, input_shape, load_path, latent_dim)
         self._beta = 0.15
         self._learning_rate = 3e-3
         self._epochs = 100
         self._batch_size = 16
+        self._instantiate()
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -74,6 +75,8 @@ class TimeSeriesVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(np_data)
         return np_input_scaled
+
+
 
     @classmethod
     def self_describe(cls):

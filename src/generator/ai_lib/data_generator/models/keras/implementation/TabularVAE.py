@@ -10,13 +10,15 @@ from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 class TabularVAE(BaseKerasVAE):
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, latent_dim: int = 2
+        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 2
     ):
-        super().__init__(metadata, model_name, input_shape, latent_dim)
+        super().__init__(metadata, model_name, input_shape, load_path, latent_dim)
         self._beta = 1
         self._learning_rate = 1e-3
         self._epochs = 200
         self._batch_size = 8
+        self._instantiate()
+
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -47,6 +49,7 @@ class TabularVAE(BaseKerasVAE):
         else:
             np_input_scaled = self._scale(cont_np_data)
         return np_input_scaled
+
 
     @classmethod
     def self_describe(cls):
