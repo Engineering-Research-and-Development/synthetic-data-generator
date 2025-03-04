@@ -1,5 +1,10 @@
 import requests
-from ..middleware_handlers import server_sync_trained, server_sync_algorithms, remote_sync
+
+from bplustree import BPlusTree, IntSerializer
+from ..middleware_handlers import server_sync_trained, server_sync_algorithms, remote_sync, \
+    intersec_and_integrate_remote_data, middleware
+import os
+from pathlib import Path
 
 test_remote_train_db = {
 "1": {
@@ -132,9 +137,18 @@ def test_server_sync_algo(local_repo_trees):
       assert key in local_keys
 
 
-def test_intersec_and_integrate_remote_data(local_repo_trees):
-    trained_trees, _ = local_repo_trees
+def test_intersec_and_integrate_remote_data():
+    test_root_dir = os.path.dirname((os.path.abspath(__file__)))
+    test_btree = BPlusTree(Path(test_root_dir + "/test_tree"),order=341,
+                           key_size=4,serializer=IntSerializer())
+    # Filling it up
+    # TODO: Maybe change the name of this function in insert_into_tree?
+    server_sync_trained(test_btree,local_trains)
 
+    intersec_and_integrate_remote_data(local_trained_trees,test_remote_train_db,
+                                       'trained_models/?include_version_ids=False&index_by_id=True')
+
+    assert local_trained_trees == requests.get(f'{middleware}trained_models')
 
 
 

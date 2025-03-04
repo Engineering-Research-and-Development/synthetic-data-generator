@@ -31,6 +31,7 @@ async def train(request: TrainRequest):
 
     request = request.model_dump()
     couch_doc = create_couch_entry()
+    # TODO: Get save_filepath
     results, metrics, model, data = job(model_info=request["model"],
                                         dataset=request["dataset"],
                                         n_rows=request["n_rows"],
@@ -39,6 +40,7 @@ async def train(request: TrainRequest):
     add_couch_data(doc_id=couch_doc, new_data={"results": results,
                                                  "metrics": metrics,
                                                  "data": data})
+    # TODO: Sync middleware with new model
     return JSONResponse(status_code=200,content=CouchEntry(doc_id=couch_doc))
 
 
@@ -53,6 +55,7 @@ async def infer_data(request: InferRequestData):
     """
     request = request.model_dump()
     couch_doc = create_couch_entry()
+    # TODO: Calculate file path
     results, metrics, model, data = job(model_info=request["model"],
                                         dataset=request["dataset"],
                                         n_rows=request["n_rows"],

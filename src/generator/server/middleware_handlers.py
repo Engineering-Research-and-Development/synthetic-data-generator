@@ -125,12 +125,13 @@ def load_trees(tree_trained_order: int = 341,
     :return: A tuple containing respectively the B+Tree for algorithms and trained models
     """
     create_server_repo_folder_structure()
+    root_file = os.path.dirname(os.path.abspath(__file__))
     tree_trained_models = BPlusTree(
-        Path(os.path.dirname(os.path.abspath(__file__)) + "\\saved_models\\trained_models\\bplus_tree.db"),
+        Path(root_file + "/saved_models/trained_models/bplus_tree.db"),
         order=tree_trained_order, key_size=trained_key_size, serializer=IntSerializer()
     )
     tree_algo = BPlusTree(
-        Path(os.path.dirname(os.path.abspath(__file__)) + "\\saved_models\\algorithms\\bplus_tree.db")
+        Path(root_file + "/saved_models/algorithms/bplus_tree.db")
         , order=tree_algo_order, key_size=algo_key_size,serializer=StrSerializer()
     )
     return tree_trained_models, tree_algo
@@ -178,8 +179,7 @@ def remote_sync(local_repo: BPlusTree,endpoint):
     remote_data = response.json()
     # We scan all the local algorithms for the remote ones, if found we delete them otherwise we create them
     intersec_and_integrate_remote_data(local_repo, remote_data, root_endpoint)
-    # The rest of the remote are the ones that are not implemented by the generator, hence they must be deleted
-    remove_remote_data_not_present(remote_data,root_endpoint)
+
 
 def intersec_and_integrate_remote_data(local_repo: BPlusTree,remote_data: dict,root_endpoint: str):
     """
@@ -196,8 +196,8 @@ def intersec_and_integrate_remote_data(local_repo: BPlusTree,remote_data: dict,r
             assert response == 200, print(response.content)
         else:
             remote_data.pop(key)
-
-def remove_remote_data_not_present(remote_data: dict,root_endpoint: str):
+    # Here we remove the remote data
     for data in remote_data:
         response = requests.delete(f"{middleware}/{root_endpoint}/{data['id']})")
         assert response == 200, print(response.content)
+
