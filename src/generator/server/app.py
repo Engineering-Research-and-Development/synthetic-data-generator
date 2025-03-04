@@ -30,16 +30,19 @@ async def train(request: TrainRequest):
     """
 
     request = request.model_dump()
-    couch_doc = create_couch_entry()
+    #couch_doc = create_couch_entry()
     results, metrics, model, data = job(model_info=request["model"],
                                         dataset=request["dataset"],
                                         n_rows=request["n_rows"],
                                         save_filepath=".",
                                         train=True)
+    """
+    results, metrics, model, data = job(model_info=request["model"],
     add_couch_data(doc_id=couch_doc, new_data={"results": results,
                                                  "metrics": metrics,
                                                  "data": data})
     return JSONResponse(status_code=200,content=CouchEntry(doc_id=couch_doc))
+    """
 
 
 

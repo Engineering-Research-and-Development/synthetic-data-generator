@@ -16,17 +16,14 @@ os.environ["KERAS_BACKEND"] = "tensorflow"
 
 class BaseKerasVAE(UnspecializedModel, ABC):
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, latent_dim: int
+        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int
     ):
-        super().__init__(metadata, model_name, input_shape)
+        super().__init__(metadata, model_name, input_shape, load_path)
         self._latent_dim = latent_dim
         self._beta = None
         self._learning_rate = None
         self._batch_size = None
         self._epochs = None
-
-        if not self._model and self._input_shape:
-            self.model = self._build(self._input_shape)
 
     def _load(self, folder_path: str):
         encoder_filename = os.path.join(folder_path, "encoder.keras")

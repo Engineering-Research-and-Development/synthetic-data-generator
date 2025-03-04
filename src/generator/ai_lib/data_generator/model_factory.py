@@ -35,7 +35,7 @@ def model_factory(model_dict: dict, input_shape: str = None) -> UnspecializedMod
         input_shape = input_shape_model
 
     ModelClass = dynamic_import(model_type)
-    model = ModelClass(metadata, model_name, input_shape, model_file)
+    model = ModelClass(metadata=metadata, model_name=model_name, input_shape=input_shape, load_path=model_file)
     return model
 
 
