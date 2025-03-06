@@ -79,8 +79,7 @@ async def add_algorithm_and_datatype(
     | dict[str, AlgorithmAndAllowedDatatypes],
 )
 async def get_all_algorithms(
-    include_allowed_datatypes: bool =False,
-    indexed_by_names: bool = False
+    include_allowed_datatypes: bool = False, indexed_by_names: bool = False
 ):
     """
     This method returns all the algorithms that are present in the model registry. The query parameter
@@ -134,8 +133,7 @@ async def get_all_algorithms(
     response_model=PydanticAlgorithm | AlgorithmAndAllowedDatatypes,
 )
 async def get_algorithm_by_id(
-    algorithm_id: int,
-    include_allowed_datatypes: bool  = False
+    algorithm_id: int, include_allowed_datatypes: bool = False
 ):
     """
     Given an id, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
@@ -180,6 +178,7 @@ async def get_algorithm_by_id(
             )
         return AlgorithmAndAllowedDatatypes(**algorithm)
 
+
 @router.get(
     "/name/{algorithm_name}",
     status_code=200,
@@ -189,8 +188,7 @@ async def get_algorithm_by_id(
     response_model=PydanticAlgorithm | AlgorithmAndAllowedDatatypes,
 )
 async def get_algorithm_by_name(
-    algorithm_name: str,
-    include_allowed_datatypes: bool = False
+    algorithm_name: str, include_allowed_datatypes: bool = False
 ):
     """
     Given the name, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
