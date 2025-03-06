@@ -1,15 +1,14 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
+from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
+from database.schema import DataType, AllowedDataType, db, Algorithm
 from database.validation.schema import (
     CreateAlgorithm,
     Algorithm as PydanticAlgorithm,
     CreateAllowedData,
     AlgorithmAndAllowedDatatypes,
 )
-from database.schema import DataType, AllowedDataType, db, Algorithm
-
-from peewee import DoesNotExist, IntegrityError, fn, JOIN
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
 
@@ -80,15 +79,8 @@ async def add_algorithm_and_datatype(
     | dict[str, AlgorithmAndAllowedDatatypes],
 )
 async def get_all_algorithms(
-    include_allowed_datatypes: bool | None = Query(
-        description="Include the allowed datatypes"
-        " for each algorithm present in the system",
-        default=False,
-    ),
-    indexed_by_names: bool | None = Query(
-        description="Returns the algorithms as a dictionary, keyed by the algorithm name.",
-        default=False,
-    ),
+    include_allowed_datatypes: bool =False,
+    indexed_by_names: bool = False
 ):
     """
     This method returns all the algorithms that are present in the model registry. The query parameter
@@ -143,11 +135,7 @@ async def get_all_algorithms(
 )
 async def get_algorithm_by_id(
     algorithm_id: int,
-    include_allowed_datatypes: bool | None = Query(
-        description="Include the allowed datatypes"
-        "for each algorithm present in the system",
-        default=False,
-    ),
+    include_allowed_datatypes: bool  = False
 ):
     """
     Given an id, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
@@ -181,6 +169,61 @@ async def get_algorithm_by_id(
                     .join(AllowedDataType, JOIN.LEFT_OUTER)
                     .join(DataType, JOIN.LEFT_OUTER)
                     .where(Algorithm.id == algorithm_id)
+                    .group_by(Algorithm.id)
+                )
+                .dicts()
+                .get()
+            )
+        except DoesNotExist:
+            return JSONResponse(
+                status_code=404, content={"message": "Algorithm not present"}
+            )
+        return AlgorithmAndAllowedDatatypes(**algorithm)
+
+@router.get(
+    "/name/{algorithm_name}",
+    status_code=200,
+    name="Get algorithm by name",
+    summary="It returns an algorithm given the name",
+    responses={404: {"model": str}},
+    response_model=PydanticAlgorithm | AlgorithmAndAllowedDatatypes,
+)
+async def get_algorithm_by_name(
+    algorithm_name: str,
+    include_allowed_datatypes: bool = False
+):
+    """
+    Given the name, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
+    dictates if the method must return the associated allowed datatypes of the request algorithm
+    """
+    if not include_allowed_datatypes:
+        try:
+            sys_model = (
+                Algorithm.select().where(Algorithm.name == algorithm_name).dicts().get()
+            )
+        except DoesNotExist:
+            return JSONResponse(
+                status_code=404, content={"message": "Algorithm not found"}
+            )
+        return PydanticAlgorithm(**sys_model)
+    else:
+        try:
+            algorithm = (
+                (
+                    Algorithm.select(
+                        Algorithm,
+                        fn.JSON_AGG(
+                            fn.JSON_BUILD_OBJECT(
+                                "datatype",
+                                DataType.type,
+                                "is_categorical",
+                                DataType.is_categorical,
+                            )
+                        ).alias("allowed_data"),
+                    )
+                    .join(AllowedDataType, JOIN.LEFT_OUTER)
+                    .join(DataType, JOIN.LEFT_OUTER)
+                    .where(Algorithm.name == algorithm_name)
                     .group_by(Algorithm.id)
                 )
                 .dicts()

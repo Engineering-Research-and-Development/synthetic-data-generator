@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Path
-from fastapi.params import Query
+from peewee import DoesNotExist, IntegrityError, fn
 from starlette.responses import JSONResponse
 
+from database.handlers import trained_models as db_handler
 from database.schema import (
     TrainedModel,
     Features,
@@ -11,7 +12,6 @@ from database.schema import (
     DataType,
     Algorithm,
 )
-from database.handlers import trained_models as db_handler
 from database.validation.schema import (
     TrainedModel as PydanticTrainedModel,
     TrainedModelAndVersionIds,
@@ -22,9 +22,6 @@ from database.validation.schema import (
     CreateTrainingInfo,
     TrainedModelAndFeatureSchema,
 )
-
-from peewee import DoesNotExist, IntegrityError, fn
-
 
 router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
 
@@ -40,14 +37,8 @@ router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
     | dict[int, TrainedModelAndVersionIds],
 )
 async def get_all_trained_models(
-    include_version_ids: bool | None = Query(
-        description="Include a list of version ids" " for each trained model",
-        default=False,
-    ),
-    index_by_id: bool | None = Query(
-        description="If true, a dictionary will be returned where each trained model is keyed by their id",
-        default=False,
-    ),
+    include_version_ids: bool = False,
+    index_by_id: bool = False,
 ):
     """
     This method returns all the trained models present in the registry, if the query parameter
@@ -92,19 +83,9 @@ async def get_trained_model_id(
     trained_model_id: int = Path(
         description="The id of the trained model you want to get", examples=[1]
     ),
-    include_versions: bool | None = Query(
-        description="If the client wants all the versions "
-        "associated with the trained model",
-        default=False,
-    ),
-    version_id: int | None = Query(
-        description="If the client wants to retrieve a specific " "version",
-        default=None,
-    ),
-    include_training_info: bool | None = Query(
-        description="If the client wants to retrieve" "also the training info",
-        default=False,
-    ),
+    include_versions: bool =False,
+    version_id: int = None,
+    include_training_info: bool = False,
 ):
     """
     Given an id, it returns a trained model. This method accepts the following query parameters:
@@ -264,9 +245,7 @@ async def create_model_and_version(
 )
 async def delete_train_model(
     trained_model_id: int,
-    version_id: int | None = Query(
-        description="The id of the version to delete", default=None
-    ),
+    version_id: int = None,
 ):
     """
     This method lets the user delete a specific trained model in the registry, this operation will delete
