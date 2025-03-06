@@ -83,7 +83,7 @@ async def get_trained_model_id(
     trained_model_id: int = Path(
         description="The id of the trained model you want to get", examples=[1]
     ),
-    include_versions: bool =False,
+    include_versions: bool = False,
     version_id: int = None,
     include_training_info: bool = False,
 ):
