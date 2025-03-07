@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 import shutil
 
 import pandas as pd
@@ -9,7 +10,7 @@ ROOT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUTPUT_FOLDER = os.path.join(ROOT_FOLDER, "outputs")
 MODEL_FOLDER = os.path.join(OUTPUT_FOLDER, "models")
 GENERATION_FOLDER = os.path.join(OUTPUT_FOLDER, "datasets")
-
+CURRENT_FOLDER =os.path.dirname(os.path.abspath(__file__)) + "\\"
 
 def create_folder_structure():
     if not os.path.isdir(OUTPUT_FOLDER):
@@ -97,3 +98,34 @@ def create_server_repo_folder_structure() -> None:
     elif not os.path.isdir(saved_root + "\\algorithms"):
         os.mkdir(saved_root + "\\algorithms")
 
+
+def get_all_folder_content_as_dict(target_folder: str, cast_key_as_int: bool = False) -> dict:
+    """
+    This function will search for any .pickle element inside the directory and if found it will add it
+    :param root_folder: The root folder where to create the dictionary of the contents
+    :return:
+    """
+    folder_contents = {}
+    for current_folder, subfolders, files in os.walk(CURRENT_FOLDER + target_folder):
+        if current_folder is not None:
+            if cast_key_as_int:
+                folder_contents.update(
+                    {
+                        int(current_folder[current_folder.rfind("\\") + 1:]):
+                            pickle.load(open(current_folder + "\\" + f, 'rb'))
+                        for f in files if f.endswith('.pickle')
+                    }
+                )
+            else:
+                folder_contents.update(
+                    {
+                        current_folder[current_folder.rfind("\\") + 1:]:
+                            pickle.load(open(current_folder + "\\" + f, 'rb'))
+                        for f in files if f.endswith('.pickle')
+                    }
+                )
+    return folder_contents
+
+
+# if __name__ == '__main__':
+#     print(get_all_folder_content_as_dict())

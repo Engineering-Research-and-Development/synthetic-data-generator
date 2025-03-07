@@ -38,7 +38,7 @@ def find_implementations(
     return module_paths
 
 
-def browse_algorithms() -> Generator[dict]:
+def browse_algorithms() -> Generator[dict,None,None]:
     """
     Generator function to iterate.
     It exploits the find_implementations function to gather all module names, then extract from each module
@@ -56,3 +56,7 @@ def browse_algorithms() -> Generator[dict]:
         Class = getattr(module, class_name)
 
         yield Class.self_describe()
+
+
+if __name__ == '__main__':
+    print([x for x in browse_algorithms()])
