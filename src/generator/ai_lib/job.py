@@ -42,7 +42,4 @@ def job(
     generated.dataframe = df_predict
     results = generated.parse_tabular_data_json()
 
-    print(results)
-    print(report)
-
     return results, report, model, data
