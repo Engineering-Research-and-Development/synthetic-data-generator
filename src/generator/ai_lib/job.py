@@ -2,7 +2,7 @@ import copy
 import pandas as pd
 
 from ai_lib.Exceptions import ModelException
-from ai_lib.data_generator.evaluate.TabularComparison import TabularComparisonEvaluator
+from ai_lib.evaluate.TabularComparison import TabularComparisonEvaluator
 from ai_lib.Dataset import Dataset
 from ai_lib.data_generator.model_factory import model_factory
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel

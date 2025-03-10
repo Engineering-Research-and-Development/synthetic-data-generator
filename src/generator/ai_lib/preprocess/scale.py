@@ -4,7 +4,7 @@ import numpy as np
 
 def standardize_input(
     train_data: np.array, test_data: np.array = None
-) -> tuple[np.array, np.array, StandardScaler]:
+) -> tuple[StandardScaler, np.array, np.array]:
     scaler = StandardScaler()
     train_data = scaler.fit_transform(train_data)
     if test_data is not None:
@@ -15,7 +15,7 @@ def standardize_input(
 
 def standardize_time_series(
     train_data: np.array, test_data: np.array = None
-) -> tuple[np.array, np.array, StandardScaler]:
+) -> tuple[StandardScaler, np.array, np.array]:
     scaler = StandardScaler()
     batch, features, steps = train_data.shape
     train_data = train_data.reshape(-1, features * steps)
