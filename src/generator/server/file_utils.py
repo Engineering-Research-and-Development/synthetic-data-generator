@@ -1,6 +1,5 @@
 import json
 import os
-import pickle
 import shutil
 
 import pandas as pd
@@ -83,48 +82,75 @@ def rollback_latest_version(model_folder: str):
         logger.info(f"Deleted {last_folder}")
 
 
-def create_server_repo_folder_structure() -> None:
+def check_dir_existence(root_folder: str, target_folder: str):
+    return os.path.isdir(os.path.join(root_folder,f"saved_models\\{target_folder}"))
+
+def check_file_existence(file_path):
+    return os.path.isfile(f"{CURRENT_FOLDER}saved_models\\{file_path}")
+
+def create_record_file(file_path: str):
+    open(f"{CURRENT_FOLDER}{file_path}",'a').close()
+
+def does_pickle_file_exists(root_folder: str,target_folder: str):
+    if check_dir_existence(root_folder,target_folder) and os.path.isfile(os.path.join(root_folder,target_folder,'model.pickle')):
+        return True
+    else: return False
+
+def get_all_subfolders_ids(folder_path: str) -> list:
     """
-    This function finds creates a folder structure for the all the models that are being saved on the server
     """
-    server_folder = os.path.dirname(os.path.abspath(__file__))
-    saved_root = server_folder + '\\saved_models'
-    if not os.path.isdir(saved_root):
-        os.mkdir(saved_root)
-        os.mkdir(saved_root + "\\algorithms")
-        os.mkdir(saved_root + "\\trained_models")
-    elif os.path.isdir(saved_root + "\\algorithms") and not os.path.isdir(saved_root + "\\trained_models"):
-        os.mkdir(saved_root + "\\trained_models")
-    elif not os.path.isdir(saved_root + "\\algorithms"):
-        os.mkdir(saved_root + "\\algorithms")
+    keys = []
+    folders = os.walk(folder_path)
+    for folder, _, _ in list(folders)[1:]:
+        keys.append((folder,folder[folder.rfind('\\') + 1:]))
+    if not keys:
+        raise RecursionError("No files have been found! Is the passed path correct?")
+    return keys
 
 
-def get_all_folder_content_as_dict(target_folder: str, cast_key_as_int: bool = False) -> dict:
-    """
-    This function will search for any .pickle element inside the directory and if found it will add it
-    :param root_folder: The root folder where to create the dictionary of the contents
-    :return:
-    """
-    folder_contents = {}
-    for current_folder, subfolders, files in os.walk(CURRENT_FOLDER + target_folder):
-        if current_folder is not None:
-            if cast_key_as_int:
-                folder_contents.update(
-                    {
-                        int(current_folder[current_folder.rfind("\\") + 1:]):
-                            pickle.load(open(current_folder + "\\" + f, 'rb'))
-                        for f in files if f.endswith('.pickle')
-                    }
-                )
-            else:
-                folder_contents.update(
-                    {
-                        current_folder[current_folder.rfind("\\") + 1:]:
-                            pickle.load(open(current_folder + "\\" + f, 'rb'))
-                        for f in files if f.endswith('.pickle')
-                    }
-                )
-    return folder_contents
+
+# def create_server_repo_folder_structure() -> None:
+#     """
+#     This function finds creates a folder structure for the all the models that are being saved on the server
+#     """
+#     server_folder = os.path.dirname(os.path.abspath(__file__))
+#     saved_root = server_folder + '\\saved_models'
+#     if not os.path.isdir(saved_root):
+#         os.mkdir(saved_root)
+#         os.mkdir(saved_root + "\\algorithms")
+#         os.mkdir(saved_root + "\\trained_models")
+#     elif os.path.isdir(saved_root + "\\algorithms") and not os.path.isdir(saved_root + "\\trained_models"):
+#         os.mkdir(saved_root + "\\trained_models")
+#     elif not os.path.isdir(saved_root + "\\algorithms"):
+#         os.mkdir(saved_root + "\\algorithms")
+#
+#
+# def get_all_folder_content_as_dict(target_folder: str, cast_key_as_int: bool = False) -> dict:
+#     """
+#     This function will search for any .pickle element inside the directory and if found it will add it
+#     :param root_folder: The root folder where to create the dictionary of the contents
+#     :return:
+#     """
+#     folder_contents = {}
+#     for current_folder, subfolders, files in os.walk(CURRENT_FOLDER + target_folder):
+#         if current_folder is not None:
+#             if cast_key_as_int:
+#                 folder_contents.update(
+#                     {
+#                         int(current_folder[current_folder.rfind("\\") + 1:]):
+#                             pickle.load(open(current_folder + "\\" + f, 'rb'))
+#                         for f in files if f.endswith('.pickle')
+#                     }
+#                 )
+#             else:
+#                 folder_contents.update(
+#                     {
+#                         current_folder[current_folder.rfind("\\") + 1:]:
+#                             pickle.load(open(current_folder + "\\" + f, 'rb'))
+#                         for f in files if f.endswith('.pickle')
+#                     }
+#                 )
+#     return folder_contents
 
 
 # if __name__ == '__main__':

@@ -1,39 +1,22 @@
-import os
-from copyreg import pickle
-from shutil import rmtree
 import pytest
 import requests
-import pickle
-from .conftest import trained_models_folder
-from ..middleware_handlers import (
-    server_sync_train_data,
-    sync_remote_trained,
-    middleware,
-    server_sync_algorithms,
-)
-from hashlib import sha256
+
 from src.generator.ai_lib.browse_algorithms import browse_algorithms
-
-test_local_algos = [
-    {
-        "name": "data_generator.models.keras.implementation.TabularVAE.TabularVAE_"
-        + str(i),
-        "default_loss_function": "ELBO LOSS",
-        "description": "A Variational Autoencoder for data generation",
-        "allowed_data": [
-            {"data_type": "float32", "is_categorical": False},
-            {"data_type": "int32", "is_categorical": False},
-            {"data_type": "int64", "is_categorical": False},
-        ],
-    }
-    for i in range(10)
-]
+from .conftest import trained_models_folder, test_folder
+from ..file_utils import get_all_subfolders_ids
+from ..middleware_handlers import (
+    # server_sync_train_data,
+    sync_remote_trained,
+    middleware, sync_remote_algorithm,
+    # server_sync_algorithms,
+)
 
 
-def test_sync_remote_train(local_repo_trees):
-    tree_trained, _ = local_repo_trees
+def test_sync_train():
+
     sync_remote_trained(
-        tree_trained, "trained_models/?include_version_ids=false&index_by_id=true"
+         "trained_models/?include_version_ids=false&index_by_id=true",
+        test_folder
     )
     # Now we check if the remote has the same stuff we have locally
     response = requests.get(
@@ -43,28 +26,24 @@ def test_sync_remote_train(local_repo_trees):
     remote_train = response.json()
     assert len(remote_train) > 0
     # We search for the names since the ids might have been changed
-    train_names = [x["name"] for x in remote_train.values()]
-    for val in tree_trained.values():
-        assert pickle.loads(val)["name"] in train_names
+    for path, trained_id in get_all_subfolders_ids(trained_models_folder):
+        assert remote_train.get(trained_id) is not None
+        assert remote_train.pop(str(trained_id))
+    # If the two match, the repo should now be empty
+    assert not remote_train
 
 
-# This kind of tests should be conducted at the end since they add test data that will not work with POSTs
-def test_server_sync_new_trained_data(local_repo_trees):
-    tree_trained, _ = local_repo_trees
-    # Creating a new folder to simulate new data
-    os.makedirs(trained_models_folder + "\\100")
-    assert os.path.exists(trained_models_folder + "\\100")
-    with open(trained_models_folder + "\\100\\model.pickle", "wb") as handle:
-        # This warning is erroneous and should be not considered
-        pickle.dump({"name": "A testing name", "size": "A testing size"}, handle)
-    assert os.path.exists(trained_models_folder + "\\100\\model.pickle")
-    # Now we call the handler
-    server_sync_train_data(tree_trained, "test\\saved_models\\trained_models")
-    # We check if the handler correctly added the new folder to the tree
-    assert tree_trained.get(100)
-    # Cleanup
-    rmtree(trained_models_folder + "\\100")
-    assert not os.path.exists(trained_models_folder + "\\100")
+def test_sync_algo():
+    sync_remote_algorithm()
+    response = requests.get(f"{middleware}algorithms/?include_allowed_datatypes=false&indexed_by_names=true")
+    assert response.status_code == 200,print(response.content)
+    remote_algos = response.json()
+    assert remote_algos
+    for algo in browse_algorithms():
+        assert remote_algos.pop(algo['name'],None) is not None
+    assert not remote_algos
+
+
 
 @pytest.mark.skip(reason="Import error by AI lib"
                          "by calling browse_algorithms(), could not execute this test")

@@ -1,20 +1,17 @@
 import json
 import os
 import pickle
-from pathlib import Path
+from copy import deepcopy
 
 import requests
-from bplustree import BPlusTree, StrSerializer, IntSerializer
 from requests.exceptions import RequestException
 
-from ai_lib.NumericDataset import NumericDataset
 from ai_lib.Exceptions import ModelException
+from ai_lib.NumericDataset import NumericDataset
 from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
-from server.file_utils import MODEL_FOLDER
-from server.file_utils import create_server_repo_folder_structure,get_all_folder_content_as_dict
-from hashlib import sha256
-
+from server.file_utils import MODEL_FOLDER, get_all_subfolders_ids, does_pickle_file_exists
+from server.validation_schema import DatasetIn
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 
@@ -90,127 +87,37 @@ def model_to_middleware(model: UnspecializedModel, data: NumericDataset):
             "Impossible to reach Model Repository, rollback to latest version"
         )
 
-
 def server_startup():
-    # Pre-work: we fetch the B+Trees for algorithms and trained models
-    tree_trained_models,tree_algorithms = load_trees_from_disk()
-    # 1. Sync with any new implemented trained models
-    server_sync_train_data(tree_trained_models,'./saved_models/trained_models')
-    # 2. Sync with remote
-    sync_remote_trained(tree_trained_models,'trained_models/?include_version_ids=false&index_by_id=true')
-    # 3. Sync with any new implemented algorithms
-    server_sync_algorithms(tree_algorithms,'./saved_models/algorithms')
-    # 4. Sync with remote algorithms
-    sync_remote_algorithms(tree_algorithms,'algorithms/?include_allowed_datatypes=true&indexed_by_names=true')
+    # 1. Sync with any new implemented trained models and Sync with remote
+    sync_remote_trained()
+    # 1. Sync with any new implemented algorithms and Sync with remote
+    sync_remote_algorithm()
 
 
-
-
-
-
-### Methods for dealing with server saved models
-def load_trees_from_disk(tree_trained_order: int = 341,
-               trained_key_size: int = 4,
-               tree_algo_order: int = 170,
-               algo_key_size: int = 16) -> tuple[BPlusTree, BPlusTree]:
-    """
-    This function finds looks for the B+Trees' pickle inside the server folder. If found, it will load them and return the
-    reference of them, otherwise it will create them from scratch and return them.
-    :param: tree_trained_order The maximum number of children per internal node for the tree of trained models. Since we
-    will use ints for the keys, the optimal parameter is 341 which is the default value
-    :param: trained_key_size The key size in bytes of each node in the tree of the trained models. Using ints, the
-    key size is 4 bytes, which is the default value
-    :param: tree_algo_order The maximum number of children per internal node for the tree of algorithms. Since we
-    will use medium strings (16 char in length) for the keys, the optimal parameter is 170 which is the default value
-    :param: algo_key_size The key size in bytes of each node in the tree of the algorithms. Using medium strings as keys, the
-    key size is 32 bytes, which is the default value
-    :return: A tuple containing respectively the B+Tree for algorithms and trained models
-    """
-    create_server_repo_folder_structure()
-    root_file = os.path.dirname(os.path.abspath(__file__))
-    tree_trained_models = BPlusTree(
-        Path(root_file + "/saved_models/trained_models/bplus_tree.db"),
-        order=tree_trained_order, key_size=trained_key_size, serializer=IntSerializer()
-    )
-    tree_algo = BPlusTree(
-        Path(root_file + "/saved_models/algorithms/bplus_tree.db")
-        , order=tree_algo_order, key_size=algo_key_size,serializer=StrSerializer()
-    )
-    return tree_trained_models, tree_algo
-
-def server_sync_train_data(local_tree: BPlusTree,folder_path: str):
-    """
-    This function given a folder path it checks if the data locally present is already present in the Bplustree,
-    otherwise it adds it
-    :param local_tree: A Bplustree that keeps track of the data, and it's position
-    :param folder_path: The folder path where to look the data for
-    :return:
-    """
-    # We fetch all the contents of the folder
-    # TODO: There should be a data structure that keeps track of any new folders instead of traversing all
-    #  the old ones
-    folder_data = get_all_folder_content_as_dict(folder_path,cast_key_as_int=True)
-    if not folder_data:
-        return
-    for key,value in local_tree.items():
-        if folder_data.get(key) is not None:
-            folder_data.pop(key)
-    # Folder data will have all the model folders that are not present in the BplusTree
-    insert_saved_trained_model_folders(local_tree,folder_data)
-
-
-def insert_saved_trained_model_folders(repo_tree: BPlusTree, trained_folders: dict) -> None:
-    """
-    This function given the trained model's folders found by the server, it fills the tree up with the data
-    so that the server repo is up to date with the generator work.
-    :return:
-    """
-    # Since each algorithm is different from each other, we can use as key the name of the folder which is the
-    # trained model id
-    zipped_keys  = [(int(folder),pickle.dumps(data)) for folder,data in trained_folders.items()]
-    zipped_keys.sort(key=lambda tup: tup[0])
-    for key,val in zipped_keys:
-        repo_tree.insert(key,val)
-
-
-def sync_remote_trained(local_repo: BPlusTree,endpoint):
-    """
-    This function given the algorithms in the repo it syncs with the algorithm in the model registry. The model registry
-    needs to reflect the algorithm that the generator has.
-    :return:
-    """
-    root_endpoint = endpoint[:str.index(endpoint,'/')]
-    # Checkout all the data from the repo
+def sync_remote_trained(endpoint: str,folder: str):
+    root_endpoint = endpoint[:str.index(endpoint, '/')]
     response = requests.get(f"{middleware}{endpoint}")
     if response.status_code == 404:
         raise TimeoutError("Could not reach middleware for synchronization!")
     remote_data = response.json()
-    intersec_and_integrate_remote_trained_data(local_repo, remote_data, root_endpoint)
-
-def intersec_and_integrate_remote_trained_data(local_repo: BPlusTree,remote_data: dict,root_endpoint: str):
-    """
-    This function operates the set operation of intersection between the local data of the generator and the remote
-    data. After that, it creates new data in the remote repository does not contain local data.
-    :param local_repo: The local elements that the generator implements
-    :param remote_data: The remote data that the repository has
-    :param root_endpoint: The endpoint where to request the remote data to
-    :return:
-    """
-    for key,value in local_repo.items():
-        if remote_data.get(key) is None:
-            payload = pickle.loads(value)
-            payload = format_saved_trained_model(payload)
-            response = requests.post(f"{middleware}/{root_endpoint}", json=payload)
+    for path,trained_id in get_all_subfolders_ids(f"{folder}\\saved_models\\trained_models"):
+        if remote_data.get(trained_id) is None:
+            with open(path + "\\model.pickle",'rb') as file:
+                payload = pickle.load(file)
+            f_payload = format_trained_model_for_post(deepcopy(payload))
+            response = requests.post(f"{middleware}/{root_endpoint}", json=f_payload)
             assert response.status_code == 201, print(response.content)
+            del f_payload
+            # Now we must update the model id locally since it has been created in the repo with a new id
+            update_trained_model(payload,trained_id,response.json()['id'],folder)
         else:
-            remote_data.pop(key)
+            remote_data.pop(trained_id)
     # Here we remove the remote data
     for key in remote_data.keys():
         response = requests.delete(f"{middleware}/{root_endpoint}/{key}")
         assert response.status_code == 200, print(response.content)
 
-def format_saved_trained_model(model: dict) -> dict[str,str | int]:
-    print(model)
+def format_trained_model_for_post(model: dict) -> dict[str,str | int]:
     model.update({'trained_model': {'name': model['name'], 'dataset_name': model['dataset_name'],
                                     'size': model['size'], 'input_shape': model['input_shape'],
                                     'algorithm_id': model['algorithm_id']}})
@@ -226,53 +133,98 @@ def format_saved_trained_model(model: dict) -> dict[str,str | int]:
     model.pop('versions')
     return model
 
-def server_sync_algorithms(local_tree: BPlusTree):
-    # We check if the algorithms passed by the generator are present in the tree
-    # https://stackoverflow.com/questions/19962424/probability-of-collision-with-truncated-sha-256-hash
-    # https://en.wikipedia.org/wiki/Birthday_problem#Probability_table
-    # This is very important and should be considered if the system is then developed
-    # For a toy example this should be enough, since system algorithms should not be a lot
-    # If the algorithms are more than 7.200.000.000 then there is a probability of
-    # a collision of 75% the keying to fail to produce a collision-free key
+def update_trained_model(tr_data: dict,old_id: int,new_id: int,folder: str):
+    # Modify the payload
+    tr_data['id'] = new_id
+    # Dump the model to the folder
+    with open(os.path.abspath(f'{folder}\\saved_models\\trained_models\\{old_id}\\model.pickle'),'wb') as file:
+        pickle.dump(tr_data,file)
+    # Rename the folder
+    os.rename(f'{folder}\\saved_models\\trained_models\\{old_id}',f'{folder}\\saved_models\\trained_models\\{new_id}')
+
+def save_new_trained_model(model_dict: dict,
+                           dataset_name: str,
+                           size: str,
+                           algo_id: int,
+                           tr_info: str,
+                           feature_schema: str):
+    image_path = model_dict['image']
+    tr_name = model_dict['model_name']
+    input_shape = model_dict['input_shape']
+
+def create_feature_schema(features_in: list[DatasetIn]):
+    pass
+
+def sync_remote_algorithm():
+    # Since the generator offers a method that lists all the implemented algorithms we only
+    # need to do a sync with the remote repository
+    response = requests.get(f'{middleware}algorithms/?include_allowed_datatypes=true&indexed_by_names=true')
+    if response.status_code != 200:
+        raise TimeoutError("Could not reach middleware for algorithms sync! Server returned the following"
+                           " code",response.status_code)
+    remote_algorithms = response.json()
     for algorithm in browse_algorithms():
-        key = sha256(algorithm['name'].encode('utf-8')).hexdigest()[:16]
-        if local_tree.get(key) is None:
-            local_tree.insert(key,pickle.dumps(algorithm))
+        if remote_algorithms.get(algorithm['name']) is None:
+            f_algorithm = format_algorithm_for_post(deepcopy(algorithm))
+            response = requests.post(f'{middleware}algorithms/', json=f_algorithm)
+            # This means that the datatype is not present and the specific datatype must be added
+            if response.status_code == 400 and response.json()['datatype'] is not None:
+                # We search it in the datatypes that we are passing to the post
+                to_add = response.json()['datatype']
+                for datatype in f_algorithm['allowed_data']:
+                    if datatype['datatype'] == to_add['type'] and datatype['is_categorical'] == to_add['is_categorical']:
+                        response = requests.post(f"{middleware}datatypes/",json=datatype)
+                        assert response.status_code == 201,print(response.content)
+                # Now we retry the creation
+                response = requests.post(f'{middleware}algorithms/', json=f_algorithm)
+                assert response.status_code == 201,print(response.content)
+            assert response.status_code == 201,print(response.content)
+            del f_algorithm
+        else:
+            remote_algorithms.pop(algorithm['name'])
 
-def sync_remote_algorithms(repo_tree: BPlusTree,endpoint: str):
-    root_endpoint = endpoint[:str.index(endpoint,'/')]
-    # Checkout all the data from the repo
-    response = requests.get(f"{middleware}{endpoint}")
+    # Now we delete all the rest of the stuff from the repo
+    for key,val in remote_algorithms.items():
+        response = requests.delete(f'{middleware}algorithms/{val["id"]}')
+        assert response.status_code == 200,print(response.content)
+
+def format_algorithm_for_post(algorithm: dict) -> dict:
+    algorithm.update({'algorithm':
+        {
+        'name':algorithm['name'],
+        'default_loss_function': algorithm['default_loss_function'],
+        'description': algorithm['description'],
+        }
+    })
+    # Changing the key data_type to datatype for each obj in 'allowed_data'
+    for data in algorithm['allowed_data']:
+        data.update({'datatype':data['data_type']})
+        data.pop('data_type')
+    algorithm.pop('name')
+    algorithm.pop('default_loss_function')
+    algorithm.pop('description')
+    return algorithm
+
+def get_algorithm_path(algorithm: dict,root_folder: str) -> str | None:
+    # Check if present in the model registry
+    response = requests.get(f"{middleware}/algorithms/{algorithm['algorithm_name']}")
     if response.status_code == 404:
-        raise TimeoutError("Could not reach middleware for synchronization!")
-    remote_data = response.json()
-    intersec_and_integrate_remote_algos(repo_tree, remote_data, root_endpoint)
+        return None
+    # Now we get the id, and we check if it is present also locally and we see if the data is passed correctly
+    algo_id = response.json()['id']
+    if does_pickle_file_exists(root_folder,algo_id):
+        # Load model information and check consistency
+        with open(os.path.join(root_folder,f"saved_models\\{algo_id}\\model.pickle"),'rb') as file:
+            model = pickle.load(file)
+        if not model['name'] == algorithm['model']['algorithm_name']:
+            return None
+    else:
+        return None
+    return os.path.join(root_folder,f"\\saved_models\\algorithms\\{algo_id}")
 
+def fetch_model_save_path(model_dict: dict):
+    pass
 
-def intersec_and_integrate_remote_algos(repo_tree: BPlusTree,remote_data: dict,root_endpoint: str):
-    """
-    This function operates the set operation of intersection between the local data of the generator and the remote
-    data. After that, it creates new data in the remote repository does not contain local data.
-    :param repo_tree: The local elements that the generator implements
-    :param remote_data: The remote data that the repository has
-    :param root_endpoint: The endpoint where to request the remote data to
-    :return:
-    """
-    for key,value in remote_data.items():
-        # Calculate hash
-        key_hash = sha256(key.encode('utf-8')).hexdigest()[:16]
-        # Delete every algorithm that is not present locally
-        if repo_tree.get(key_hash) is None:
-            response = requests.delete(f"{middleware}/{root_endpoint}/{value['id']})")
-            assert response.status_code == 200, print(response.content)
-
-    # This is inefficient but it is the only way to add non-present models
-    for value in repo_tree.values():
-        value = pickle.loads(value)
-        response = requests.get(f"{middleware}/{root_endpoint}/{value['name']})")
-        if response.status_code == 404:
-            requests.post(f"{middleware}/{root_endpoint}/",json=value)
-        assert response == 200, print(response.content)
 
 
 
