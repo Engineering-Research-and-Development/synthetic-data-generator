@@ -51,8 +51,9 @@ async def add_algorithm_and_datatype(
                 return JSONResponse(
                     status_code=400,
                     content={
-                        "message": "The datatype is currently not supported"
-                        ", to use it add it with POST /datatype"
+                        "message": "This datatype is currently not supported"
+                        ", to use it add it with POST /datatype",
+                        "datatype" : {"type":feature.datatype,"is_categorical":feature.is_categorical}
                     },
                 )
             try:
