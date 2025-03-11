@@ -7,7 +7,7 @@ from ..conftest import server, port
 
 endpoint = "/datatypes"
 
-test_datatype = {"type": "TestDatatype", "is_categorical": "false"}
+test_datatype = {"datatype": "TestDatatype", "is_categorical": "false"}
 
 
 def test_get_all_datatypes():
@@ -63,7 +63,8 @@ def test_wrong_datatype_payload():
 
 
 def test_create_datatype():
-    assert (
-        requests.post(f"{server}:{port}{endpoint}", json=test_datatype).status_code
-        == 201
-    )
+    response = requests.post(f"{server}:{port}{endpoint}", json=test_datatype)
+    assert response.status_code == 201, print(response.content)
+    dt_id = response.json()['id']
+    response = requests.get(f"{server}:{port}{endpoint}/{dt_id}")
+    assert response.status_code == 200, print(response.content)
