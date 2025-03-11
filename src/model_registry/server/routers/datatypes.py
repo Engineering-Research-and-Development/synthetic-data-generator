@@ -55,7 +55,10 @@ def create_datatype(datatype: CreateDataType):
     """
     # This is done so that I don't break the db schema
     datatype = datatype.model_dump()
-    datatype.update({'type':datatype['datatype']})
-    datatype.pop('datatype')
+    datatype.update({"type": datatype["datatype"]})
+    datatype.pop("datatype")
     dt = DataType.create(**datatype)
-    return JSONResponse(status_code=201,content={'message':"Created a datatype with the following id",'id':dt.id})
+    return JSONResponse(
+        status_code=201,
+        content={"message": "Created a datatype with the following id", "id": dt.id},
+    )
