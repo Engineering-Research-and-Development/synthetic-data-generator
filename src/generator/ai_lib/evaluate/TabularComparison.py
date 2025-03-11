@@ -37,13 +37,22 @@ class TabularComparisonEvaluator:
         """
         confusion_matrix = pd.crosstab(data1, data2)
         chi2 = ss.chi2_contingency(confusion_matrix)[0]
-        n = confusion_matrix.sum()
+        # Total number of observations.
+        n = confusion_matrix.to_numpy().sum()
+        if n == 0:
+            return 0.0
         phi2 = chi2 / n
         r, k = confusion_matrix.shape
+        # Check for potential division by zero in the correction terms.
+        if n - 1 == 0:
+            return 0.0
         phi2_corr = max(0, phi2 - ((k - 1) * (r - 1)) / (n - 1))
         r_corr = r - ((r - 1) ** 2) / (n - 1)
         k_corr = k - ((k - 1) ** 2) / (n - 1)
-        V = np.sqrt(phi2_corr / min((k_corr - 1), (r_corr - 1)))
+        denominator = min(k_corr - 1, r_corr - 1)
+        if denominator <= 0:
+            return 0.0
+        V = np.sqrt(phi2_corr / denominator)
         return V
 
     def _evaluate_cramer_v_distance(self) -> float:
@@ -149,7 +158,7 @@ class TabularComparisonEvaluator:
             "Unique Synthetic Data [%]": np.round(
                 synth_unique_len / synth_len * 100, 2
             ).item(),
-            "New Synthetic Data [%]:": np.round(
+            "New Synthetic Data [%]": np.round(
                 new_synt_data / synth_len * 100, 2
             ).item(),
         }
@@ -157,39 +166,53 @@ class TabularComparisonEvaluator:
 
     def _evaluate_adherence(self):
         """
-        Computes adherence metrics such as:
-        - Synthetic Categories Adherence to Real Categories
-        - Numerical min-max boundaries
-        - Primary / Foreign Keys integrity and uniqueness
-        :return:
-        """
-        category_adherence_score = {}
+                Computes adherence metrics such as:
+                - Synthetic Categories Adherence to Real Categories
+                - Numerical min-max boundaries adherence
+
+                :return: A tuple containing:
+                    - category_adherence_score: dict mapping column name to adherence percentage.
+                    - boundary_adherence_score: dict mapping column name to adherence percentage.
+                """
+        # Ensure synthetic data is not empty
+        total_records = self._synthetic_data.shape[0]
+        if total_records == 0:
+            raise ValueError("Synthetic data is empty.")
+
+        # --- Categorical Adherence ---
+        # For each categorical column, compute the percentage of synthetic entries
+        # that have values found in the real data.
+        category_adherence_score: dict[str, float] = {}
         real_categorical = self._real_data[self._categorical_columns]
         synth_categorical = self._synthetic_data[self._categorical_columns]
-        for col in self._categorical_columns:
-            item_diff = set(synth_categorical[col].unique()) - set(
-                real_categorical[col].unique()
-            )
-            n_items = synth_categorical[col].isin(item_diff)
-            category_adherence_score[col] = np.round(
-                n_items / self._synthetic_data.shape[0] * 100, 2
-            ).item()
 
-        boundary_adherence_score = {}
+        for col in self._categorical_columns:
+            # Identify values present in synthetic data but missing in real data.
+            extra_values = set(synth_categorical[col].unique()) - set(real_categorical[col].unique())
+            # Count how many synthetic records use these extra values.
+            extra_count = synth_categorical[col].isin(extra_values).sum()
+            # Define adherence as the percentage of records that do NOT have extra values.
+            adherence_percentage = np.round((1 - extra_count / total_records) * 100, 2)
+            category_adherence_score[col] = float(adherence_percentage)
+
+        # --- Numerical Boundary Adherence ---
+        # For each numerical column, compute the percentage of synthetic entries
+        # that lie within the min-max boundaries of the real data.
+        boundary_adherence_score: dict[str, float] = {}
         real_numerical = self._real_data[self._numerical_columns]
         synth_numerical = self._synthetic_data[self._numerical_columns]
+
         for col in self._numerical_columns:
-            report = real_numerical[col].describe()
-            max_boundary = report["max"]
-            min_boundary = report["min"]
-            df_filtered = synth_numerical[
-                (synth_numerical[col] <= max_boundary)
-                & (synth_numerical[col] >= min_boundary)
-            ]
-            n_items_in = df_filtered.shape[0]
-            boundary_adherence_score[col] = np.round(
-                n_items_in / self._synthetic_data.shape[0] * 100, 2
-            ).item()
+            # Obtain min and max boundaries from the real data.
+            stats = real_numerical[col].describe()
+            min_boundary = stats["min"]
+            max_boundary = stats["max"]
+            # Filter synthetic records that fall within these boundaries.
+            in_boundary = synth_numerical[(synth_numerical[col] >= min_boundary) &
+                                          (synth_numerical[col] <= max_boundary)]
+            in_boundary_count = in_boundary.shape[0]
+            adherence_percentage = np.round(in_boundary_count / total_records * 100, 2)
+            boundary_adherence_score[col] = float(adherence_percentage)
 
         report = {
             "category_adherence_score [%]": category_adherence_score,
