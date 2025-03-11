@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
-from ai_lib.Dataset import Dataset
+from ai_lib.NumericDataset import NumericDataset
 
 
 class UnspecializedModel(ABC):
@@ -39,7 +39,7 @@ class UnspecializedModel(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _pre_process(self, data: Dataset, **kwargs):
+    def _pre_process(self, data: NumericDataset, **kwargs):
         """Pre-process data"""
         raise NotImplementedError
 

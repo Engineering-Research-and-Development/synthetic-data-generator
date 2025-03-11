@@ -8,7 +8,7 @@ CATEGORICAL = "categorical"
 OTHER = "none"
 
 
-class Dataset:
+class NumericDataset:
     def __init__(self, dataset: list[dict]):
         self.dataset: list[dict] = dataset
         self.dataframe: pd.DataFrame = pd.DataFrame()
@@ -53,18 +53,20 @@ class Dataset:
             else:
                 unrecognized_columns.append(column_name)
 
-        # Transposing array. Since columns are appended row-wise, by transposing we obtain a column-wise data structure
-        data_structure = np.array(data_structure)
-        data_structure = np.moveaxis(data_structure, 0, 1)
-        data_frame = pd.DataFrame(data=data_structure.tolist(), columns=column_names)
-
         if len(column_names) < 1:
             raise DataException("No column names are passed to the input data")
+
+        input_data = {
+            col["column_name"]: np.array(col.get("column_data", [])).tolist() for col in data
+        }
+        data_frame = pd.DataFrame(input_data)
+        data_structure = np.array(data_frame.to_numpy().tolist())
 
         self.dataframe = data_frame
         self.columns = column_names
         self.categorical_columns = categorical_columns
         self.continuous_columns = numerical_columns
+        self.unrecognized_columns = unrecognized_columns
         self.continuous_data = data_frame[numerical_columns]
         self.categorical_data = data_frame[categorical_columns]
         self.input_shape = str(data_structure.shape[1:])
@@ -92,7 +94,7 @@ class Dataset:
                 "column_data": self.dataframe[col].to_numpy().tolist(),
                 "column_name": col,
                 "column_type": self._categorize_column(col),
-                "column_datatype": str(self.dataframe[col].dtype),
+                "column_datatype": str(self.dataframe[col].to_numpy().dtype),
             }
             for col in self.dataframe.columns
         ]
@@ -115,10 +117,30 @@ class Dataset:
             feature_list.append(feat)
         return feature_list
 
-    def get_data(self):
+    def get_data(self) -> tuple[pd.DataFrame, list[str], list[str], list[str]]:
+        """
+        Returns the data in the dataset as a tuple of 4 elements:
+
+        1. The pandas DataFrame containing the data
+        2. A list of column names
+        3. A list of continuous column names
+        4. A list of categorical column names
+
+        :return: (dataframe, columns, continuous_columns, categorical_columns)
+        :rtype: tuple[pandas.DataFrame, list[str], list[str], list[str]]
+        """
         return (
             self.dataframe,
             self.columns,
             self.continuous_columns,
             self.categorical_columns,
         )
+
+    @staticmethod
+    def get_numpy_data(dataframe: pd.DataFrame) -> np.ndarray:
+        """
+        Correctly Returns numpy array with complex structures, like columns with type list
+        :param dataframe: numpy dataframe
+        :return: correctly structured numpy array
+        """
+        return np.array(dataframe.to_numpy().tolist())

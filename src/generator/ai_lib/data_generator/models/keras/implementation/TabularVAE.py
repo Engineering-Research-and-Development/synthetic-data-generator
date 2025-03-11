@@ -1,7 +1,7 @@
 import keras
 from keras import layers
 
-from ai_lib.Dataset import Dataset
+from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
 from ai_lib.preprocess.scale import standardize_input
@@ -19,6 +19,8 @@ class TabularVAE(BaseKerasVAE):
         self._batch_size = 8
         self._instantiate()
 
+    def _load_model(self, encoder, decoder):
+        self._model = VAE(encoder, decoder, self._beta)
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -41,7 +43,7 @@ class TabularVAE(BaseKerasVAE):
         vae.summary()
         return vae
 
-    def _pre_process(self, data: Dataset, **kwargs):
+    def _pre_process(self, data: NumericDataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
         if not self._scaler:
             scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)

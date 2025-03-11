@@ -29,7 +29,6 @@ def test_infer():
     n_rows = infer_request["n_rows"]
     save_filepath = "./outputs/"
 
-    print(model_info)
     results, metrics, model, data = job(model_info=model_info, dataset=dataset, n_rows=n_rows,
                                         save_filepath=save_filepath, train=False)
     assert type(results) == list
@@ -45,7 +44,6 @@ def test_infer_nodata():
     n_rows = infer_nodata_request["n_rows"]
     save_filepath = "./outputs/"
 
-    print(model_info)
     results, metrics, model, data = job(model_info=model_info, dataset=[], n_rows=n_rows,
                                         save_filepath=save_filepath, train=False)
     assert type(results) == list

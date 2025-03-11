@@ -7,7 +7,7 @@ import requests
 from bplustree import BPlusTree, StrSerializer, IntSerializer
 from requests.exceptions import RequestException
 
-from ai_lib.Dataset import Dataset
+from ai_lib.NumericDataset import NumericDataset
 from ai_lib.Exceptions import ModelException
 from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
@@ -55,7 +55,7 @@ def delete_sys_model_by_id(model_id: int):
         raise ModelException("Impossible to reach Model Repository")
 
 
-def model_to_middleware(model: UnspecializedModel, data: Dataset):
+def model_to_middleware(model: UnspecializedModel, data: NumericDataset):
     feature_list = data.parse_data_to_registry()
     training_info = model._training_info.to_dict()
     model_image = model.model_filepath

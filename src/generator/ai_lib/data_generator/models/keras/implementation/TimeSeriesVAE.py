@@ -1,7 +1,7 @@
 import numpy as np
 import keras
 
-from ai_lib.Dataset import Dataset
+from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
 from keras import layers
@@ -20,6 +20,9 @@ class TimeSeriesVAE(BaseKerasVAE):
         self._epochs = 100
         self._batch_size = 16
         self._instantiate()
+
+    def _load_model(self, encoder, decoder):
+        self._model = VAE(encoder, decoder, self._beta)
 
     def _build(self, input_shape: tuple[int, ...]):
         encoder_inputs = keras.Input(shape=input_shape)
@@ -67,7 +70,7 @@ class TimeSeriesVAE(BaseKerasVAE):
             -1, feats, steps
         )
 
-    def _pre_process(self, data: Dataset, **kwargs):
+    def _pre_process(self, data: NumericDataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
         if not self._scaler:
             scaler, np_input_scaled, _ = standardize_time_series(train_data=np_data)

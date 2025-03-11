@@ -3,12 +3,10 @@ from pathlib import Path
 import importlib
 from typing import Generator
 
-base_path = "ai_lib.data_generator/models/"
-model_paths = os.path.join(
+base_package = "ai_lib.data_generator.models."
+base_model_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "data_generator/models/"
 )
-model_package = base_path.replace("/", ".")
-
 
 def find_implementations(
     root_path: str, implementation_folder: str = "implementation"
@@ -19,6 +17,7 @@ def find_implementations(
     :param root_path: root path in which to explore
     :return: list of stringed modules represented in py-like dot-notation
     """
+
     root_dir = Path(root_path).resolve()  # Ensure absolute path
     implementation_dirs = root_dir.rglob(
         implementation_folder
@@ -38,7 +37,7 @@ def find_implementations(
     return module_paths
 
 
-def browse_algorithms() -> Generator[dict, None, None]:
+def browse_algorithms(model_paths:str=base_model_path, model_package:str=base_package) -> Generator[dict | None, None, None]:
     """
     Generator function to iterate.
     It exploits the find_implementations function to gather all module names, then extract from each module
@@ -52,7 +51,11 @@ def browse_algorithms() -> Generator[dict, None, None]:
 
     for module_name in list_module_names:
         class_name = module_name.split(".")[-1]
-        module = importlib.import_module(module_name)
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            yield None
+            continue
         Class = getattr(module, class_name)
 
         yield Class.self_describe()
