@@ -4,7 +4,7 @@ from keras import layers
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
-from ai_lib.preprocess.scale import standardize_input
+from ai_lib.preprocess.scale import standardize_simple_tabular_input
 from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 
@@ -46,7 +46,7 @@ class TabularVAE(BaseKerasVAE):
     def _pre_process(self, data: NumericDataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
         if not self._scaler:
-            scaler, np_input_scaled, _ = standardize_input(train_data=cont_np_data)
+            scaler, np_input_scaled, _ = standardize_simple_tabular_input(train_data=cont_np_data)
             self._scaler = scaler
         else:
             np_input_scaled = self._scale(cont_np_data)

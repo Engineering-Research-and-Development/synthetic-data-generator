@@ -6,7 +6,7 @@ from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
 from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
 from keras import layers
 
-from ai_lib.preprocess.scale import standardize_time_series
+from ai_lib.preprocess.scale import standardize_simple_tabular_time_series
 from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 
@@ -73,7 +73,7 @@ class TimeSeriesVAE(BaseKerasVAE):
     def _pre_process(self, data: NumericDataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
         if not self._scaler:
-            scaler, np_input_scaled, _ = standardize_time_series(train_data=np_data)
+            scaler, np_input_scaled, _ = standardize_simple_tabular_time_series(train_data=np_data)
             self._scaler = scaler
         else:
             np_input_scaled = self._scale(np_data)
