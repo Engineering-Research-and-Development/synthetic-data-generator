@@ -8,7 +8,7 @@ class TrainingInfo:
         train_samples: int,
         train_loss: float,
         validation_samples: int = None,
-        validation_loss: int = None,
+        validation_loss: float = None,
     ):
         self._loss_fn = loss_fn
         self._train_samples = train_samples
