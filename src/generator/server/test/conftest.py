@@ -2,12 +2,9 @@ import os
 import pickle
 import random
 from copy import deepcopy
-from pathlib import Path
 from shutil import rmtree
 
-import pytest
 import requests
-from bplustree import BPlusTree, IntSerializer
 
 from ..middleware_handlers import middleware
 
@@ -23,26 +20,7 @@ if not os.path.isdir(trained_models_folder):
 if not os.path.isdir(algorithms_folder):
     os.makedirs(algorithms_folder)
 
-tree_trained = BPlusTree(
-    Path(trained_models_folder + "/test_trained.db"),
-    order=341,
-    key_size=4,
-    serializer=IntSerializer(),
-)
-tree_algo = BPlusTree(
-    Path(algorithms_folder + "/test_algo.db"),
-    order=108,
-    key_size=32,
-    serializer=IntSerializer(),
-)
 trained_models, algorithms = [], []
-
-
-@pytest.fixture(scope="module")
-def local_repo_trees():
-    global tree_trained, tree_algo
-    return tree_trained, tree_algo
-
 
 # Why do this? The sync operations are quite destructive (a lot of POST/DELETE based on the generator algo/trianed models
 # view) for this reason, we get a copy of all the data present in the registry before the tests then we restore it.
@@ -75,7 +53,7 @@ def pytest_sessionstart(session):
     to_add = []
     # We make some dirs and mock data in the files
     for i in range(1, 6):
-        os.makedirs(test_folder + f"\\saved_models/trained_models/{i}")
+        os.makedirs(test_folder + f"\\saved_models\\trained_models\\{i}")
         mock_train = {
             "name": "TrainedModel_" + str(i),
             "dataset_name": "Dataset_" + str(i),
@@ -112,12 +90,12 @@ def pytest_sessionstart(session):
             ],
         }
         with open(
-            test_folder + f"\\saved_models/trained_models/{i}/model.pickle", "wb+"
+            test_folder + f"\\saved_models\\trained_models\\{i}\\model.pickle", "wb"
         ) as file:
             pickle.dump(mock_train, file)
-        to_add.append((i, pickle.dumps(mock_train)))
-    # Now we add them as startup training data
-    tree_trained.batch_insert(to_add)
+        # to_add.append((i, pickle.dumps(mock_train)))
+    # # Now we add them as startup training data
+    # tree_trained.batch_insert(to_add)
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -125,8 +103,6 @@ def pytest_sessionfinish(session, exitstatus):
     Called after whole test run finished, right before
     returning the exit status to the system.
     """
-    global tree_trained, tree_algo
-    tree_trained.close(), tree_algo.close()
     # First we delete everything
     response = requests.get(
         f"{middleware}trained_models/?include_version_ids=false&index_by_id=false"
@@ -212,12 +188,6 @@ def pytest_sessionfinish(session, exitstatus):
     ).json()
     for algo in algorithms:
         assert remote_algorithms.get(algo["name"])
-
-    # Finally we close the trees and delete them
-    tree_algo.close()
-    os.remove(algorithms_folder + "/test_algo.db")
-    tree_trained.close()
-    os.remove(trained_models_folder + "/test_trained.db")
 
     # Deleting temp files for server sync
     # Files cleanup

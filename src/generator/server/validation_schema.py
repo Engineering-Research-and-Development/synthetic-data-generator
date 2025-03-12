@@ -1,5 +1,7 @@
-from pydantic import BaseModel, PositiveInt, Field
 from typing import List, Literal
+
+from pydantic import BaseModel, PositiveInt, Field
+
 
 class TrainingDataInfo(BaseModel):
     column_name: str
@@ -22,6 +24,7 @@ class TrainRequest(BaseModel):
     functions_id : list[PositiveInt]
     n_rows : PositiveInt
 
+# Should I have an id here?
 class InferModelInfoData(BaseModel):
     algorithm_name: str
     model_name: str

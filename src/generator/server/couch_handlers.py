@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 COUCHDB_URL = os.environ.get("couch_db", "http://admin:password@127.0.0.1:5984")
