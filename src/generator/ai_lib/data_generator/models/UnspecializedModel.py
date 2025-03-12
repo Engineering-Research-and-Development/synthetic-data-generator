@@ -63,9 +63,15 @@ class UnspecializedModel(ABC):
         """Save Model."""
         raise NotImplementedError
 
+    @abstractmethod
+    def set_hyperparameters(self, **kwargs):
+        """ Set Hyperparameters"""
+        raise NotImplementedError
+
     @classmethod
     def self_describe(cls):
         raise NotImplementedError
+
 
     @staticmethod
     def _parse_stringed_input_shape(stringed_shape: str) -> tuple[int, ...]:

@@ -12,13 +12,14 @@ from ai_lib.data_generator.models.keras.Sampling import Sampling
 
 class TimeSeriesVAE(BaseKerasVAE):
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 6
+        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 6,
+            learning_rate: float = 3e-3, batch_size: int = 16, epochs: int = 100
     ):
         super().__init__(metadata, model_name, input_shape, load_path, latent_dim)
         self._beta = 0.15
-        self._learning_rate = 3e-3
-        self._epochs = 100
-        self._batch_size = 16
+        self._learning_rate = learning_rate
+        self._epochs = epochs
+        self._batch_size = batch_size
         self._instantiate()
 
     def _load_model(self, encoder, decoder):

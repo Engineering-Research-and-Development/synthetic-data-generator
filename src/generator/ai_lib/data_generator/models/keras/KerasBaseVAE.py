@@ -74,6 +74,17 @@ class BaseKerasVAE(UnspecializedModel, ABC):
     def _pre_process(self, data: NumericDataset, **kwargs):
         raise NotImplementedError
 
+    def _set_hyperparams(self, learning_rate, batch_size, epochs):
+        self._learning_rate = learning_rate
+        self._batch_size = batch_size
+        self._epochs = epochs
+
+    def set_hyperparameters(self, **kwargs):
+        learning_rate = kwargs.get("learning_rate", self._learning_rate)
+        batch_size = kwargs.get("batch_size", self._batch_size)
+        epochs = kwargs.get("epochs", self._epochs)
+        self._set_hyperparams(learning_rate, batch_size, epochs)
+
     def train(self, data: NumericDataset):
         data = self._pre_process(data)
         self._model.compile(
