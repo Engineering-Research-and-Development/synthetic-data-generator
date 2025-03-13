@@ -80,8 +80,6 @@ class TimeSeriesVAE(KerasBaseVAE):
             np_input_scaled = self._scale(np_data)
         return np_input_scaled
 
-
-
     @classmethod
     def self_describe(cls):
         return ModelInfo(

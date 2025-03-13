@@ -6,7 +6,6 @@ import os
 import keras
 from keras import saving
 
-from ai_lib.Exceptions import ModelException, DataException
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
 from ai_lib.NumericDataset import NumericDataset
@@ -55,7 +54,7 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         if not os.path.isdir(folder_path):
             raise FileNotFoundError
         if self._model is None:
-            raise ModelException("Model does not exist. Please, initialize model first")
+            raise AttributeError("Model does not exist. Please, initialize model first")
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         saving.save_model(self._model.encoder, encoder_filename)
@@ -72,10 +71,14 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         raise NotImplementedError
 
     def _scale(self, data: np.array):
-        return self._scaler.transform(data)
+        if self._scaler is not None:
+            return self._scaler.transform(data)
+        return data
 
     def _inverse_scale(self, data: np.array):
-        return self._scaler.inverse_transform(data)
+        if self._scaler is not None:
+            return self._scaler.inverse_transform(data)
+        return data
 
     def _pre_process(self, data: NumericDataset, **kwargs):
         raise NotImplementedError
@@ -93,8 +96,10 @@ class KerasBaseVAE(UnspecializedModel, ABC):
 
     def train(self, data: NumericDataset, learning_rate: float = None, batch_size: int = None, epochs: int = None):
         if type(data) is not NumericDataset:
-            raise DataException("Data type is not compliant with model")
+            raise TypeError("Data type is not compliant with model")
         data = self._pre_process(data)
+        if data.shape[1:] != self._input_shape:
+            raise ValueError("Model shape does not reflect Data shape")
         learning_rate = learning_rate if learning_rate is not None else self._learning_rate
         batch_size = batch_size if batch_size is not None else self._batch_size
         epochs = epochs if epochs is not None else self._epochs
@@ -113,6 +118,8 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         )
 
     def infer(self, n_rows: int, **kwargs):
+        if self._model is None:
+            raise AttributeError("Model is not instantiated, please, build the model before launching inference")
         z_random = np.random.normal(size=(n_rows, self._latent_dim))
         results = self._model.decoder.predict(z_random)
         results = self._inverse_scale(results)

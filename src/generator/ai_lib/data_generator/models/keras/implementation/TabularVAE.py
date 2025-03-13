@@ -10,7 +10,7 @@ from ai_lib.data_generator.models.keras.VAE import Sampling, VAE
 
 class TabularVAE(KerasBaseVAE):
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 2,
+        self, metadata: dict, model_name: str, input_shape: str, load_path: str|None, latent_dim: int = 2,
         learning_rate: float = 1e-3, batch_size: int = 8, epochs: int = 200
     ):
         super().__init__(metadata, model_name, input_shape, load_path, latent_dim)

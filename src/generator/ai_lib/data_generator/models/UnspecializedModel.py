@@ -7,12 +7,12 @@ from ai_lib.NumericDataset import NumericDataset
 class UnspecializedModel(ABC):
     def __init__(self, metadata: dict, model_name: str, input_shape: str = None, load_path: str = None):
         self._metadata = metadata
-        self._model_name = model_name
-        self._input_shape = self._parse_stringed_input_shape(input_shape)
+        self.model_name = model_name
+        self.input_shape = self._parse_stringed_input_shape(input_shape)
         self._load_path = load_path
         self._model = None  # Placeholder for the model instance
         self._scaler = None  # Placeholder for model scaler
-        self._training_info = None  # Placeholder for training info
+        self.training_info = None  # Placeholder for training info
         self._model_misc = None  # Placeholder for model miscellaneous info
 
     @abstractmethod
@@ -71,7 +71,6 @@ class UnspecializedModel(ABC):
     @classmethod
     def self_describe(cls):
         raise NotImplementedError
-
 
     @staticmethod
     def _parse_stringed_input_shape(stringed_shape: str) -> tuple[int, ...]:
