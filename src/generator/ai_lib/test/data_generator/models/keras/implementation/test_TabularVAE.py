@@ -73,11 +73,11 @@ def test_train_wrong(model_data_no_load, data):
 
 def test_train_correct(model_data_correct_train, data):
     model = TabularVAE(**model_data_correct_train)
-    assert model._training_info is None
+    assert model.training_info is None
     assert model._scaler is None
     model.train(data)
     assert type(model._scaler) is StandardScaler
-    assert type(model._training_info) is TrainingInfo
+    assert type(model.training_info) is TrainingInfo
 
 def test_infer(model_data_correct_train, data):
     n_rows = 2

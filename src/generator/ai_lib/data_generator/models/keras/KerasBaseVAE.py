@@ -109,7 +109,7 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         history = self._model.fit(
             data, epochs=epochs, batch_size=batch_size
         )
-        self._training_info = TrainingInfo(
+        self.training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
             train_samples=data.shape[0],
