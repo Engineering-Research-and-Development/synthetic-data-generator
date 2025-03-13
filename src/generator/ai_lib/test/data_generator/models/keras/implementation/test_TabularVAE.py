@@ -38,9 +38,9 @@ def model_data_correct_train():
 
 def test_instantiate(model_data_no_load):
     model = TabularVAE(**model_data_no_load)
-    assert model._model_name == model_data_no_load["model_name"]
+    assert model.model_name == model_data_no_load["model_name"]
     assert model._load_path is None
-    assert model._input_shape == (13,)
+    assert model.input_shape == (13,)
     assert model._epochs == 1
     assert type(model._model) is VAE
     assert model._scaler is None
@@ -83,4 +83,4 @@ def test_infer(model_data_correct_train, data):
     n_rows = 2
     model = TabularVAE(**model_data_correct_train)
     results = model.infer(n_rows)
-    assert results.shape == (n_rows, *model._input_shape)
+    assert results.shape == (n_rows, *model.input_shape)

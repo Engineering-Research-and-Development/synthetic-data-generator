@@ -47,8 +47,8 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         if self._load_path is not None:
             self._load(self._load_path)
             return
-        if not self._model and self._input_shape:
-            self._model = self._build(self._input_shape)
+        if not self._model and self.input_shape:
+            self._model = self._build(self.input_shape)
 
     def save(self, folder_path: str):
         if not os.path.isdir(folder_path):
@@ -98,7 +98,7 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         if type(data) is not NumericDataset:
             raise TypeError("Data type is not compliant with model")
         data = self._pre_process(data)
-        if data.shape[1:] != self._input_shape:
+        if data.shape[1:] != self.input_shape:
             raise ValueError("Model shape does not reflect Data shape")
         learning_rate = learning_rate if learning_rate is not None else self._learning_rate
         batch_size = batch_size if batch_size is not None else self._batch_size

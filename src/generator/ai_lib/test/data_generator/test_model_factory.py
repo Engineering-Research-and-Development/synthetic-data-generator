@@ -31,13 +31,13 @@ def test_dynamic_import(class_name):
 def test_model_factory_empty(shapeless_model):
     model = model_factory(shapeless_model, input_shape="(13,)")
     assert type(model) is TabularVAE
-    assert model._input_shape == (13,)
+    assert model.input_shape == (13,)
     assert model._model is not None
-    assert model._model_name is shapeless_model["model_name"]
+    assert model.model_name is shapeless_model["model_name"]
 
 def test_model_factory_full(shape_model):
     model = model_factory(shape_model)
     assert type(model) is TabularVAE
-    assert model._input_shape == (13,)
+    assert model.input_shape == (13,)
     assert model._model is not None
-    assert model._model_name is shape_model["model_name"]
+    assert model.model_name is shape_model["model_name"]
