@@ -4,9 +4,9 @@ from abc import ABC
 import numpy as np
 import os
 import keras
-from keras import saving, ops
-import tensorflow as tf
+from keras import saving
 
+from ai_lib.Exceptions import ModelException, DataException
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
 from ai_lib.NumericDataset import NumericDataset
@@ -14,9 +14,9 @@ from ai_lib.NumericDataset import NumericDataset
 os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
-class BaseKerasVAE(UnspecializedModel, ABC):
+class KerasBaseVAE(UnspecializedModel, ABC):
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int
+        self, metadata: dict, model_name: str, input_shape: str, load_path: str|None, latent_dim: int
     ):
         super().__init__(metadata, model_name, input_shape, load_path)
         self._latent_dim = latent_dim
@@ -28,6 +28,8 @@ class BaseKerasVAE(UnspecializedModel, ABC):
     def _load_files(self, folder_path: str):
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
+        if not os.path.isfile(encoder_filename) or not os.path.isfile(decoder_filename):
+            raise FileNotFoundError
         scaler_filename = os.path.join(folder_path, "scaler.pkl")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
@@ -50,6 +52,10 @@ class BaseKerasVAE(UnspecializedModel, ABC):
             self._model = self._build(self._input_shape)
 
     def save(self, folder_path: str):
+        if not os.path.isdir(folder_path):
+            raise FileNotFoundError
+        if self._model is None:
+            raise ModelException("Model does not exist. Please, initialize model first")
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         saving.save_model(self._model.encoder, encoder_filename)
@@ -85,13 +91,18 @@ class BaseKerasVAE(UnspecializedModel, ABC):
         epochs = kwargs.get("epochs", self._epochs)
         self._set_hyperparams(learning_rate, batch_size, epochs)
 
-    def train(self, data: NumericDataset):
+    def train(self, data: NumericDataset, learning_rate: float = None, batch_size: int = None, epochs: int = None):
+        if type(data) is not NumericDataset:
+            raise DataException("Data type is not compliant with model")
         data = self._pre_process(data)
+        learning_rate = learning_rate if learning_rate is not None else self._learning_rate
+        batch_size = batch_size if batch_size is not None else self._batch_size
+        epochs = epochs if epochs is not None else self._epochs
         self._model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=self._learning_rate)
+            optimizer=keras.optimizers.Adam(learning_rate=learning_rate)
         )
         history = self._model.fit(
-            data, epochs=self._epochs, batch_size=self._batch_size
+            data, epochs=epochs, batch_size=batch_size
         )
         self._training_info = TrainingInfo(
             loss_fn="ELBO",
@@ -110,46 +121,3 @@ class BaseKerasVAE(UnspecializedModel, ABC):
     @classmethod
     def self_describe(cls):
         raise NotImplementedError
-
-
-class VAE(keras.Model):
-    def __init__(self, encoder, decoder, beta=1, **kwargs):
-        super().__init__(**kwargs)
-        self.encoder = encoder
-        self.decoder = decoder
-        self._beta = beta
-        self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
-        self.reconstruction_loss_tracker = keras.metrics.Mean(
-            name="reconstruction_loss"
-        )
-        self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
-
-    @property
-    def metrics(self):
-        return [
-            self.total_loss_tracker,
-            self.reconstruction_loss_tracker,
-            self.kl_loss_tracker,
-        ]
-
-    def train_step(self, data):
-        with tf.GradientTape() as tape:
-            z_mean, z_log_var, z = self.encoder(data)
-            reconstruction = self.decoder(z)
-            reconstruction_loss = ops.mean(
-                ops.sum(ops.abs(data - reconstruction), axis=-1)
-            )
-            kl_loss = -0.5 * (1 + z_log_var - ops.square(z_mean) - ops.exp(z_log_var))
-            kl_loss = ops.mean(ops.sum(kl_loss, axis=1))
-            total_loss = reconstruction_loss + self._beta * kl_loss
-        grads = tape.gradient(total_loss, self.trainable_weights)
-        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
-        self.total_loss_tracker.update_state(total_loss)
-        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
-        self.kl_loss_tracker.update_state(kl_loss)
-
-        return {
-            "loss": self.total_loss_tracker.result(),
-            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "kl_loss": self.kl_loss_tracker.result(),
-        }

@@ -3,12 +3,12 @@ from keras import layers
 
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.ModelInfo import ModelInfo, AllowedData
-from ai_lib.data_generator.models.keras.KerasBaseVAE import BaseKerasVAE, VAE
+from ai_lib.data_generator.models.keras.KerasBaseVAE import KerasBaseVAE
 from ai_lib.preprocess.scale import standardize_simple_tabular_input
-from ai_lib.data_generator.models.keras.Sampling import Sampling
+from ai_lib.data_generator.models.keras.VAE import Sampling, VAE
 
 
-class TabularVAE(BaseKerasVAE):
+class TabularVAE(KerasBaseVAE):
     def __init__(
         self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 2,
         learning_rate: float = 1e-3, batch_size: int = 8, epochs: int = 200
