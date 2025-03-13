@@ -32,8 +32,9 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         scaler_filename = os.path.join(folder_path, "scaler.pkl")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
-        with open(scaler_filename, "rb") as f:
-            self._scaler = pickle.load(f)
+        if os.path.isfile(scaler_filename):
+            with open(scaler_filename, "rb") as f:
+                self._scaler = pickle.load(f)
         return encoder, decoder
 
     def _load_model(self, encoder, decoder):
