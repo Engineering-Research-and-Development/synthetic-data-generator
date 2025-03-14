@@ -12,12 +12,16 @@ router = APIRouter(prefix="/datatypes", tags=["Datatypes"])
     "/",
     name="Get all datatypes",
     summary="Get all the available datatypes",
+    response_model= list[PydanticDataType] | dict[int,PydanticDataType]
 )
-async def get_all_datatypes() -> list[PydanticDataType]:
+async def get_all_datatypes(index_by_id: bool = False) -> list[PydanticDataType]:
     """
     This method returns all the datatypes that are present in the model registry
     """
-    results = [PydanticDataType(**datatype) for datatype in DataType.select().dicts()]
+    if not index_by_id:
+        results = [PydanticDataType(**datatype) for datatype in DataType.select().dicts()]
+    else:
+        results = {datatype['id']: PydanticDataType(**datatype) for datatype in DataType.select().dicts()}
     return results
 
 
