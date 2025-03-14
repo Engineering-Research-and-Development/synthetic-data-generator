@@ -26,12 +26,14 @@ class TimeSeriesVAE(KerasBaseVAE):
         self._model = VAE(encoder, decoder, self._beta)
 
     def _build(self, input_shape: tuple[int, ...]):
+        print(input_shape)
         encoder_inputs = keras.Input(shape=input_shape)
-        encoder_inputs = layers.Permute((1, 2))(encoder_inputs)
-        x = layers.Conv1D(32, 3, activation="relu", strides=2, padding="same")(
-            encoder_inputs
+        encoder_inputs_permute  = layers.Permute((2, 1))(encoder_inputs)
+        x = layers.Conv1D(32, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(
+            encoder_inputs_permute
         )
-        x = layers.Conv1D(64, 3, activation="relu", strides=2, padding="same")(x)
+        x = layers.Conv1D(64, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(x)
+        shape_before_flatten = x.shape[1:]
         x = layers.Flatten()(x)
         x = layers.Dense(16, activation="relu")(x)
         z_mean = layers.Dense(self._latent_dim, name="z_mean")(x)
@@ -39,33 +41,38 @@ class TimeSeriesVAE(KerasBaseVAE):
         z = Sampling()([z_mean, z_log_var])
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
-        shape_out = int(np.round(input_shape[1] / 4, 0))
         latent_inputs = keras.Input(shape=(self._latent_dim,))
-        y = layers.Dense(shape_out * 64, activation="relu")(latent_inputs)
-        y = layers.Reshape((shape_out, 64))(y)
-        y = layers.Conv1DTranspose(64, 3, activation="relu", strides=2, padding="same")(
+        y = layers.Dense(np.prod(shape_before_flatten), activation="relu")(latent_inputs)
+        y = layers.Reshape(shape_before_flatten)(y)
+        y = layers.Conv1DTranspose(64, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(
             y
         )
-        y = layers.Conv1DTranspose(32, 3, activation="relu", strides=2, padding="same")(
+        y = layers.Conv1DTranspose(32, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(
             y
         )
         decoder_outputs = layers.Conv1DTranspose(
             input_shape[0], 3, activation="relu", padding="same"
         )(y)
-        decoder_outputs = layers.Permute((2, 1))(decoder_outputs)
-        decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
+        decoder_outputs_permute = layers.Permute((2, 1))(decoder_outputs)
+        decoder = keras.Model(latent_inputs, decoder_outputs_permute, name="decoder")
 
         vae = VAE(encoder, decoder, self._beta)
+        encoder.summary()
+        decoder.summary()
         vae.summary()
         return vae
 
     def _scale(self, data: np.array):
         batch, feats, steps = data.shape
+        if self._scaler is None:
+            return data
         return self._scaler.transform(data.reshape(-1, feats * steps)).reshape(
             -1, feats, steps
         )
 
     def _inverse_scale(self, data: np.array):
+        if self._scaler is None:
+            return data
         batch, feats, steps = data.shape
         return self._scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(
             -1, feats, steps
