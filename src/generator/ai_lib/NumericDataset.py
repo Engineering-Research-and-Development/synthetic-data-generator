@@ -9,6 +9,11 @@ OTHER = "none"
 
 
 class NumericDataset:
+    """
+    Class to handle numeric datasets.
+    The class loads a dataset from a list of dictionaries into a pandas DataFrame.
+    It also identifies which columns are numerical and which are categorical.
+    """
     def __init__(self, dataset: list[dict]):
         self.dataset: list[dict] = dataset
         self.dataframe: pd.DataFrame = pd.DataFrame()

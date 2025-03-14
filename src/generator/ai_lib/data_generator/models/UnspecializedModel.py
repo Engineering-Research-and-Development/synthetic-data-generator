@@ -5,6 +5,19 @@ from ai_lib.NumericDataset import NumericDataset
 
 
 class UnspecializedModel(ABC):
+    """
+    Abstract class for all models. Implements common functionalities and defines abstract methods that must be implemented
+    by all subclasses.
+
+    Attributes:
+        _metadata (dict): A dictionary containing miscellaneous information about the model.
+        model_name (str): The model name, used to identify the model itself.
+        input_shape (tuple): A tuple containing the input shape of the model.
+        _load_path (str): A string containing the path where to load the model from.
+        _model (keras.Model): The model instance.
+        _scaler (Scaler): The scaler instance.
+        training_info (TrainingInfo): The training info instance.
+    """
     def __init__(self, metadata: dict, model_name: str, input_shape: str = None, load_path: str = None):
         self._metadata = metadata
         self.model_name = model_name

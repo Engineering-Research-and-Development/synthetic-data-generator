@@ -4,6 +4,16 @@ import scipy.stats as ss
 
 
 class TabularComparisonEvaluator:
+    """
+    Evaluates the quality of a synthetic dataset with respect to a real one.
+
+    The evaluation is based on the following metrics:
+    - Statistical properties: wasserstein distance and Cramer's V
+    - Adherence: evaluates how well the synthetic data adheres to the real data distribution
+    - Novelty: evaluates how many new values are generated in the synthetic dataset
+
+    The evaluation is performed on a per-column basis, and the results are aggregated.
+    """
     def __init__(
         self,
         real_data: pd.DataFrame,
@@ -166,14 +176,14 @@ class TabularComparisonEvaluator:
 
     def _evaluate_adherence(self):
         """
-                Computes adherence metrics such as:
-                - Synthetic Categories Adherence to Real Categories
-                - Numerical min-max boundaries adherence
+        Computes adherence metrics such as:
+        - Synthetic Categories Adherence to Real Categories
+        - Numerical min-max boundaries adherence
 
-                :return: A tuple containing:
-                    - category_adherence_score: dict mapping column name to adherence percentage.
-                    - boundary_adherence_score: dict mapping column name to adherence percentage.
-                """
+        :return: A tuple containing:
+            - category_adherence_score: dict mapping column name to adherence percentage.
+            - boundary_adherence_score: dict mapping column name to adherence percentage.
+        """
         # Ensure synthetic data is not empty
         total_records = self._synthetic_data.shape[0]
         if total_records == 0:

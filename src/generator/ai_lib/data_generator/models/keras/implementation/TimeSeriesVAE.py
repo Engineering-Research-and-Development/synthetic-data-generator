@@ -11,6 +11,25 @@ from ai_lib.data_generator.models.keras.VAE import Sampling, VAE
 
 
 class TimeSeriesVAE(KerasBaseVAE):
+    """
+    TimeSeriesVAE is a Variational Autoencoder designed for generating synthetic time series data.
+
+    This model is particularly useful in scenarios where time series data needs to be generated for
+    testing or simulation purposes. It leverages the power of variational inference to learn latent
+    representations of time series data, enabling the generation of new, similar sequences.
+
+    Attributes:
+        _beta (float): Coefficient for the KL divergence term in the VAE loss.
+        _learning_rate (float): Learning rate for the optimizer.
+        _epochs (int): Number of training epochs.
+        _batch_size (int): Number of samples per gradient update.
+
+    Methods:
+        _load_model(encoder, decoder): Loads the VAE model with the specified encoder and decoder.
+        _build(input_shape): Constructs the VAE model architecture.
+        _pre_process(data, **kwargs): Pre-processes the input data for training.
+        self_describe(): Provides a description of the model, including its name, loss function, and allowed data types.
+    """
     def __init__(
         self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 6,
             learning_rate: float = 3e-3, batch_size: int = 16, epochs: int = 100

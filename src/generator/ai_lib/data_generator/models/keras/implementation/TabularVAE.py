@@ -9,6 +9,25 @@ from ai_lib.data_generator.models.keras.VAE import Sampling, VAE
 
 
 class TabularVAE(KerasBaseVAE):
+    """
+    TabularVAE is a class that implements a Variational Autoencoder (VAE) for tabular data generation.
+    It inherits from the KerasBaseVAE class and provides functionality specific to handling tabular data.
+
+    Attributes:
+        _latent_dim (int): The dimensionality of the latent space.
+        _beta (float): The beta parameter for the VAE loss function.
+        _learning_rate (float): Learning rate for the optimizer.
+        _batch_size (int): Number of samples per batch during training.
+        _epochs (int): Number of training epochs.
+        _scaler: Scaler used for standardizing input data.
+
+    Methods:
+        __init__: Initializes the TabularVAE with model parameters.
+        _load_model: Loads the VAE model with specified encoder and decoder.
+        _build: Builds the VAE model architecture.
+        _pre_process: Pre-processes input data using standardization.
+        self_describe: Provides metadata information about the model.
+    """
     def __init__(
         self, metadata: dict, model_name: str, input_shape: str, load_path: str|None, latent_dim: int = 2,
         learning_rate: float = 1e-3, batch_size: int = 8, epochs: int = 200

@@ -17,6 +17,11 @@ class TrainingInfo:
         self._validation_loss = validation_loss
 
     def to_dict(self) -> dict:
+        """
+        Convert the TrainingInfo to a dictionary
+
+        :return: dict: A dictionary with the training info
+        """
         return {
             "loss_fn": self._loss_fn,
             "train_samples": self._train_samples,
@@ -26,4 +31,10 @@ class TrainingInfo:
         }
 
     def to_json(self) -> str:
+        """
+        Convert the TrainingInfo to a JSON string
+
+        :return: str: A JSON string with the training info
+        """
+
         return json.dumps(self.to_dict())

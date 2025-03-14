@@ -7,6 +7,15 @@ from ai_lib.Exceptions import DataException
 def standardize_simple_tabular_input(
     train_data: np.array, test_data: np.array = None
 ) -> tuple[StandardScaler, np.array, np.array]:
+    """
+    Standardizes the tabular input data by scaling features to have zero mean and unit variance.
+
+    :param train_data: A numpy array of shape (batch, features) representing the training data.
+    :param test_data: An optional numpy array of shape (batch, features) representing the test data.
+    :return: A tuple containing the fitted StandardScaler, the standardized training data, and the standardized test data
+             if provided.
+    :raises DataException: If the input data does not have the expected shape.
+    """
 
     if len(train_data.shape) != 2:
         raise DataException("Data must be in the format (batch, features)")
@@ -22,6 +31,15 @@ def standardize_simple_tabular_input(
 def standardize_simple_tabular_time_series(
     train_data: np.array, test_data: np.array = None
 ) -> tuple[StandardScaler, np.array, np.array]:
+    """
+    Standardizes the time series data by scaling features to have zero mean and unit variance.
+
+    :param train_data: A numpy array of shape (batch, features, steps) representing the training data.
+    :param test_data: An optional numpy array of shape (batch, features, steps) representing the test data.
+    :return: A tuple containing the fitted StandardScaler, the standardized training data, and the standardized test data
+             if provided.
+    :raises DataException: If the input data does not have the expected shape.
+    """
     scaler = StandardScaler()
 
     if len(train_data.shape) != 3:

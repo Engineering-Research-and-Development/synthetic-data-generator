@@ -14,6 +14,11 @@ os.environ["KERAS_BACKEND"] = "tensorflow"
 
 
 class KerasBaseVAE(UnspecializedModel, ABC):
+    """
+    Abstract base class for keras VAE models.
+
+    This class provides a common interface for keras VAE models and handles the saving and loading of models.
+    """
     def __init__(
         self, metadata: dict, model_name: str, input_shape: str, load_path: str|None, latent_dim: int
     ):
@@ -25,6 +30,13 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         self._epochs = None
 
     def _load_files(self, folder_path: str):
+        """
+        Loads the saved VAE model files from the given folder path.
+
+        :param folder_path: path to the folder containing the saved model files
+        :return: encoder and decoder models
+        :raises FileNotFoundError: if the model files are not found in the given folder
+        """
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         if not os.path.isfile(encoder_filename) or not os.path.isfile(decoder_filename):
@@ -45,6 +57,11 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         self._load_model(encoder, decoder)
 
     def _instantiate(self):
+        """
+        Instantiates the model and loads the saved model if the load_path is given.
+
+        :return: None
+        """
         if self._load_path is not None:
             self._load(self._load_path)
             return
@@ -52,6 +69,14 @@ class KerasBaseVAE(UnspecializedModel, ABC):
             self._model = self._build(self.input_shape)
 
     def save(self, folder_path: str):
+        """
+        Saves the model and scaler to the given folder path.
+
+        :param folder_path: path to the folder to save the model
+        :raises FileNotFoundError: if the folder does not exist
+        :raises AttributeError: if the model does not exist
+        :return: None
+        """
         if not os.path.isdir(folder_path):
             raise FileNotFoundError
         if self._model is None:
@@ -96,6 +121,17 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         self._set_hyperparams(learning_rate, batch_size, epochs)
 
     def train(self, data: NumericDataset, learning_rate: float = None, batch_size: int = None, epochs: int = None):
+        """
+        Trains the VAE model on the provided data.
+
+        :param data: the dataset to train the model on, must be a NumericDataset
+        :param learning_rate: optional, the learning rate to use for training
+        :param batch_size: optional, the batch size to use for training
+        :param epochs: optional, the number of epochs to train the model for
+        :raises TypeError: if the data is not of type NumericDataset
+        :raises ValueError: if the model shape does not match data shape
+        :return: None
+        """
         if type(data) is not NumericDataset:
             raise TypeError("Data type is not compliant with model")
         data = self._pre_process(data)
@@ -119,6 +155,14 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         )
 
     def infer(self, n_rows: int, **kwargs):
+        """
+        Performs inference using the trained VAE model.
+
+        :param n_rows: Number of rows to generate.
+        :param kwargs: Additional arguments for inference, not currently used.
+        :raises AttributeError: If the model is not instantiated.
+        :return: A numpy array containing the generated data after decoding and inverse scaling.
+        """
         if self._model is None:
             raise AttributeError("Model is not instantiated, please, build the model before launching inference")
         z_random = np.random.normal(size=(n_rows, self._latent_dim))

@@ -18,6 +18,14 @@ class ModelInfo:
         self.allowed_data = allowed_data
 
     def get_model_info(self):
+        """
+        Returns a dictionary containing the model information.
+
+        The dictionary includes the model's name, default loss function, description,
+        and a list of allowed data types with their categorical status.
+
+        :return: dict containing the model's information
+        """
         allowed_data = [
             {"data_type": ad.dtype, "is_categorical": ad.is_categorical}
             for ad in self.allowed_data
