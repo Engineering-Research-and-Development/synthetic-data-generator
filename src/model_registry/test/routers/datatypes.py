@@ -65,6 +65,6 @@ def test_wrong_datatype_payload():
 def test_create_datatype():
     response = requests.post(f"{server}:{port}{endpoint}", json=test_datatype)
     assert response.status_code == 201, print(response.content)
-    dt_id = response.json()['id']
+    dt_id = response.json()["id"]
     response = requests.get(f"{server}:{port}{endpoint}/{dt_id}")
     assert response.status_code == 200, print(response.content)
