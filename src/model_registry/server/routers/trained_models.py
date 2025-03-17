@@ -150,25 +150,30 @@ async def get_trained_model_id(
 
 
 @router.get(
-    "/image-paths",
+    "/image-paths/",
     status_code=200,
     name="Get a single trained model by their image id, which is the name of the folder given by the generator",
     summary="It returns a trained model given the passed image id",
     responses={404: {"model": str}},
     response_model= dict[str,CreateTrainedModel],
 )
-async def get_trained_model_by_image_path(
+async def get_all_trained_model_by_image_path(
 ):
     """
     This function returns all the trained models present in the repo indexed by their version's image path
     """
     try:
-        results = (TrainedModel.select(ModelVersion.image_path,TrainedModel).join(ModelVersion).dicts().get())
+        results = (TrainedModel.select(TrainedModel,ModelVersion.image_path).join(ModelVersion).dicts())
     except DoesNotExist:
         return JSONResponse(
             status_code=404, content={"message": "Trained Model not found"}
         )
-    return {image_id: CreateTrainedModel(**tr) for image_id, tr in results}
+    payload = {}
+    for elem in results:
+            path = elem['image_path']
+            del elem['image_path']
+            payload[path] = CreateTrainedModel(**elem)
+    return payload
 
 
 @router.get(
