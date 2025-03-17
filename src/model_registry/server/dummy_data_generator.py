@@ -64,7 +64,7 @@ def insert_data():
     model_versions = [
         ModelVersion.create(
             version_name=f"v{i+1}.0",
-            image_path=f"/models/unique_model_{i}.h5",
+            image_path=f"unique_model_{i}.h5",
             trained_model=trained_models[(i + 1) % 5],
         )
         for i in range(5)
@@ -73,7 +73,7 @@ def insert_data():
     multiple_model_versions = [
         ModelVersion.create(
             version_name=f"v{i+1}.0",
-            image_path=f"/models/unique_model_{i}.h5",
+            image_path=f"unique_model_{i}.h5",
             trained_model=1,
         )
         for i in range(5, 9)
