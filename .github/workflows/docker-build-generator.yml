@@ -21,6 +21,33 @@ jobs:
     permissions:
       contents: read
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 5
+
+      sdg-middleware:
+        image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
+        ports:
+          - "8001:8001"
+        env:
+          db_host: postgres
+          db_name: postgres
+          db_password: postgres
+          db_username: postgres
+          INIT_DB: True
+          allowed_origins: '*'
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
