@@ -9,4 +9,4 @@ RUN uv init
 RUN uv add -r ./requirements.txt
 
 
-CMD [".venv/bin/fastapi", "run", "generator/server/app.py", "--port", "8010"]
+CMD [".venv/bin/fastapi", "run", "server/app.py", "--port", "8010"]
