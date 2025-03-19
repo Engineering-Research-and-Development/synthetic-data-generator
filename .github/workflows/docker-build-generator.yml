@@ -99,13 +99,13 @@ jobs:
         uv pip install pytest
 
     - name: Run GENERATOR tests
-      run: pytest src/generator/ai_lib/test/
+      run: uv run pytest src/generator/ai_lib/test/
 
     - name: Run SERVER tests
-      run: pytest src/generator/server/test
+      run: uv run pytest src/generator/server/test
 
     - name: Run SERVER integration tests
-      run: pytest src/generator/test
+      run: uv run pytest src/generator/test
 
     - name: Stop and remove container
       run: |
