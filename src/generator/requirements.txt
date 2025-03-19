@@ -8,3 +8,4 @@ keras==3.6.0
 tensorflow==2.18.0
 pyaml
 fastapi[standard]
+loguru
