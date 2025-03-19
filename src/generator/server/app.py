@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from ai_lib.job import job
-from file_utils import create_trained_model_folder, cleanup_temp_dir
+from server.file_utils import create_trained_model_folder, cleanup_temp_dir
 from server.couch_handlers import create_couch_entry, add_couch_data
 from server.file_utils import create_server_repo_folder_structure
 from server.middleware_handlers import model_to_middleware, server_startup, generator_algorithms
