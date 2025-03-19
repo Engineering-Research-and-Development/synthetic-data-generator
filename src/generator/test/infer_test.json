@@ -157,12 +157,13 @@
 			"column_datatype": "int64"
 		}
 	],
-  	"behavious_id" : [],
+  	"functions_id" : [],
 	"model": {
 		"algorithm_name": "models.classes.keras.KerasTabularVae.KerasTabularVAE",
 		"model_name": "Test-T_VAE",
-        "image": "/home/emilio/PycharmProjects/synthetic-data-generator/src/generator/outputs/models/KerasTabularVAE__Test-T_VAE:1",
-        "input_shape": "(13,)"
+        "image": "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE20250317.174916",
+        "input_shape": "(13,)",
+		"training_data_info": []
 	},
     "n_rows": 1000
 }

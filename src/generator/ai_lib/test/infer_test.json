@@ -157,11 +157,11 @@
 			"column_datatype": "int64"
 		}
 	],
-  	"behavious_id" : [],
+  	"functions_id" : [],
 	"model": {
 		"algorithm_name": "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE",
 		"model_name": "Test-T_VAE",
-        "image": "/home/emilio/PycharmProjects/synthetic-data-generator/src/generator/ai_lib/test/outputs/",
+        "image": "C:\\Users\\giumartine\\PycharmProjects\\SyntheticGenerator\\synthetic-data-generator\\src\\generator\\server\\saved_models\\trained_models\\Test-T_VAETabularVAE20250319.150458",
         "input_shape": "(13,)"
 	},
     "n_rows": 1000

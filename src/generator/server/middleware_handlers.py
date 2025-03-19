@@ -1,7 +1,8 @@
 import json
 import os
-import pickle
 from copy import deepcopy
+from pathlib import Path
+from shutil import rmtree
 
 import requests
 from requests.exceptions import RequestException
@@ -10,11 +11,10 @@ from ai_lib.Exceptions import ModelException
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
-from server.file_utils import MODEL_FOLDER, get_all_subfolders_ids, does_pickle_file_exists
-from server.validation_schema import DatasetIn
+from server.file_utils import get_all_subfolders_ids
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
-
+generator_algorithms = []
 
 def save_system_model(model: dict):
     """
@@ -52,19 +52,26 @@ def delete_sys_model_by_id(model_id: int):
         raise ModelException("Impossible to reach Model Repository")
 
 
-def model_to_middleware(model: UnspecializedModel, data: NumericDataset):
+def model_to_middleware(model: UnspecializedModel, data: NumericDataset,
+                        dataset_name: str,save_path: str) -> str:
     feature_list = data.parse_data_to_registry()
-    training_info = model.training_info.to_dict()
-    model_image = model.model_filepath # Qui ci passi il tuo save path. -> Prima crei couch entry vuota con ID, dopo usi ID per creare cartella
-    model_version = model.check_folder_latest_version(MODEL_FOLDER) # Da riscrivere per gestire le cartelle con le versioni
-    # Io facevo Algorithm_Name__Model_Name:model_version
-    # Ti consiglio di fare id:version_number
-    version_info = {"version_name": model_version, "model_image_path": model_image} # Gestione versioni come sopra
+    create_datatypes_if_not_present(feature_list)
+    training_info = format_training_info(model.training_info.to_dict())
+    model_image = save_path
+    model_version = "v0"
+    version_info = {"version_name": model_version, "image_path": model_image} # Gestione versioni come sopra
+    # Getting the algorithm id
+    response = requests.get(f"{middleware}algorithms/name/{model.self_describe().get("name", None)}")
+    # This edge case should not be happening since the existence of the algorithm is checked before this function
+    if response.status_code != 200:
+        raise SystemError
+    algorithm_id = response.json()['id']
     trained_model_misc = {
         "name": model.model_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm_name": model.self_describe().get("name", None),
+        "algorithm_id": algorithm_id,
+        "dataset_name": dataset_name
     }
 
     model_to_save = {
@@ -76,88 +83,67 @@ def model_to_middleware(model: UnspecializedModel, data: NumericDataset):
 
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
+    print(f"Creating model\n {body}")
     try:
         response = requests.post(
             f"{middleware}trained_models/", headers=headers, data=body
         )
-        if response.status_code > 300:
+        if response.status_code != 201:
             raise ModelException(
-                "Something went wrong in saving the model, rollback to latest version"
+                f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
             )
     except RequestException:
         raise ModelException(
             "Impossible to reach Model Repository, rollback to latest version"
         )
 
-def server_startup():
+def create_datatypes_if_not_present(feature_list: list[dict]):
+    response = requests.get(f"{middleware}datatypes/?index_by_id=true")
+    if response.status_code != 200:
+        raise ConnectionError(f"Could not reach model repo for datatypes validation\n"
+                              f"{response.status_code}:{response.content}")
+    remote_dt = response.json()
+    for feature in feature_list:
+        # This means the datatype is not present, so in order to use this algo we must create it
+        if remote_dt.get(feature['datatype']) is None:
+            payload = {'datatype':feature['datatype'],'is_categorical':feature['is_categorical']}
+            response = requests.post(url=f"{middleware}datatypes/",json=payload)
+            if response.status_code != 201:
+                raise ConnectionRefusedError("Error in creating a new datatype")
+
+
+def format_training_info(tr_info: dict):
+    payload = {
+        "loss_function": tr_info['loss_fn'],
+        "train_loss": tr_info["train_loss"],
+        "val_loss": tr_info['validation_loss'],
+        "train_samples": tr_info['train_samples'],
+        "val_samples": tr_info['validation_samples']
+    }
+    return payload
+
+
+def server_startup(app_folder: str):
     # 1. Sync with any new implemented trained models and Sync with remote
-    sync_remote_trained()
+    sync_remote_trained("trained_models/image-paths/",app_folder)
     # 1. Sync with any new implemented algorithms and Sync with remote
     sync_remote_algorithm()
 
 
 def sync_remote_trained(endpoint: str,folder: str):
-    root_endpoint = endpoint[:str.index(endpoint, '/')]
     response = requests.get(f"{middleware}{endpoint}")
-    if response.status_code == 404:
-        raise TimeoutError("Could not reach middleware for synchronization!")
+    if response.status_code != 200:
+        raise TimeoutError(f"Could not reach middleware for synchronization!\n"
+                           f"{response.status_code}:{response.content}")
     remote_data = response.json()
-    for path,trained_id in get_all_subfolders_ids(f"{folder}\\saved_models\\trained_models"):
-        if remote_data.get(trained_id) is None:
-            with open(path + "\\model.pickle",'rb') as file:
-                payload = pickle.load(file)
-            f_payload = format_trained_model_for_post(deepcopy(payload))
-            response = requests.post(f"{middleware}/{root_endpoint}", json=f_payload)
-            assert response.status_code == 201, print(response.content)
-            del f_payload
-            # Now we must update the model id locally since it has been created in the repo with a new id
-            update_trained_model(payload,trained_id,response.json()['id'],folder)
-        else:
-            remote_data.pop(trained_id)
-    # Here we remove the remote data
-    for key in remote_data.keys():
-        response = requests.delete(f"{middleware}/{root_endpoint}/{key}")
-        assert response.status_code == 200, print(response.content)
+    for path,trained_id in get_all_subfolders_ids(os.path.join(folder,Path("saved_models/trained_models"))):
+        # Into posix so that we search it
+        if remote_data.get(Path(path).as_posix()) is None:
+            rmtree(path)
 
-def format_trained_model_for_post(model: dict) -> dict[str,str | int]:
-    model.update({'trained_model': {'name': model['name'], 'dataset_name': model['dataset_name'],
-                                    'size': model['size'], 'input_shape': model['input_shape'],
-                                    'algorithm_id': model['algorithm_id']}})
-    model.pop('id')
-    model.pop('name')
-    model.pop('dataset_name')
-    model.pop('size')
-    model.pop('input_shape')
-    model.pop('algorithm_id')
-    model.pop('algorithm_name')
-    model.update({'version': model['versions'][0]['version']})
-    model.update({'training_info': model['versions'][0]['training_info']})
-    model.pop('versions')
-    return model
-
-def update_trained_model(tr_data: dict,old_id: int,new_id: int,folder: str):
-    # Modify the payload
-    tr_data['id'] = new_id
-    # Dump the model to the folder
-    with open(os.path.abspath(f'{folder}\\saved_models\\trained_models\\{old_id}\\model.pickle'),'wb') as file:
-        pickle.dump(tr_data,file)
-    # Rename the folder
-    os.rename(f'{folder}\\saved_models\\trained_models\\{old_id}',f'{folder}\\saved_models\\trained_models\\{new_id}')
-
-def save_new_trained_model(model_dict: dict,
-                           dataset_name: str,
-                           size: str,
-                           algo_id: int,
-                           tr_info: str,
-                           feature_schema: str):
-    image_path = model_dict['image']
-    tr_name = model_dict['model_name']
-    input_shape = model_dict['input_shape']
-
-def create_feature_schema(features_in: list[DatasetIn]):
-    pass
 
 def sync_remote_algorithm():
+    global generator_algorithms
     # Since the generator offers a method that lists all the implemented algorithms we only
     # need to do a sync with the remote repository
     response = requests.get(f'{middleware}algorithms/?include_allowed_datatypes=true&indexed_by_names=true')
@@ -166,20 +152,12 @@ def sync_remote_algorithm():
                            " code",response.status_code)
     remote_algorithms = response.json()
     for algorithm in browse_algorithms():
+        # Creating a local data structure that we keep in memory
+        generator_algorithms.append(algorithm)
         if remote_algorithms.get(algorithm['name']) is None:
+            check_algorithm_datatypes(algorithm['allowed_data'])
             f_algorithm = format_algorithm_for_post(deepcopy(algorithm))
             response = requests.post(f'{middleware}algorithms/', json=f_algorithm)
-            # This means that the datatype is not present and the specific datatype must be added
-            if response.status_code == 400 and response.json()['datatype'] is not None:
-                # We search it in the datatypes that we are passing to the post
-                to_add = response.json()['datatype']
-                for datatype in f_algorithm['allowed_data']:
-                    if datatype['datatype'] == to_add['type'] and datatype['is_categorical'] == to_add['is_categorical']:
-                        response = requests.post(f"{middleware}datatypes/",json=datatype)
-                        assert response.status_code == 201,print(response.content)
-                # Now we retry the creation
-                response = requests.post(f'{middleware}algorithms/', json=f_algorithm)
-                assert response.status_code == 201,print(response.content)
             assert response.status_code == 201,print(response.content)
             del f_algorithm
         else:
@@ -207,26 +185,17 @@ def format_algorithm_for_post(algorithm: dict) -> dict:
     algorithm.pop('description')
     return algorithm
 
-def get_algorithm_path(algorithm: dict,root_folder: str) -> str | None:
-    # Check if present in the model registry
-    response = requests.get(f"{middleware}/algorithms/{algorithm['algorithm_name']}")
-    if response.status_code == 404:
-        return None
-    # Now we get the id, and we check if it is present also locally and we see if the data is passed correctly
-    algo_id = response.json()['id']
-    if does_pickle_file_exists(root_folder,algo_id):
-        # Load model information and check consistency
-        with open(os.path.join(root_folder,f"saved_models\\{algo_id}\\model.pickle"),'rb') as file:
-            model = pickle.load(file)
-        if not model['name'] == algorithm['model']['algorithm_name']:
-            return None
-    else:
-        return None
-    return os.path.join(root_folder,f"\\saved_models\\algorithms\\{algo_id}")
 
-def fetch_model_save_path(model_dict: dict):
-    pass
-
-
-
-
+def check_algorithm_datatypes(datatypes: list[dict[str,str | bool]]):
+    response = requests.get(f"{middleware}datatypes/?index_by_id=true")
+    if response.status_code != 200:
+        raise ConnectionError(f"Could not reach model repo for datatypes validation\n"
+                              f"{response.status_code}:{response.content}")
+    remote_dt = response.json()
+    for datatype in datatypes:
+        # This means the datatype is not present, so in order to use this algo we must create it
+        if remote_dt.get(datatype['data_type']) is None:
+            payload = {'datatype':datatype['data_type'],'is_categorical':datatype['is_categorical']}
+            response = requests.post(url=f"{middleware}datatypes/",json=payload)
+            if response.status_code != 201:
+                raise ConnectionRefusedError("Error in creating a new datatype")

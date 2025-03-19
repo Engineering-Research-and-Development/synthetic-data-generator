@@ -59,4 +59,3 @@ def browse_algorithms(model_paths:str=base_model_path, model_package:str=base_pa
         Class = getattr(module, class_name)
 
         yield Class.self_describe()
-

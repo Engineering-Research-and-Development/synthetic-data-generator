@@ -1,5 +1,5 @@
 {
-  	"behavious_id" : [],
+  	"functions_id" : [],
 	"model": {
 		"algorithm_name": "models.classes.keras.KerasTabularVae.KerasTabularVAE",
 		"model_name": "Test-T_VAE",

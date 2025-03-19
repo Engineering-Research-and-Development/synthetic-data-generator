@@ -184,3 +184,6 @@ fabric.properties
 /.idea/
 /pyproject.toml
 /uv.lock
+
+.run
+src/generator/server/saved_models

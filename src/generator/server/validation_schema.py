@@ -21,7 +21,7 @@ class TrainModelInfo(BaseModel):
 class TrainRequest(BaseModel):
     model : TrainModelInfo
     dataset : List[DatasetIn]
-    functions_id : list[PositiveInt]
+    functions_id : list[PositiveInt] = []
     n_rows : PositiveInt
 
 # Should I have an id here?
@@ -33,12 +33,12 @@ class InferModelInfoData(BaseModel):
 
 
 class InferModelInfoNodata(InferModelInfoData):
-    training_data_info: List[TrainingDataInfo]
+    training_data_info: List[TrainingDataInfo] = []
 
 
 class InferRequestNoData(BaseModel):
     model : InferModelInfoNodata
-    functions_id : list[PositiveInt]
+    functions_id : list[PositiveInt] = []
     n_rows : PositiveInt
 
 
