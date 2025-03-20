@@ -1,6 +1,5 @@
 import pytest
 
-from ai_lib.Exceptions import ModelException, DataException
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.keras.KerasBaseVAE import KerasBaseVAE
 

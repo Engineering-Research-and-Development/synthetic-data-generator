@@ -23,6 +23,6 @@ def test_get_data(model_info):
     assert info["name"] == "Test"
     assert len(info["allowed_data"]) == 2
     assert info["allowed_data"][0]["data_type"] == "int64"
-    assert info["allowed_data"][0]["is_categorical"] == False
+    assert not info["allowed_data"][0]["is_categorical"]
     assert info["allowed_data"][1]["data_type"] == "float32"
-    assert info["allowed_data"][1]["is_categorical"] == False
+    assert not info["allowed_data"][1]["is_categorical"]

@@ -48,7 +48,7 @@ def test_infer(setup):
 
     results, metrics, model, data = job(model_info=model_info, dataset=dataset, n_rows=n_rows,
                                         save_filepath=save_filepath, train=False)
-    assert type(results) == list
+    assert isinstance(results, list)
     assert results is not None
     assert metrics is not None
     assert model is not None
@@ -63,7 +63,7 @@ def test_infer_nodata(setup, teardown):
 
     results, metrics, model, data = job(model_info=model_info, dataset=[], n_rows=n_rows,
                                         save_filepath=save_filepath, train=False)
-    assert type(results) == list
+    assert isinstance(results, list)
     assert results is not None
     assert metrics is not None
     assert model is not None
