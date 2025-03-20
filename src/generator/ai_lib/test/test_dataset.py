@@ -5,56 +5,60 @@ import numpy as np
 from ai_lib.Exceptions import DataException
 from ai_lib.NumericDataset import NumericDataset
 
+
 @pytest.fixture
 def correct_dataset():
     return [
         {
-            "column_name" : "A",
-            "column_type" : "continuous",
-            "column_datatype" : "float64",
-            "column_data" : [1., 2., 3., 4., 5.]
+            "column_name": "A",
+            "column_type": "continuous",
+            "column_datatype": "float64",
+            "column_data": [1.0, 2.0, 3.0, 4.0, 5.0],
         },
         {
-            "column_name" : "B",
-            "column_type" : "categorical",
-            "column_datatype" : "object",
-            "column_data" : ["a", "b", "c", "d", "e"]
+            "column_name": "B",
+            "column_type": "categorical",
+            "column_datatype": "object",
+            "column_data": ["a", "b", "c", "d", "e"],
         },
         {
-            "column_name" : "C",
-            "column_type" : "continuous",
-            "column_datatype" : "int64",
-            "column_data" : [1, 2, 3, 4, 5]
+            "column_name": "C",
+            "column_type": "continuous",
+            "column_datatype": "int64",
+            "column_data": [1, 2, 3, 4, 5],
         },
         {
             "column_name": "D",
             "column_type": "test",
             "column_datatype": "int64",
-            "column_data": [1, 2, 3, 4, 5]
+            "column_data": [1, 2, 3, 4, 5],
         },
     ]
+
 
 @pytest.fixture
 def complex_dataset():
     return [
         {
-            "column_name" : "A",
-            "column_type" : "time_series",
-            "column_datatype" : "float64",
-            "column_data" : [[1., 2., 3., 4., 5.], [1., 2., 3., 4., 5.]]
+            "column_name": "A",
+            "column_type": "time_series",
+            "column_datatype": "float64",
+            "column_data": [[1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]],
         }
     ]
+
 
 @pytest.fixture
 def error_dataset():
     return [
         {
-            "column_name" : "A",
-            "column_type" : "categorical",
-            "column_datatype" : "string",
-            "column_data" : ["a", "b", "c", "d", "e"]
+            "column_name": "A",
+            "column_type": "categorical",
+            "column_datatype": "string",
+            "column_data": ["a", "b", "c", "d", "e"],
         }
     ]
+
 
 @pytest.fixture
 def empty_dataset():
@@ -69,6 +73,7 @@ def test_initialization(correct_dataset):
     assert len(dataset.unrecognized_columns) == 1
     assert dataset.get_numpy_data(dataset.dataframe).shape == (5, 4)
 
+
 def test_dataset_complexity(complex_dataset):
     dataset = NumericDataset(complex_dataset)
     print(np.array(dataset.dataframe.to_numpy().tolist()).shape)
@@ -78,15 +83,18 @@ def test_dataset_complexity(complex_dataset):
     assert len(dataset.unrecognized_columns) == 1
     assert dataset.get_numpy_data(dataset.dataframe).shape == (2, 1, 5)
 
+
 def test_error_initialization(error_dataset):
     with pytest.raises(TypeError) as exception_info:
         _ = NumericDataset(error_dataset)
     assert exception_info.type is TypeError
 
+
 def test_empty_dataset(empty_dataset):
     with pytest.raises(DataException) as exception_info:
         _ = NumericDataset(empty_dataset)
     assert exception_info.type is DataException
+
 
 def test_parse_tabular_data_json(correct_dataset):
     dataset = NumericDataset(correct_dataset)
@@ -109,6 +117,7 @@ def test_parse_tabular_data_json(correct_dataset):
     assert list_dict[3]["column_type"] == "none"
     assert list_dict[3]["column_datatype"] == "int64"
     assert list_dict[3]["column_data"] == [1, 2, 3, 4, 5]
+
 
 def test_get_data(correct_dataset):
     dataset = NumericDataset(correct_dataset)

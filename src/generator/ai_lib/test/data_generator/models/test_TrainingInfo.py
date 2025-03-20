@@ -9,8 +9,9 @@ def training_info():
         train_samples=100,
         train_loss=0.05,
         validation_samples=20,
-        validation_loss=0.03
+        validation_loss=0.03,
     )
+
 
 def test_training_info_to_dict(training_info):
     assert training_info.to_dict() == {
@@ -18,8 +19,12 @@ def test_training_info_to_dict(training_info):
         "train_samples": 100,
         "train_loss": 0.05,
         "validation_samples": 20,
-        "validation_loss": 0.03
+        "validation_loss": 0.03,
     }
 
+
 def test_training_info_to_json(training_info):
-    assert training_info.to_json() == '{"loss_fn": "mse", "train_samples": 100, "train_loss": 0.05, "validation_samples": 20, "validation_loss": 0.03}'
+    assert (
+        training_info.to_json()
+        == '{"loss_fn": "mse", "train_samples": 100, "train_loss": 0.05, "validation_samples": 20, "validation_loss": 0.03}'
+    )

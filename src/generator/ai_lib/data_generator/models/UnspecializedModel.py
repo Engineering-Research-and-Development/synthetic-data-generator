@@ -18,7 +18,14 @@ class UnspecializedModel(ABC):
         _scaler (Scaler): The scaler instance.
         training_info (TrainingInfo): The training info instance.
     """
-    def __init__(self, metadata: dict, model_name: str, input_shape: str = None, load_path: str = None):
+
+    def __init__(
+        self,
+        metadata: dict,
+        model_name: str,
+        input_shape: str = None,
+        load_path: str = None,
+    ):
         self._metadata = metadata
         self.model_name = model_name
         self.input_shape = self._parse_stringed_input_shape(input_shape)
@@ -78,7 +85,7 @@ class UnspecializedModel(ABC):
 
     @abstractmethod
     def set_hyperparameters(self, **kwargs):
-        """ Set Hyperparameters"""
+        """Set Hyperparameters"""
         raise NotImplementedError
 
     @classmethod
