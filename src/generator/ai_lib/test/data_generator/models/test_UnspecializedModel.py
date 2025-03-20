@@ -6,21 +6,17 @@ from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 @pytest.fixture(autouse=False)
 def unspecialized_model():
     return UnspecializedModel(
-        metadata={},
-        model_name="Test-T_VAE",
-        input_shape="(13,)",
-        load_path=None
+        metadata={}, model_name="Test-T_VAE", input_shape="(13,)", load_path=None
     )
+
 
 def test_initialize():
     with pytest.raises(TypeError) as exception_info:
         _ = UnspecializedModel(
-            metadata={},
-            model_name="Test-T_VAE",
-            input_shape="(13,)",
-            load_path=None
+            metadata={}, model_name="Test-T_VAE", input_shape="(13,)", load_path=None
         )
     assert exception_info.type is TypeError
+
 
 def test_parse_stringed_input_shape():
 

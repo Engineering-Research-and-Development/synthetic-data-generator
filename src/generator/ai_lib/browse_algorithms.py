@@ -8,6 +8,7 @@ base_model_path = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "data_generator/models/"
 )
 
+
 def find_implementations(
     root_path: str, implementation_folder: str = "implementation"
 ) -> list[str]:
@@ -37,7 +38,9 @@ def find_implementations(
     return module_paths
 
 
-def browse_algorithms(model_paths:str=base_model_path, model_package:str=base_package) -> Generator[dict | None, None, None]:
+def browse_algorithms(
+    model_paths: str = base_model_path, model_package: str = base_package
+) -> Generator[dict | None, None, None]:
     """
     Generator function to iterate.
     It exploits the find_implementations function to gather all module names, then extract from each module

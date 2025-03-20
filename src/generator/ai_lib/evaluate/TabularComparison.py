@@ -14,6 +14,7 @@ class TabularComparisonEvaluator:
 
     The evaluation is performed on a per-column basis, and the results are aggregated.
     """
+
     def __init__(
         self,
         real_data: pd.DataFrame,
@@ -198,7 +199,9 @@ class TabularComparisonEvaluator:
 
         for col in self._categorical_columns:
             # Identify values present in synthetic data but missing in real data.
-            extra_values = set(synth_categorical[col].unique()) - set(real_categorical[col].unique())
+            extra_values = set(synth_categorical[col].unique()) - set(
+                real_categorical[col].unique()
+            )
             # Count how many synthetic records use these extra values.
             extra_count = synth_categorical[col].isin(extra_values).sum()
             # Define adherence as the percentage of records that do NOT have extra values.
@@ -218,8 +221,10 @@ class TabularComparisonEvaluator:
             min_boundary = stats["min"]
             max_boundary = stats["max"]
             # Filter synthetic records that fall within these boundaries.
-            in_boundary = synth_numerical[(synth_numerical[col] >= min_boundary) &
-                                          (synth_numerical[col] <= max_boundary)]
+            in_boundary = synth_numerical[
+                (synth_numerical[col] >= min_boundary)
+                & (synth_numerical[col] <= max_boundary)
+            ]
             in_boundary_count = in_boundary.shape[0]
             adherence_percentage = np.round(in_boundary_count / total_records * 100, 2)
             boundary_adherence_score[col] = float(adherence_percentage)
