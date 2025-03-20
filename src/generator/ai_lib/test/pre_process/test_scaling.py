@@ -2,7 +2,11 @@ import pytest
 import numpy as np
 
 from ai_lib.Exceptions import DataException
-from ai_lib.preprocess.scale import standardize_simple_tabular_time_series, standardize_simple_tabular_input
+from ai_lib.preprocess.scale import (
+    standardize_simple_tabular_time_series,
+    standardize_simple_tabular_input,
+)
+
 
 @pytest.fixture()
 def correct_tabular_input():
@@ -16,7 +20,10 @@ def correct_time_series_input():
 
 def test_correct_tabular_scaling(correct_tabular_input):
     scaler, standardized_train_data, standardized_test_data = (
-        standardize_simple_tabular_input(train_data=correct_tabular_input, test_data=correct_tabular_input))
+        standardize_simple_tabular_input(
+            train_data=correct_tabular_input, test_data=correct_tabular_input
+        )
+    )
 
     assert type(standardized_train_data) is np.ndarray
     assert standardized_train_data.shape == correct_tabular_input.shape
@@ -25,21 +32,25 @@ def test_correct_tabular_scaling(correct_tabular_input):
 
 def test_incorrect_tabular_scaling(correct_time_series_input):
     with pytest.raises(DataException) as exception_info:
-        _, _, _ = (
-            standardize_simple_tabular_input(train_data=correct_time_series_input))
+        _, _, _ = standardize_simple_tabular_input(train_data=correct_time_series_input)
     assert exception_info.type is DataException
+
 
 def test_correct_time_series_scaling(correct_time_series_input):
     scaler, standardized_train_data, standardized_test_data = (
-        standardize_simple_tabular_time_series(train_data=correct_time_series_input, test_data=correct_time_series_input))
+        standardize_simple_tabular_time_series(
+            train_data=correct_time_series_input, test_data=correct_time_series_input
+        )
+    )
 
     assert type(standardized_train_data) is np.ndarray
     assert standardized_train_data.shape == correct_time_series_input.shape
     assert standardized_test_data.shape == correct_time_series_input.shape
 
+
 def test_incorrect_time_series_scaling(correct_tabular_input):
     with pytest.raises(DataException) as exception_info:
-        _, _, _ = (
-            standardize_simple_tabular_time_series(train_data=correct_tabular_input))
+        _, _, _ = standardize_simple_tabular_time_series(
+            train_data=correct_tabular_input
+        )
     assert exception_info.type is DataException
-

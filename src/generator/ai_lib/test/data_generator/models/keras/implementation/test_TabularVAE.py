@@ -7,14 +7,20 @@ from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
 from ai_lib.data_generator.models.keras.VAE import VAE
 from ai_lib.data_generator.models.keras.implementation.TabularVAE import TabularVAE
 
+
 @pytest.fixture()
 def data():
-    return NumericDataset([{
-        "column_name": "A",
-        "column_type": "continuous",
-        "column_datatype": "float64",
-        "column_data": [1., 2., 3., 4., 5.]
-    }])
+    return NumericDataset(
+        [
+            {
+                "column_name": "A",
+                "column_type": "continuous",
+                "column_datatype": "float64",
+                "column_data": [1.0, 2.0, 3.0, 4.0, 5.0],
+            }
+        ]
+    )
+
 
 @pytest.fixture()
 def model_data_no_load():
@@ -26,6 +32,7 @@ def model_data_no_load():
         "epochs": 1,
     }
 
+
 @pytest.fixture()
 def model_data_correct_train():
     return {
@@ -36,6 +43,7 @@ def model_data_correct_train():
         "epochs": 1,
     }
 
+
 def test_instantiate(model_data_no_load):
     model = TabularVAE(**model_data_no_load)
     assert model.model_name == model_data_no_load["model_name"]
@@ -45,6 +53,7 @@ def test_instantiate(model_data_no_load):
     assert type(model._model) is VAE
     assert model._scaler is None
 
+
 def test_preprocess(model_data_no_load, data):
     model = TabularVAE(**model_data_no_load)
     assert model._scaler is None
@@ -52,24 +61,33 @@ def test_preprocess(model_data_no_load, data):
     assert model._scaler is not None and type(model._scaler) is StandardScaler
     assert type(scaled_data) is np.ndarray
 
+
 def test_self_description(model_data_no_load):
     model = TabularVAE(**model_data_no_load)
     self_description = model.self_describe()
     assert self_description is not None
-    assert self_description["name"] == "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE"
+    assert (
+        self_description["name"]
+        == "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE"
+    )
     assert self_description["default_loss_function"] == "ELBO LOSS"
-    assert self_description["description"] == "A Variational Autoencoder for data generation"
+    assert (
+        self_description["description"]
+        == "A Variational Autoencoder for data generation"
+    )
     assert self_description["allowed_data"] == [
         {"data_type": "float32", "is_categorical": False},
         {"data_type": "int32", "is_categorical": False},
         {"data_type": "int64", "is_categorical": False},
     ]
 
+
 def test_train_wrong(model_data_no_load, data):
     model = TabularVAE(**model_data_no_load)
     with pytest.raises(ValueError) as exception_info:
         model.train(data)
     assert exception_info.type is ValueError
+
 
 def test_train_correct(model_data_correct_train, data):
     model = TabularVAE(**model_data_correct_train)
@@ -78,6 +96,7 @@ def test_train_correct(model_data_correct_train, data):
     model.train(data)
     assert type(model._scaler) is StandardScaler
     assert type(model.training_info) is TrainingInfo
+
 
 def test_infer(model_data_correct_train, data):
     n_rows = 2

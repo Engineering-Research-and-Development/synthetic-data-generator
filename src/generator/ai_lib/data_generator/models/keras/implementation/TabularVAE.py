@@ -28,9 +28,17 @@ class TabularVAE(KerasBaseVAE):
         _pre_process: Pre-processes input data using standardization.
         self_describe: Provides metadata information about the model.
     """
+
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, load_path: str|None, latent_dim: int = 2,
-        learning_rate: float = 1e-3, batch_size: int = 8, epochs: int = 200
+        self,
+        metadata: dict,
+        model_name: str,
+        input_shape: str,
+        load_path: str | None,
+        latent_dim: int = 2,
+        learning_rate: float = 1e-3,
+        batch_size: int = 8,
+        epochs: int = 200,
     ):
         super().__init__(metadata, model_name, input_shape, load_path, latent_dim)
         self._beta = 1
@@ -66,7 +74,9 @@ class TabularVAE(KerasBaseVAE):
     def _pre_process(self, data: NumericDataset, **kwargs):
         cont_np_data = data.continuous_data.to_numpy()
         if not self._scaler:
-            scaler, np_input_scaled, _ = standardize_simple_tabular_input(train_data=cont_np_data)
+            scaler, np_input_scaled, _ = standardize_simple_tabular_input(
+                train_data=cont_np_data
+            )
             self._scaler = scaler
         else:
             np_input_scaled = self._scale(cont_np_data)

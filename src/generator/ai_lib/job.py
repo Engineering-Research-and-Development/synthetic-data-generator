@@ -26,7 +26,6 @@ def job(
     :return: a tuple containing a list of metrics, a dictionary with the model's info, the trained model, and the generated dataset
     """
 
-
     if len(dataset) == 0:
         data_info = model_info.get("training_data_info", [])
         if len(data_info) == 0:

@@ -19,8 +19,14 @@ class KerasBaseVAE(UnspecializedModel, ABC):
 
     This class provides a common interface for keras VAE models and handles the saving and loading of models.
     """
+
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, load_path: str|None, latent_dim: int
+        self,
+        metadata: dict,
+        model_name: str,
+        input_shape: str,
+        load_path: str | None,
+        latent_dim: int,
     ):
         super().__init__(metadata, model_name, input_shape, load_path)
         self._latent_dim = latent_dim
@@ -120,7 +126,13 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         epochs = kwargs.get("epochs", self._epochs)
         self._set_hyperparams(learning_rate, batch_size, epochs)
 
-    def train(self, data: NumericDataset, learning_rate: float = None, batch_size: int = None, epochs: int = None):
+    def train(
+        self,
+        data: NumericDataset,
+        learning_rate: float = None,
+        batch_size: int = None,
+        epochs: int = None,
+    ):
         """
         Trains the VAE model on the provided data.
 
@@ -137,15 +149,15 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         data = self._pre_process(data)
         if data.shape[1:] != self.input_shape:
             raise ValueError("Model shape does not reflect Data shape")
-        learning_rate = learning_rate if learning_rate is not None else self._learning_rate
+        learning_rate = (
+            learning_rate if learning_rate is not None else self._learning_rate
+        )
         batch_size = batch_size if batch_size is not None else self._batch_size
         epochs = epochs if epochs is not None else self._epochs
         self._model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=learning_rate)
         )
-        history = self._model.fit(
-            data, epochs=epochs, batch_size=batch_size
-        )
+        history = self._model.fit(data, epochs=epochs, batch_size=batch_size)
         self.training_info = TrainingInfo(
             loss_fn="ELBO",
             train_loss=history.history["loss"][-1].numpy().item(),
@@ -164,7 +176,9 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         :return: A numpy array containing the generated data after decoding and inverse scaling.
         """
         if self._model is None:
-            raise AttributeError("Model is not instantiated, please, build the model before launching inference")
+            raise AttributeError(
+                "Model is not instantiated, please, build the model before launching inference"
+            )
         z_random = np.random.normal(size=(n_rows, self._latent_dim))
         results = self._model.decoder.predict(z_random)
         results = self._inverse_scale(results)
