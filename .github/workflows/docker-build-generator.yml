@@ -35,6 +35,8 @@ jobs:
           --health-interval 10s
           --health-timeout 10s
           --health-retries 5
+          --name postgres
+          --hostname postgres
 
       sdg-middleware:
         image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
@@ -47,6 +49,9 @@ jobs:
           db_username: postgres
           INIT_DB: True
           allowed_origins: '*'
+        options: 
+          --name sdg-middleware 
+          --hostname sdg-middleware
 
     steps:
     - name: Checkout repository
