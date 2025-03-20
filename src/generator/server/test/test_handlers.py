@@ -3,9 +3,9 @@ from pathlib import Path
 
 import requests
 
-from src.generator.ai_lib.browse_algorithms import browse_algorithms
-from .conftest import test_folder
-from ..middleware_handlers import (
+from ai_lib.browse_algorithms import browse_algorithms
+from server.test.conftest import test_folder
+from server.middleware_handlers import (
     sync_remote_trained,
     middleware,
     sync_remote_algorithm,
