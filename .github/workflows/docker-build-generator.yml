@@ -65,7 +65,7 @@ jobs:
       run: |
         docker run -d --network ${{ job.services.sdg-middleware.network }} \
           -p 8010:8010 \
-          -e MIDDLEWARE_URL="sdg-middleware:8001" \
+          -e MIDDLEWARE_URL="sdg-middleware:8001/" \
           --name test-container test-container
           
 
