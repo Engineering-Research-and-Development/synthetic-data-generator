@@ -40,7 +40,7 @@ def test_train(setup):
         save_filepath=save_filepath,
         train=True,
     )
-    assert type(results) == list
+    assert isinstance(results, list)
     assert results is not None
     assert metrics is not None
     assert model is not None
@@ -62,7 +62,7 @@ def test_infer(setup):
         save_filepath=save_filepath,
         train=False,
     )
-    assert type(results) == list
+    assert isinstance(results, list)
     assert results is not None
     assert metrics is not None
     assert model is not None
@@ -83,7 +83,7 @@ def test_infer_nodata(setup, teardown):
         save_filepath=save_filepath,
         train=False,
     )
-    assert type(results) == list
+    assert isinstance(results, list)
     assert results is not None
     assert metrics is not None
     assert model is not None
