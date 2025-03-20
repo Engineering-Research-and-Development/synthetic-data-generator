@@ -4,21 +4,23 @@ from ai_lib.job import job
 import json
 import os
 
-train_request = json.load(open("train_test.json"))
-infer_request = json.load(open("infer_test.json"))
-infer_nodata_request = json.load(open("infer_test_nodata.json"))
+current_folder = os.path.dirname(os.path.abspath(__file__))
+train_request = json.load(open(os.path.join(current_folder,"train_test.json")))
+infer_request = json.load(open(os.path.join(current_folder,"infer_test.json")))
+infer_nodata_request = json.load(open(os.path.join(current_folder,"infer_test_nodata.json")))
+output_folder = os.path.join(current_folder, "outputs")
 
 @pytest.fixture()
 def setup():
-    if not os.path.isdir("./outputs"):
-        os.mkdir("./outputs")
+    if not os.path.isdir(output_folder):
+        os.mkdir(output_folder)
 
 
 @pytest.fixture()
 def teardown():
     yield
-    if os.path.isdir("./outputs"):
-        shutil.rmtree("./outputs")
+    if os.path.isdir(output_folder):
+        shutil.rmtree(output_folder)
 
 
 def test_train(setup):
@@ -26,7 +28,7 @@ def test_train(setup):
     model_info = train_request["model"]
     dataset = train_request["dataset"]
     n_rows = train_request["n_rows"]
-    save_filepath = "./outputs/"
+    save_filepath = output_folder
 
     results, metrics, model, data = job(model_info=model_info, dataset=dataset, n_rows=n_rows,
                                         save_filepath=save_filepath, train=True)
@@ -39,9 +41,10 @@ def test_train(setup):
 def test_infer(setup):
 
     model_info = infer_request["model"]
+    model_info["image"] = output_folder
     dataset = infer_request["dataset"]
     n_rows = infer_request["n_rows"]
-    save_filepath = "./outputs/"
+    save_filepath = output_folder
 
     results, metrics, model, data = job(model_info=model_info, dataset=dataset, n_rows=n_rows,
                                         save_filepath=save_filepath, train=False)
@@ -54,8 +57,9 @@ def test_infer(setup):
 def test_infer_nodata(setup, teardown):
 
     model_info = infer_nodata_request["model"]
+    model_info["image"] = output_folder
     n_rows = infer_nodata_request["n_rows"]
-    save_filepath = "./outputs/"
+    save_filepath = output_folder
 
     results, metrics, model, data = job(model_info=model_info, dataset=[], n_rows=n_rows,
                                         save_filepath=save_filepath, train=False)

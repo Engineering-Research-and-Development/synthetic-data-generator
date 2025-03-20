@@ -59,8 +59,8 @@ def test_train_correct(model_data_correct_train, data):
     assert type(model._scaler) is StandardScaler
     assert type(model.training_info) is TrainingInfo
 
-def test_self_description(model_data_no_load):
-    model = TimeSeriesVAE(**model_data_no_load)
+def test_self_description(model_data_correct_train):
+    model = TimeSeriesVAE(**model_data_correct_train)
     self_description = model.self_describe()
     assert self_description is not None
     assert self_description["name"] == "ai_lib.data_generator.models.keras.implementation.TimeSeriesVAE.TimeSeriesVAE"
