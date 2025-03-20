@@ -82,6 +82,9 @@ jobs:
          exit 1  # Fail the pipeline
         fi
 
+    - name: check_docker_networks
+      run: docker network ls
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
