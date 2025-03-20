@@ -21,6 +21,5 @@ def test_generator_train():
 def test_generator_infer():
     with open(infer_test) as file:
         to_post = json.load(file)
-    print(to_post)
     response = requests.post(f"{generator_url}infer", json=to_post)
     assert response.status_code == 200, print(response.content)
