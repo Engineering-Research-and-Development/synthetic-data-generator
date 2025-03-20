@@ -83,10 +83,10 @@ async def train(request: TrainRequest):
                 save_filepath=tmp_dir,
                 train=True,
             )
-        except Exception:
+        except Exception as e:
             cleanup_temp_dir(tmp_dir)
             return JSONResponse(
-                status_code=500, content="Something went wrong during training"
+                status_code=500, content=str(e)
             )
         create_trained_model_folder(folder_path, tmp_dir)
     dataset_name = "A name passed"
