@@ -30,9 +30,17 @@ class TimeSeriesVAE(KerasBaseVAE):
         _pre_process(data, **kwargs): Pre-processes the input data for training.
         self_describe(): Provides a description of the model, including its name, loss function, and allowed data types.
     """
+
     def __init__(
-        self, metadata: dict, model_name: str, input_shape: str, load_path: str, latent_dim: int = 6,
-            learning_rate: float = 3e-3, batch_size: int = 16, epochs: int = 100
+        self,
+        metadata: dict,
+        model_name: str,
+        input_shape: str,
+        load_path: str,
+        latent_dim: int = 6,
+        learning_rate: float = 3e-3,
+        batch_size: int = 16,
+        epochs: int = 100,
     ):
         super().__init__(metadata, model_name, input_shape, load_path, latent_dim)
         self._beta = 0.15
@@ -47,11 +55,23 @@ class TimeSeriesVAE(KerasBaseVAE):
     def _build(self, input_shape: tuple[int, ...]):
         print(input_shape)
         encoder_inputs = keras.Input(shape=input_shape)
-        encoder_inputs_permute  = layers.Permute((2, 1))(encoder_inputs)
-        x = layers.Conv1D(32, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(
-            encoder_inputs_permute
-        )
-        x = layers.Conv1D(64, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(x)
+        encoder_inputs_permute = layers.Permute((2, 1))(encoder_inputs)
+        x = layers.Conv1D(
+            32,
+            3,
+            activation="relu",
+            padding="valid",
+            strides=2,
+            data_format="channels_last",
+        )(encoder_inputs_permute)
+        x = layers.Conv1D(
+            64,
+            3,
+            activation="relu",
+            padding="valid",
+            strides=2,
+            data_format="channels_last",
+        )(x)
         shape_before_flatten = x.shape[1:]
         x = layers.Flatten()(x)
         x = layers.Dense(16, activation="relu")(x)
@@ -61,14 +81,26 @@ class TimeSeriesVAE(KerasBaseVAE):
         encoder = keras.Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
 
         latent_inputs = keras.Input(shape=(self._latent_dim,))
-        y = layers.Dense(np.prod(shape_before_flatten), activation="relu")(latent_inputs)
+        y = layers.Dense(np.prod(shape_before_flatten), activation="relu")(
+            latent_inputs
+        )
         y = layers.Reshape(shape_before_flatten)(y)
-        y = layers.Conv1DTranspose(64, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(
-            y
-        )
-        y = layers.Conv1DTranspose(32, 3, activation="relu", padding="valid", strides=2, data_format="channels_last")(
-            y
-        )
+        y = layers.Conv1DTranspose(
+            64,
+            3,
+            activation="relu",
+            padding="valid",
+            strides=2,
+            data_format="channels_last",
+        )(y)
+        y = layers.Conv1DTranspose(
+            32,
+            3,
+            activation="relu",
+            padding="valid",
+            strides=2,
+            data_format="channels_last",
+        )(y)
         decoder_outputs = layers.Conv1DTranspose(
             input_shape[0], 3, activation="relu", padding="same"
         )(y)
@@ -100,7 +132,9 @@ class TimeSeriesVAE(KerasBaseVAE):
     def _pre_process(self, data: NumericDataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
         if not self._scaler:
-            scaler, np_input_scaled, _ = standardize_simple_tabular_time_series(train_data=np_data)
+            scaler, np_input_scaled, _ = standardize_simple_tabular_time_series(
+                train_data=np_data
+            )
             self._scaler = scaler
         else:
             np_input_scaled = self._scale(np_data)

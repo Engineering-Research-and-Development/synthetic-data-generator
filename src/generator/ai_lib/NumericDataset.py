@@ -14,6 +14,7 @@ class NumericDataset:
     The class loads a dataset from a list of dictionaries into a pandas DataFrame.
     It also identifies which columns are numerical and which are categorical.
     """
+
     def __init__(self, dataset: list[dict]):
         self.dataset: list[dict] = dataset
         self.dataframe: pd.DataFrame = pd.DataFrame()
@@ -62,7 +63,8 @@ class NumericDataset:
             raise DataException("No column names are passed to the input data")
 
         input_data = {
-            col["column_name"]: np.array(col.get("column_data", [])).tolist() for col in data
+            col["column_name"]: np.array(col.get("column_data", [])).tolist()
+            for col in data
         }
         data_frame = pd.DataFrame(input_data)
         data_structure = np.array(data_frame.to_numpy().tolist())

@@ -8,25 +8,29 @@ from ai_lib.data_generator.models.keras.implementation.TabularVAE import Tabular
 def class_name():
     return "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE"
 
+
 @pytest.fixture()
 def shapeless_model():
     return {
         "algorithm_name": "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE",
-        "model_name": "Test-T_VAE"
+        "model_name": "Test-T_VAE",
     }
+
 
 @pytest.fixture()
 def shape_model():
     return {
         "algorithm_name": "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE",
-		"model_name": "Test-T_VAE",
-        "input_shape": "(13,)"
+        "model_name": "Test-T_VAE",
+        "input_shape": "(13,)",
     }
+
 
 def test_dynamic_import(class_name):
     model_class = dynamic_import(class_name)
     assert model_class is not None
     assert model_class is TabularVAE
+
 
 def test_model_factory_empty(shapeless_model):
     model = model_factory(shapeless_model, input_shape="(13,)")
@@ -34,6 +38,7 @@ def test_model_factory_empty(shapeless_model):
     assert model.input_shape == (13,)
     assert model._model is not None
     assert model.model_name is shapeless_model["model_name"]
+
 
 def test_model_factory_full(shape_model):
     model = model_factory(shape_model)

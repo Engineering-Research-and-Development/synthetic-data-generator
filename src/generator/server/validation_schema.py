@@ -19,10 +19,11 @@ class TrainModelInfo(BaseModel):
 
 
 class TrainRequest(BaseModel):
-    model : TrainModelInfo
-    dataset : List[DatasetIn]
-    functions_id : list[PositiveInt] = []
-    n_rows : PositiveInt
+    model: TrainModelInfo
+    dataset: List[DatasetIn]
+    functions_id: list[PositiveInt] = []
+    n_rows: PositiveInt
+
 
 # Should I have an id here?
 class InferModelInfoData(BaseModel):
@@ -37,13 +38,13 @@ class InferModelInfoNodata(InferModelInfoData):
 
 
 class InferRequestNoData(BaseModel):
-    model : InferModelInfoNodata
-    functions_id : list[PositiveInt] = []
-    n_rows : PositiveInt
+    model: InferModelInfoNodata
+    functions_id: list[PositiveInt] = []
+    n_rows: PositiveInt
 
 
 class InferRequestData(InferRequestNoData):
-    dataset : List[DatasetIn]
+    dataset: List[DatasetIn]
 
 
 ##################################
@@ -57,6 +58,7 @@ class GeneratedData(BaseModel):
 class GeneratedResponse(BaseModel):
     result_data: GeneratedData
     metrics: dict
+
 
 class CouchEntry(BaseModel):
     doc_id: str
