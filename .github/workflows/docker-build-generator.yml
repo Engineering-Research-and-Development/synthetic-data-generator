@@ -83,7 +83,7 @@ jobs:
         fi
 
     - name: check_docker_networks
-      run: docker network ls
+      run: docker network inspect ${{ job.services.sdg-middleware.network }}
 
     - name: Set up Python
       uses: actions/setup-python@v5
