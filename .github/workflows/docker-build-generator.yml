@@ -104,7 +104,7 @@ jobs:
       run: uv run pytest src/generator/ai_lib/test/
 
     - name: Run SERVER tests
-      run: docker exec test-container sh -c uv run pytest server/test
+      run: docker exec test-container sh -c "uv run pytest server/test"
 
     - name: Stop and remove container
       run: |
