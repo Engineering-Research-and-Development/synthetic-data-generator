@@ -1,6 +1,7 @@
 import os
 
 from fastapi import APIRouter
+import requests
 from starlette.responses import JSONResponse
 
 from .handlers import (
@@ -67,4 +68,9 @@ async def collect_user_input(input_data: UserDataInput):
     else:
         url = generator_url + "/infer"
 
-    return JSONResponse(status_code=200, content="Invoking training/infer endpoint")
+    # Invoking the generator
+    response = requests.post(url,json=body)
+    if response != 200:
+        return JSONResponse(status_code=500, content="Something went wrong during the generator invocation"
+                                                     f"\n{response.status_code}:{response.content}")
+    return JSONResponse(status_code=200, content=response.content)
