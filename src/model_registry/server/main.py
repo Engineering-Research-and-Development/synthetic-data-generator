@@ -54,7 +54,6 @@ async def lifespan(app: FastAPI):
         ]
     )
 
-
     if init_db == "True":
         insert_data()
 
