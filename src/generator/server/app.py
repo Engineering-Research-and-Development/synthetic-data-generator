@@ -85,9 +85,7 @@ async def train(request: TrainRequest):
             )
         except Exception as e:
             cleanup_temp_dir(tmp_dir)
-            return JSONResponse(
-                status_code=500, content=str(e)
-            )
+            return JSONResponse(status_code=500, content=str(e))
         create_trained_model_folder(folder_path, tmp_dir)
     dataset_name = "A name passed"
     # We invoke the model registry saving the model
@@ -101,7 +99,7 @@ async def train(request: TrainRequest):
             "data": data.parse_tabular_data_json(),
         },
     )
-    return CouchEntry(doc_id=couch_doc,model_path = folder_path.as_posix())
+    return CouchEntry(doc_id=couch_doc, model_path=folder_path.as_posix())
 
 
 @generator.post(
@@ -129,7 +127,7 @@ async def infer_data(request: InferRequestData):
 
     add_couch_data(doc_id=couch_doc, new_data={"results": results, "metrics": metrics})
     # Since the model has been only used (no training/fine-tuning) no further saving is required
-    return CouchEntry(doc_id=couch_doc,model_path=request["model"]["image"])
+    return CouchEntry(doc_id=couch_doc, model_path=request["model"]["image"])
 
 
 @generator.get("/", include_in_schema=False)
