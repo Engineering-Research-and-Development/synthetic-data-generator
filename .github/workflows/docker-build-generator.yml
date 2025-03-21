@@ -35,10 +35,8 @@ jobs:
           --health-interval 10s
           --health-timeout 10s
           --health-retries 5
-          --name postgres
-          --hostname postgres
 
-      sdg-middleware:
+      middleware:
         image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
         ports:
           - "8001:8001"
@@ -49,9 +47,6 @@ jobs:
           db_username: postgres
           INIT_DB: True
           allowed_origins: '*'
-        options: 
-          --name sdg-middleware 
-          --hostname sdg-middleware
 
     steps:
     - name: Checkout repository
@@ -63,7 +58,7 @@ jobs:
 
     - name: Run the Docker container
       run: |
-        docker run -d --network ${{ job.services.sdg-middleware.network }} \
+        docker run -d --network ${{ job.services.middleware.network }} \
           -p 8010:8010 \
           --name test-container test-container
           
@@ -88,9 +83,6 @@ jobs:
          exit 1  # Fail the pipeline
         fi
 
-    - name: check_docker_networks
-      run: docker network inspect ${{ job.services.sdg-middleware.network }}
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -104,7 +96,6 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
-        uv pip install -r src/generator/requirements.txt
         uv pip install pytest
 
     - name: Run GENERATOR tests
