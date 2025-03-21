@@ -91,7 +91,7 @@ async def train(request: TrainRequest):
         create_trained_model_folder(folder_path, tmp_dir)
     dataset_name = "A name passed"
     # We invoke the model registry saving the model
-    model_to_middleware(model, data, dataset_name, folder_path.as_posix())
+    model_id = model_to_middleware(model, data, dataset_name, folder_path.as_posix())
     couch_doc = create_couch_entry()
     add_couch_data(
         couch_doc,
@@ -101,7 +101,7 @@ async def train(request: TrainRequest):
             "data": data.parse_tabular_data_json(),
         },
     )
-    return CouchEntry(doc_id=couch_doc)
+    return CouchEntry(doc_id=couch_doc,model_path = folder_path.as_posix())
 
 
 @generator.post(
@@ -129,7 +129,7 @@ async def infer_data(request: InferRequestData):
 
     add_couch_data(doc_id=couch_doc, new_data={"results": results, "metrics": metrics})
     # Since the model has been only used (no training/fine-tuning) no further saving is required
-    return CouchEntry(doc_id=couch_doc)
+    return CouchEntry(doc_id=couch_doc,model_path=request["model"]["image"])
 
 
 @generator.get("/", include_in_schema=False)

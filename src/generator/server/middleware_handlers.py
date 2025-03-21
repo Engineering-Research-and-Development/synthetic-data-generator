@@ -103,6 +103,7 @@ def model_to_middleware(
         raise ModelException(
             "Impossible to reach Model Repository, rollback to latest version"
         )
+    return str(response.json()['id'])
 
 
 def create_datatypes_if_not_present(feature_list: list[dict]):
