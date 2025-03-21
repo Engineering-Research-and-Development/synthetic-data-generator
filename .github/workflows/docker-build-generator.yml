@@ -36,7 +36,7 @@ jobs:
           --health-timeout 10s
           --health-retries 5
 
-      sdg-middleware:
+      middleware:
         image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
         ports:
           - "8001:8001"
@@ -58,9 +58,11 @@ jobs:
 
     - name: Run the Docker container
       run: |
-        docker run -d --network ${{ job.services.sdg-middleware.network }} \
+        docker run -d --network ${{ job.services.middleware.network }} \
+          -e MIDDLEWARE_URL="http://middleware:8001/" \
           -p 8010:8010 \
           --name test-container test-container
+          
 
     - name: Wait the container to be up and running
       run: |
@@ -82,9 +84,6 @@ jobs:
          exit 1  # Fail the pipeline
         fi
 
-    - name: check_docker_networks
-      run: docker network inspect ${{ job.services.sdg-middleware.network }}
-
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -101,14 +100,11 @@ jobs:
         uv pip install -r src/generator/requirements.txt
         uv pip install pytest
 
-    - name: Run GENERATOR tests
+    - name: Run AI-LIB tests
       run: uv run pytest src/generator/ai_lib/test/
 
     - name: Run SERVER tests
-      run: uv run pytest src/generator/server/test
-
-    - name: Run SERVER integration tests
-      run: uv run pytest src/generator/test
+      run: docker exec test-container sh -c "uv add pytest && uv run pytest server/test"
 
     - name: Stop and remove container
       run: |
