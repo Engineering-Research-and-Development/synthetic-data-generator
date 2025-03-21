@@ -100,7 +100,7 @@ jobs:
         uv pip install -r src/generator/requirements.txt
         uv pip install pytest
 
-    - name: Run GENERATOR tests
+    - name: Run AI-LIB tests
       run: uv run pytest src/generator/ai_lib/test/
 
     - name: Run SERVER tests

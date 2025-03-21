@@ -67,7 +67,7 @@ def model_to_middleware(
     }  # Gestione versioni come sopra
     # Getting the algorithm id
     response = requests.get(
-        f"{middleware}algorithms/name/{model.self_describe().get("name", None)}"
+        f"{middleware}algorithms/name/{model.self_describe().get('name', None)}"
     )
     # This edge case should not be happening since the existence of the algorithm is checked before this function
     if response.status_code != 200:
@@ -188,7 +188,7 @@ def sync_remote_algorithm():
 
     # Now we delete all the rest of the stuff from the repo
     for key, val in remote_algorithms.items():
-        response = requests.delete(f'{middleware}algorithms/{val["id"]}')
+        response = requests.delete(f"{middleware}algorithms/{val['id']}")
         assert response.status_code == 200, print(response.content)
 
 
