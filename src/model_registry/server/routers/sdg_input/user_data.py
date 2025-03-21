@@ -69,8 +69,11 @@ async def collect_user_input(input_data: UserDataInput):
         url = generator_url + "/infer"
 
     # Invoking the generator
-    response = requests.post(url,json=body)
+    response = requests.post(url, json=body)
     if response != 200:
-        return JSONResponse(status_code=500, content="Something went wrong during the generator invocation"
-                                                     f"\n{response.status_code}:{response.content}")
+        return JSONResponse(
+            status_code=500,
+            content="Something went wrong during the generator invocation"
+            f"\n{response.status_code}:{response.content}",
+        )
     return JSONResponse(status_code=200, content=response.content)
