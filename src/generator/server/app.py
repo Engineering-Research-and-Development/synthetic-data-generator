@@ -89,7 +89,7 @@ async def train(request: TrainRequest):
         create_trained_model_folder(folder_path, tmp_dir)
     dataset_name = "A name passed"
     # We invoke the model registry saving the model
-    model_id = model_to_middleware(model, data, dataset_name, folder_path.as_posix())
+    _ = model_to_middleware(model, data, dataset_name, folder_path.as_posix())
     couch_doc = create_couch_entry()
     add_couch_data(
         couch_doc,
