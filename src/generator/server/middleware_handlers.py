@@ -1,6 +1,5 @@
 import json
 import os
-from copy import deepcopy
 from pathlib import Path
 from shutil import rmtree
 
@@ -55,7 +54,7 @@ def delete_sys_model_by_id(model_id: int):
 
 def model_to_middleware(
     model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str
-) -> str:
+) -> str|None:
     feature_list = data.parse_data_to_registry()
     create_datatypes_if_not_present(feature_list)
     training_info = format_training_info(model.training_info.to_dict())
@@ -64,7 +63,7 @@ def model_to_middleware(
     version_info = {
         "version_name": model_version,
         "image_path": model_image,
-    }  # Gestione versioni come sopra
+    }  # Version management as described above
     # Getting the algorithm id
     response = requests.get(
         f"{middleware}algorithms/name/{model.self_describe().get("name", None)}"
@@ -176,39 +175,17 @@ def sync_remote_algorithm():
     for algorithm in browse_algorithms():
         # Creating a local data structure that we keep in memory
         generator_algorithms.append(algorithm)
-        if remote_algorithms.get(algorithm["name"]) is None:
+        if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
             check_algorithm_datatypes(algorithm["allowed_data"])
-            f_algorithm = format_algorithm_for_post(deepcopy(algorithm))
-            response = requests.post(f"{middleware}algorithms/", json=f_algorithm)
+            response = requests.post(f"{middleware}algorithms/", json=algorithm)
             assert response.status_code == 201, print(response.content)
-            del f_algorithm
         else:
-            remote_algorithms.pop(algorithm["name"])
+            remote_algorithms.pop(algorithm["algorithm"]["name"])
 
     # Now we delete all the rest of the stuff from the repo
     for key, val in remote_algorithms.items():
         response = requests.delete(f'{middleware}algorithms/{val["id"]}')
         assert response.status_code == 200, print(response.content)
-
-
-def format_algorithm_for_post(algorithm: dict) -> dict:
-    algorithm.update(
-        {
-            "algorithm": {
-                "name": algorithm["name"],
-                "default_loss_function": algorithm["default_loss_function"],
-                "description": algorithm["description"],
-            }
-        }
-    )
-    # Changing the key data_type to datatype for each obj in 'allowed_data'
-    for data in algorithm["allowed_data"]:
-        data.update({"datatype": data["data_type"]})
-        data.pop("data_type")
-    algorithm.pop("name")
-    algorithm.pop("default_loss_function")
-    algorithm.pop("description")
-    return algorithm
 
 
 def check_algorithm_datatypes(datatypes: list[dict[str, str | bool]]):

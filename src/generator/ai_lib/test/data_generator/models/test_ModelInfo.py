@@ -16,11 +16,12 @@ def model_info():
 def test_get_data(model_info):
     info = model_info.get_model_info()
     assert info is not None
-    assert info["default_loss_function"] == "Test Loss Function"
-    assert info["description"] == "This is a test model"
-    assert info["name"] == "Test"
+    assert info["algorithm"] is not None
+    assert info["algorithm"]["default_loss_function"] == "Test Loss Function"
+    assert info["algorithm"]["description"] == "This is a test model"
+    assert info["algorithm"]["name"] == "Test"
     assert len(info["allowed_data"]) == 2
-    assert info["allowed_data"][0]["data_type"] == "int64"
+    assert info["allowed_data"][0]["datatype"] == "int64"
     assert not info["allowed_data"][0]["is_categorical"]
-    assert info["allowed_data"][1]["data_type"] == "float32"
+    assert info["allowed_data"][1]["datatype"] == "float32"
     assert not info["allowed_data"][1]["is_categorical"]

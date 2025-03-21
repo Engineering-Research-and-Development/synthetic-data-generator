@@ -27,13 +27,15 @@ class ModelInfo:
         :return: dict containing the model's information
         """
         allowed_data = [
-            {"data_type": ad.dtype, "is_categorical": ad.is_categorical}
+            {"datatype": ad.dtype, "is_categorical": ad.is_categorical}
             for ad in self.allowed_data
         ]
         system_model_info = {
-            "name": self.name,
-            "default_loss_function": self.default_loss_function,
-            "description": self.description,
+            "algorithm" : {
+                "name": self.name,
+                "default_loss_function": self.default_loss_function,
+                "description": self.description,
+            },
             "allowed_data": allowed_data,
         }
 

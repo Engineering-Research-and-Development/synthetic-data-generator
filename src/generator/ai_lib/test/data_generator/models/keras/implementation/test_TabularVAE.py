@@ -67,18 +67,18 @@ def test_self_description(model_data_no_load):
     self_description = model.self_describe()
     assert self_description is not None
     assert (
-        self_description["name"]
+        self_description["algorithm"]["name"]
         == "ai_lib.data_generator.models.keras.implementation.TabularVAE.TabularVAE"
     )
-    assert self_description["default_loss_function"] == "ELBO LOSS"
+    assert self_description["algorithm"]["default_loss_function"] == "ELBO LOSS"
     assert (
-        self_description["description"]
+        self_description["algorithm"]["description"]
         == "A Variational Autoencoder for data generation"
     )
     assert self_description["allowed_data"] == [
-        {"data_type": "float32", "is_categorical": False},
-        {"data_type": "int32", "is_categorical": False},
-        {"data_type": "int64", "is_categorical": False},
+        {"datatype": "float32", "is_categorical": False},
+        {"datatype": "int32", "is_categorical": False},
+        {"datatype": "int64", "is_categorical": False},
     ]
 
 
