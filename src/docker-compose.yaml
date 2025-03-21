@@ -63,6 +63,8 @@ services:
       - sdg-middleware
       - couchDb
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:generator
+    environment:
+      couch_db: "http://admin:password@couchDb:5984"
     ports:
       - "8010:8010"
 
