@@ -54,7 +54,8 @@ async def lifespan(app: FastAPI):
         ]
     )
 
-    if (isinstance(init_db, bool) and init_db) or init_db == "True":
+
+    if init_db == "True":
         insert_data()
 
     yield
