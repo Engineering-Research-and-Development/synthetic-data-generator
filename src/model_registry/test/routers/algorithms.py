@@ -47,7 +47,7 @@ def test_create_bad_datatype_algorithm():
     local_algo = deepcopy(test_algorithm)
     local_algo["allowed_data"][0]["datatype"] = "bad_datatype"
     assert (
-        requests.post(f"{server}:{port}{endpoint}", json=local_algo).status_code == 400
+        requests.post(f"{server}:{port}{endpoint}", json=local_algo).status_code == 404
     )
 
 

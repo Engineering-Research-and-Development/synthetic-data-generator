@@ -1,8 +1,7 @@
-import json
 import os
 
-from fastapi import APIRouter
 import requests
+from fastapi import APIRouter
 from starlette.responses import JSONResponse
 
 from .handlers import (

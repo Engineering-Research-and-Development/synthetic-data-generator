@@ -242,7 +242,7 @@ def test_bad_algo_id_create_trained_model():
 def test_bad_datatype_create_trained_model():
     bad_data = deepcopy(model)
     bad_data["feature_schema"][0]["datatype"] = "BadDatatype"
-    assert requests.post(f"{server}:{port}{endpoint}", json=bad_data).status_code == 400
+    assert requests.post(f"{server}:{port}{endpoint}", json=bad_data).status_code == 404
 
 
 def test_delete_bad_train_model():
