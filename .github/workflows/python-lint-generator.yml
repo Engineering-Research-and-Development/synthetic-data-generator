@@ -69,5 +69,5 @@ jobs:
       - name: Run bandit
         run: |
           cd src/generator          
-          uv run bandit -r ./server
-          uv run bandit -r ./ai_lib
+          uv run bandit -c bandit.yaml -r ./server
+          uv run bandit -c bandit.yaml -r ./ai_lib
