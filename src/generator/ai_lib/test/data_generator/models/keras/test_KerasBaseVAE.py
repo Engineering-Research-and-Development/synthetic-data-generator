@@ -37,9 +37,9 @@ def test_instantiate(model):
 
 def test_load_files(model):
     wrong_filepath = "."
-    with pytest.raises(FileNotFoundError) as exception_info:
+    with pytest.raises(ValueError) as exception_info:
         model._load_files(wrong_filepath)
-    assert exception_info.type is FileNotFoundError
+    assert exception_info.type is ValueError
 
 
 def test_set_hyperparameters(model):
