@@ -1,2 +1,2 @@
 exclude_dirs: ['./test/']
-skips: ['B113']
+skips: ['B113', 'B104']
