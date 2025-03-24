@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from ai_lib.Exceptions import DataException
-
 NUMERICAL = "continuous"
 CATEGORICAL = "categorical"
 OTHER = "none"
@@ -58,9 +56,6 @@ class NumericDataset:
                 categorical_columns.append(column_name)
             else:
                 unrecognized_columns.append(column_name)
-
-        if len(column_names) < 1:
-            raise DataException("No column names are passed to the input data")
 
         input_data = {
             col["column_name"]: np.array(col.get("column_data", [])).tolist()

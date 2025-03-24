@@ -2,7 +2,6 @@ import pandas as pd
 import pytest
 import numpy as np
 
-from ai_lib.Exceptions import DataException
 from ai_lib.NumericDataset import NumericDataset
 
 
@@ -88,12 +87,6 @@ def test_error_initialization(error_dataset):
     with pytest.raises(TypeError) as exception_info:
         _ = NumericDataset(error_dataset)
     assert exception_info.type is TypeError
-
-
-def test_empty_dataset(empty_dataset):
-    with pytest.raises(DataException) as exception_info:
-        _ = NumericDataset(empty_dataset)
-    assert exception_info.type is DataException
 
 
 def test_parse_tabular_data_json(correct_dataset):

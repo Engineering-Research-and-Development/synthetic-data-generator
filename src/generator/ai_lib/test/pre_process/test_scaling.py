@@ -1,7 +1,6 @@
 import pytest
 import numpy as np
 
-from ai_lib.Exceptions import DataException
 from ai_lib.preprocess.scale import (
     standardize_simple_tabular_time_series,
     standardize_simple_tabular_input,
@@ -31,9 +30,9 @@ def test_correct_tabular_scaling(correct_tabular_input):
 
 
 def test_incorrect_tabular_scaling(correct_time_series_input):
-    with pytest.raises(DataException) as exception_info:
+    with pytest.raises(ValueError) as exception_info:
         _, _, _ = standardize_simple_tabular_input(train_data=correct_time_series_input)
-    assert exception_info.type is DataException
+    assert exception_info.type is ValueError
 
 
 def test_correct_time_series_scaling(correct_time_series_input):
@@ -49,8 +48,8 @@ def test_correct_time_series_scaling(correct_time_series_input):
 
 
 def test_incorrect_time_series_scaling(correct_tabular_input):
-    with pytest.raises(DataException) as exception_info:
+    with pytest.raises(ValueError) as exception_info:
         _, _, _ = standardize_simple_tabular_time_series(
             train_data=correct_tabular_input
         )
-    assert exception_info.type is DataException
+    assert exception_info.type is ValueError

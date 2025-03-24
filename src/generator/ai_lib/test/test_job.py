@@ -10,6 +10,9 @@ infer_request = json.load(open(os.path.join(current_folder, "infer_test.json")))
 infer_nodata_request = json.load(
     open(os.path.join(current_folder, "infer_test_nodata.json"))
 )
+infer_nodata_request_wrong = json.load(
+    open(os.path.join(current_folder, "infer_test_nodata_wrong.json"))
+)
 output_folder = os.path.join(current_folder, "outputs")
 
 
@@ -65,6 +68,23 @@ def test_infer(setup):
     assert metrics is not None
     assert model is not None
     assert data is not None
+
+
+def test_infer_nodata_wrong(setup):
+    model_info = infer_nodata_request_wrong["model"]
+    model_info["image"] = output_folder
+    n_rows = infer_nodata_request_wrong["n_rows"]
+    save_filepath = output_folder
+
+    with pytest.raises(ValueError) as exception_info:
+        _, _, _, _ = job(
+            model_info=model_info,
+            dataset=[],
+            n_rows=n_rows,
+            save_filepath=save_filepath,
+            train=False,
+        )
+    assert exception_info.type == ValueError
 
 
 def test_infer_nodata(setup, teardown):

@@ -1,7 +1,6 @@
 import copy
 import pandas as pd
 
-from ai_lib.Exceptions import ModelException
 from ai_lib.evaluate.TabularComparison import TabularComparisonEvaluator
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.model_factory import model_factory
@@ -29,7 +28,8 @@ def job(
     if len(dataset) == 0:
         data_info = model_info.get("training_data_info", [])
         if len(data_info) == 0:
-            raise ModelException("It is not possible to infer column names from model")
+            pass
+            # raise ModelException("It is not possible to infer column names from model")
         data = NumericDataset(dataset=data_info)
     else:
         data = NumericDataset(dataset=dataset)

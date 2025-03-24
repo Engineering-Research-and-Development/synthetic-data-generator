@@ -1,8 +1,6 @@
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 
-from ai_lib.Exceptions import DataException
-
 
 def standardize_simple_tabular_input(
     train_data: np.array, test_data: np.array = None
@@ -16,9 +14,6 @@ def standardize_simple_tabular_input(
              if provided.
     :raises DataException: If the input data does not have the expected shape.
     """
-
-    if len(train_data.shape) != 2:
-        raise DataException("Data must be in the format (batch, features)")
 
     scaler = StandardScaler()
     train_data = scaler.fit_transform(train_data)
@@ -41,9 +36,6 @@ def standardize_simple_tabular_time_series(
     :raises DataException: If the input data does not have the expected shape.
     """
     scaler = StandardScaler()
-
-    if len(train_data.shape) != 3:
-        raise DataException("Data must be in the format (batch, features, steps)")
 
     batch, features, steps = train_data.shape
     train_data = train_data.reshape(-1, features * steps)
