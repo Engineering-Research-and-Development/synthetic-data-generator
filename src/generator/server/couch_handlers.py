@@ -6,50 +6,6 @@ COUCHDB_URL = os.environ.get("couch_db", "http://admin:password@127.0.0.1:5984")
 DATABASE_NAME = "models_results"
 
 
-def is_couch_online():
-    response = requests.get(COUCHDB_URL)
-    if response.status_code == 200 and response.json():
-        return True
-    else:
-        return False
-
-
-def check_couch_model_registry():
-    """
-    This function checks if the couch model registry db is present, otherwise it creates it if absent
-    :return:
-    """
-    response = requests.get(f"{COUCHDB_URL}/_all_dbs")
-    if response.status_code != 200:
-        logger.error(
-            "Could not connect to couch db for server init!\n "
-            f"Got the following response:\n"
-            f" {response.status_code}:{response.content}  "
-        )
-        return
-
-    if DATABASE_NAME not in response.json():
-        response = requests.put(url=f"{COUCHDB_URL}/{DATABASE_NAME}")
-        if response.status_code != 201:
-            logger.error(
-                "Could not create the couch db model registry\n"
-                f"{response.status_code}:{response.content}"
-            )
-            return
-
-        # Checking if the db has been created
-        response = requests.get(f"{COUCHDB_URL}/_all_dbs")
-        if response.status_code != 200:
-            logger.error("Could not reach couch db")
-            return
-
-        if DATABASE_NAME not in response.json():
-            logger.error(
-                "Model registry has been created but couch db is not returning it in the available"
-                f"databases.\n{response.status_code}:{response.json()}"
-            )
-
-
 def create_couch_entry() -> str | None:
     """Creates a new document in CouchDB and returns its _id."""
     url = f"{COUCHDB_URL}/{DATABASE_NAME}/"

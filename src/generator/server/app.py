@@ -9,21 +9,24 @@ from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from ai_lib.job import job
-from server.file_utils import create_trained_model_folder, cleanup_temp_dir, APP_FOLDER
 from server.couch_handlers import create_couch_entry, add_couch_data
-from server.file_utils import create_server_repo_folder_structure
+from server.file_utils import (
+    create_trained_model_folder,
+    cleanup_temp_dir,
+    TRAINED_MODELS,
+)
 from server.middleware_handlers import (
     model_to_middleware,
     generator_algorithms,
+    server_startup,
 )
-from server.utilities import trim_name, server_startup
+from server.utilities import trim_name
 from server.validation_schema import InferRequestData, TrainRequest, CouchEntry
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     server_startup()
-    create_server_repo_folder_structure()
     # if is_couch_online():
     #     check_couch_model_registry()
     # else:
@@ -53,14 +56,12 @@ async def train(request: TrainRequest):
         )
 
     # Here we calculate the unique name of the folder
-    folder_id = (
-            request["model"]["model_name"]
-            + trim_name(request["model"]["algorithm_name"])
-            + datetime.now().strftime("%Y%m%d.%H%M%S")
+    folder_id = str(
+        request["model"]["model_name"]
+        + trim_name(request["model"]["algorithm_name"])
+        + datetime.now().strftime("%Y%m%d.%H%M%S")
     )
-    folder_path = Path(
-        os.path.join(APP_FOLDER, Path(f"saved_models/trained_models/{folder_id}"))
-    )
+    folder_path = TRAINED_MODELS / folder_id
     # Here we create a temp directory
     with tempfile.TemporaryDirectory(
         dir=os.path.dirname(os.path.abspath(__file__))
@@ -105,7 +106,7 @@ async def infer_data(request: InferRequestData):
     request = request.model_dump()
     couch_doc = create_couch_entry()
     if not os.path.isdir(Path(request["model"]["image"])):
-        return JSONResponse(status_code=404, content="This model has not been found!")
+        return JSONResponse(status_code=500, content="This model has not been found!")
     # In this case since train is false the model will be loaded
     results, metrics, model, data = job(
         model_info=request["model"],

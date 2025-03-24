@@ -3,6 +3,7 @@ from pathlib import Path
 from shutil import copytree, rmtree
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
+TRAINED_MODELS = Path(APP_FOLDER) / "saved_models" / "trained_models"
 
 
 def cleanup_temp_dir(tmp_path):
@@ -10,7 +11,6 @@ def cleanup_temp_dir(tmp_path):
 
 
 def get_all_subfolders_ids(folder_path: str) -> list:
-    """ """
     keys = []
     folders = os.walk(folder_path)
     for folder, _, _ in list(folders)[1:]:
@@ -19,7 +19,7 @@ def get_all_subfolders_ids(folder_path: str) -> list:
 
 
 def create_trained_model_folder(dest: Path, tmp_path: str):
-        copytree(tmp_path, dest)
+    copytree(tmp_path, dest)
 
 
 def create_server_repo_folder_structure() -> None:
@@ -28,9 +28,6 @@ def create_server_repo_folder_structure() -> None:
 
     The structure includes:
     - saved_models/
-      - algorithms/
       - trained_models/
     """
-    saved_root = Path(APP_FOLDER) / "saved_models"
-
-    (saved_root / "trained_models").mkdir(parents=True, exist_ok=True)
+    TRAINED_MODELS.mkdir(parents=True, exist_ok=True)

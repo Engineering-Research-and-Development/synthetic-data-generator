@@ -4,14 +4,32 @@ from pathlib import Path
 from shutil import rmtree
 from loguru import logger
 import requests
-
+from requests.exceptions import ConnectionError
 from ai_lib.NumericDataset import NumericDataset
+from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
-from server.file_utils import get_all_subfolders_ids
+from server.file_utils import (
+    get_all_subfolders_ids,
+    TRAINED_MODELS,
+    create_server_repo_folder_structure,
+)
 from server.utilities import format_training_info
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 generator_algorithms = []
+
+
+def server_startup():
+    create_server_repo_folder_structure()
+    [generator_algorithms.append(algorithm) for algorithm in browse_algorithms()]
+    try:
+        sync_trained_models()
+        sync_available_algorithms()
+    except ConnectionError as error:
+        logger.error(
+            f"Unable to connect to the middleware. Running in isolated environment\n {error.strerror}"
+        )
+        return
 
 
 def model_to_middleware(
@@ -62,6 +80,7 @@ def model_to_middleware(
 
 def create_datatypes_if_not_present(feature_list: list[dict]):
     response = requests.get(f"{middleware}datatypes/?index_by_id=true")
+
     if response.status_code != 200:
         logger.error(
             f"Could not reach model repo for datatypes validation\n"
@@ -78,23 +97,21 @@ def create_datatypes_if_not_present(feature_list: list[dict]):
             requests.post(url=f"{middleware}datatypes/", json=payload)
 
 
-def sync_remote_trained(endpoint: str, folder: str):
-    response = requests.get(f"{middleware}{endpoint}")
+def sync_trained_models():
+    response = requests.get(f"{middleware}trained_models/image-paths/")
+
     remote_data = response.json()
-    for path, trained_id in get_all_subfolders_ids(
-        os.path.join(folder, Path("saved_models/trained_models"))
-    ):
+    for path, trained_id in get_all_subfolders_ids(TRAINED_MODELS):
         # Into posix so that we search it
         if remote_data.get(Path(path).as_posix()) is None:
             rmtree(path)
 
 
-def sync_remote_algorithm():
-    # Since the generator offers a method that lists all the implemented algorithms we only
-    # need to do a sync with the remote repository
+def sync_available_algorithms():
     response = requests.get(
         f"{middleware}algorithms/?include_allowed_datatypes=true&indexed_by_names=true"
     )
+
     remote_algorithms = response.json()
     for algorithm in generator_algorithms:
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
