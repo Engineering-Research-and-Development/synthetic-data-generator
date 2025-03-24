@@ -54,7 +54,7 @@ def delete_sys_model_by_id(model_id: int):
 
 def model_to_middleware(
     model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str
-) -> str|None:
+) -> str | None:
     feature_list = data.parse_data_to_registry()
     create_datatypes_if_not_present(feature_list)
     training_info = format_training_info(model.training_info.to_dict())
