@@ -45,7 +45,7 @@ async def get_all_functions() -> list[FunctionParameterOut]:
 async def get_function_parameters_by_function_id(
     function_id: int = Path(
         description="The ID of the function to retrieve parameters for", examples=[1]
-    )
+    ),
 ):
     """
     This function returns a function parameter given his id. If not found, a 404 will be returned

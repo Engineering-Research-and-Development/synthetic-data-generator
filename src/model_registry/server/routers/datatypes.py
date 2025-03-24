@@ -40,7 +40,7 @@ async def get_all_datatypes(index_by_id: bool = False) -> list[PydanticDataType]
 async def get_single_datatype(
     datatype_id: int = Path(
         description="The id of the datatype you want to get", examples=[1]
-    )
+    ),
 ):
     """
     This method returns a datatype given his id. If not present, an 404 error will be returned

@@ -30,15 +30,6 @@ jobs:
           labels: "auto-format, black"
           assignees: ${{ github.actor }}
 
-  format_autoflake:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: creyD/autoflake_action@v1.1
-        with:
-          options: --in-place --remove-all-unused-imports -r
-
   lint_tools:
     runs-on: ubuntu-latest
     strategy:
@@ -69,5 +60,5 @@ jobs:
 
       - name: Run bandit
         run: |
-          cd src/model_registry/server          
-          python -m bandit -r .
+          cd src/model_registry          
+          python -m bandit -c bandit.yaml b-r .
