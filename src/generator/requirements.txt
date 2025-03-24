@@ -9,4 +9,4 @@ tensorflow==2.18.0
 pyaml
 fastapi[standard]
 loguru
-sklearn_json
+skops

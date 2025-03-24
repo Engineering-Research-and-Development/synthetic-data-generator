@@ -1,7 +1,7 @@
 from abc import ABC
 
 import numpy as np
-import sklearn_json as skljson
+import skops.io as sio
 import os
 import keras
 from keras import saving
@@ -47,11 +47,11 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         if not os.path.isfile(encoder_filename) or not os.path.isfile(decoder_filename):
             raise FileNotFoundError
-        scaler_filename = os.path.join(folder_path, "scaler.json")
+        scaler_filename = os.path.join(folder_path, "scaler.skops")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
         if os.path.isfile(scaler_filename):
-            self._scaler = skljson.from_json(scaler_filename)
+            self._scaler = sio.load(scaler_filename)
         return encoder, decoder
 
     def _load_model(self, encoder, decoder):
@@ -90,8 +90,8 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         saving.save_model(self._model.encoder, encoder_filename)
         saving.save_model(self._model.decoder, decoder_filename)
-        scaler_filename = os.path.join(folder_path, "scaler.json")
-        skljson.to_json(self._scaler, scaler_filename)
+        scaler_filename = os.path.join(folder_path, "scaler.skops")
+        sio.dump(self._scaler, scaler_filename)
 
     def fine_tune(self, data: np.array, **kwargs):
         raise NotImplementedError
