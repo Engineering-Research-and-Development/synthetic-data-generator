@@ -1,7 +1,8 @@
-import pickle
+
 from abc import ABC
 
 import numpy as np
+import sklearn_json as skljson
 import os
 import keras
 from keras import saving
@@ -47,12 +48,11 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         if not os.path.isfile(encoder_filename) or not os.path.isfile(decoder_filename):
             raise FileNotFoundError
-        scaler_filename = os.path.join(folder_path, "scaler.pkl")
+        scaler_filename = os.path.join(folder_path, "scaler.json")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
         if os.path.isfile(scaler_filename):
-            with open(scaler_filename, "rb") as f:
-                self._scaler = pickle.load(f)
+            self._scaler = skljson.from_json(scaler_filename)
         return encoder, decoder
 
     def _load_model(self, encoder, decoder):
@@ -91,10 +91,9 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         saving.save_model(self._model.encoder, encoder_filename)
         saving.save_model(self._model.decoder, decoder_filename)
-        scaler_filename = os.path.join(folder_path, "scaler.pkl")
+        scaler_filename = os.path.join(folder_path, "scaler.json")
+        skljson.to_json(self._scaler, scaler_filename)
 
-        with open(scaler_filename, "wb") as f:
-            pickle.dump(self._scaler, f)
 
     def fine_tune(self, data: np.array, **kwargs):
         raise NotImplementedError
