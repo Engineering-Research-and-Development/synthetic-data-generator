@@ -42,8 +42,8 @@ def insert_data():
         TrainedModel.create(
             name=f"TrainedModel_{i}",
             dataset_name=f"Dataset_{i}",
-            size=f"{(i+1)*15}MB",
-            input_shape=f"({i+1},{i+2},{i+3})",
+            size=f"{(i + 1) * 15}MB",
+            input_shape=f"({i + 1},{i + 2},{i + 3})",
             algorithm_id=systems[(i + 1) % 5],
         )
         for i in range(5)
@@ -63,7 +63,7 @@ def insert_data():
     # Insert ModelVersion
     model_versions = [
         ModelVersion.create(
-            version_name=f"v{i+1}.0",
+            version_name=f"v{i + 1}.0",
             image_path=f"unique_model_{i}.h5",
             trained_model=trained_models[(i + 1) % 5],
         )
@@ -72,7 +72,7 @@ def insert_data():
     # Inserting multiple model version for the same training model
     multiple_model_versions = [
         ModelVersion.create(
-            version_name=f"v{i+1}.0",
+            version_name=f"v{i + 1}.0",
             image_path=f"unique_model_{i}.h5",
             trained_model=1,
         )

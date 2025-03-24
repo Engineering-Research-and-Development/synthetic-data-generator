@@ -183,10 +183,10 @@ class ModelVersionAndTrainInfo(BaseModel):
 
 class TrainedModelAndVersions(TrainedModel):
     versions: list[ModelVersionAndTrainInfo] | list[ModelVersion] | None = Field(
-        description="This is a list of the trained model" " versions and training infos"
+        description="This is a list of the trained model versions and training infos"
     )
     feature_schema: list[CreateFeatures] | None = Field(
-        description="This is a list of the features that the trained model" " has"
+        description="This is a list of the features that the trained model has"
     )
 
 
