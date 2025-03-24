@@ -58,7 +58,7 @@ jobs:
 
     - name: Run the Docker container
       run: |
-        docker run --network ${{ job.services.middleware.network }} \
+        docker run -d --network ${{ job.services.middleware.network }} \
           -e MIDDLEWARE_URL="http://middleware:8001/" \
           -p 8010:8010 \
           --name test-container test-container
@@ -66,7 +66,7 @@ jobs:
 
     - name: Wait the container to be up and running
       run: |
-        sleep 10
+        sleep 5
 
     - name: Check container status
       run: |
@@ -83,6 +83,10 @@ jobs:
          docker logs test-container  # Print logs for debugging
          exit 1  # Fail the pipeline
         fi
+
+    - name: Print docker logs
+      run: |
+        docker logs test-container
 
     - name: Set up Python
       uses: actions/setup-python@v5
