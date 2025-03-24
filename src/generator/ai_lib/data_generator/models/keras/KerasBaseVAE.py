@@ -1,4 +1,3 @@
-
 from abc import ABC
 
 import numpy as np
@@ -93,7 +92,6 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         saving.save_model(self._model.decoder, decoder_filename)
         scaler_filename = os.path.join(folder_path, "scaler.json")
         skljson.to_json(self._scaler, scaler_filename)
-
 
     def fine_tune(self, data: np.array, **kwargs):
         raise NotImplementedError
