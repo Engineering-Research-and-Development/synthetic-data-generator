@@ -120,15 +120,13 @@ def sync_remote_algorithm():
         generator_algorithms.append(algorithm)
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
             check_algorithm_datatypes(algorithm["allowed_data"])
-            response = requests.post(f"{middleware}algorithms/", json=algorithm)
-            assert response.status_code == 201, print(response.content)
+            requests.post(f"{middleware}algorithms/", json=algorithm)
         else:
             remote_algorithms.pop(algorithm["algorithm"]["name"])
 
     # Now we delete all the rest of the stuff from the repo
     for key, val in remote_algorithms.items():
-        response = requests.delete(f"{middleware}algorithms/{val['id']}")
-        assert response.status_code == 200, print(response.content)
+        requests.delete(f"{middleware}algorithms/{val['id']}")
 
 
 def check_algorithm_datatypes(datatypes: list[dict[str, str | bool]]):
