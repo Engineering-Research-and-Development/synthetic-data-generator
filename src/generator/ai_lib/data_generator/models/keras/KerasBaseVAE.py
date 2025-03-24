@@ -45,8 +45,6 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         """
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
-        if not os.path.isfile(encoder_filename) or not os.path.isfile(decoder_filename):
-            raise FileNotFoundError
         scaler_filename = os.path.join(folder_path, "scaler.skops")
         encoder = saving.load_model(encoder_filename)
         decoder = saving.load_model(decoder_filename)
