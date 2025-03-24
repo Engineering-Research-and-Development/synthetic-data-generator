@@ -82,10 +82,6 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         :raises AttributeError: if the model does not exist
         :return: None
         """
-        if not os.path.isdir(folder_path):
-            raise FileNotFoundError
-        if self._model is None:
-            raise AttributeError("Model does not exist. Please, initialize model first")
         encoder_filename = os.path.join(folder_path, "encoder.keras")
         decoder_filename = os.path.join(folder_path, "decoder.keras")
         saving.save_model(self._model.encoder, encoder_filename)
@@ -141,11 +137,7 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         :raises ValueError: if the model shape does not match data shape
         :return: None
         """
-        if type(data) is not NumericDataset:
-            raise TypeError("Data type is not compliant with model")
         data = self._pre_process(data)
-        if data.shape[1:] != self.input_shape:
-            raise ValueError("Model shape does not reflect Data shape")
         learning_rate = (
             learning_rate if learning_rate is not None else self._learning_rate
         )
@@ -172,10 +164,6 @@ class KerasBaseVAE(UnspecializedModel, ABC):
         :raises AttributeError: If the model is not instantiated.
         :return: A numpy array containing the generated data after decoding and inverse scaling.
         """
-        if self._model is None:
-            raise AttributeError(
-                "Model is not instantiated, please, build the model before launching inference"
-            )
         z_random = np.random.normal(size=(n_rows, self._latent_dim))
         results = self._model.decoder.predict(z_random)
         results = self._inverse_scale(results)

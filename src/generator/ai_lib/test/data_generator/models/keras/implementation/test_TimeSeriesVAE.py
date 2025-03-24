@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+import os
+import shutil
 from sklearn.preprocessing import StandardScaler
 
 from ai_lib.NumericDataset import NumericDataset
@@ -68,6 +70,17 @@ def test_train_correct(model_data_correct_train, data):
     model.train(data)
     assert type(model._scaler) is StandardScaler
     assert type(model.training_info) is TrainingInfo
+
+
+def test_save(model_data_correct_train):
+    model = TimeSeriesVAE(**model_data_correct_train)
+    model_path = "./test_model"
+    os.mkdir(model_path)
+    model.save(model_path)
+    assert os.path.isfile(os.path.join(model_path, "encoder.keras"))
+    assert os.path.isfile(os.path.join(model_path, "decoder.keras"))
+    assert os.path.isfile(os.path.join(model_path, "scaler.skops"))
+    shutil.rmtree(model_path)
 
 
 def test_self_description(model_data_correct_train):

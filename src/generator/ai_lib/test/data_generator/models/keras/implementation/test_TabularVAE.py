@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+import os
+import shutil
 from sklearn.preprocessing import StandardScaler
 
 from ai_lib.NumericDataset import NumericDataset
@@ -80,6 +82,17 @@ def test_self_description(model_data_no_load):
         {"datatype": "int32", "is_categorical": False},
         {"datatype": "int64", "is_categorical": False},
     ]
+
+
+def test_save(model_data_no_load):
+    model = TabularVAE(**model_data_no_load)
+    model_path = "./test_model"
+    os.mkdir(model_path)
+    model.save(model_path)
+    assert os.path.isfile(os.path.join(model_path, "encoder.keras"))
+    assert os.path.isfile(os.path.join(model_path, "decoder.keras"))
+    assert os.path.isfile(os.path.join(model_path, "scaler.skops"))
+    shutil.rmtree(model_path)
 
 
 def test_train_wrong(model_data_no_load, data):

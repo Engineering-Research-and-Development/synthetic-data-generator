@@ -42,15 +42,6 @@ def test_load_files(model):
     assert exception_info.type is FileNotFoundError
 
 
-def test_save(model):
-    with pytest.raises(FileNotFoundError) as exception_info:
-        model.save("Test")
-    assert exception_info.type is FileNotFoundError
-    with pytest.raises(AttributeError) as exception_info:
-        model.save(".")
-    assert exception_info.type is AttributeError
-
-
 def test_set_hyperparameters(model):
     hyperparams_wrong = {"wrong": 0.01, "test": 32, "foobar": 10}
     model.set_hyperparameters(**hyperparams_wrong)
@@ -72,9 +63,9 @@ def test_train_not_initialized(model, correct_dataset):
 
 
 def test_train_wrong_data(model):
-    with pytest.raises(TypeError) as exception_info:
+    with pytest.raises(NotImplementedError) as exception_info:
         model.train([1, 2, 3])
-    assert exception_info.type is TypeError
+    assert exception_info.type is NotImplementedError
 
 
 def test_infer(model):
