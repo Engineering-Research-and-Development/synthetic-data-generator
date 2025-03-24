@@ -54,9 +54,9 @@ async def train(request: TrainRequest):
 
     # Here we calculate the unique name of the folder
     folder_id = (
-            request["model"]["model_name"]
-            + trim_name(request["model"]["algorithm_name"])
-            + datetime.now().strftime("%Y%m%d.%H%M%S")
+        request["model"]["model_name"]
+        + trim_name(request["model"]["algorithm_name"])
+        + datetime.now().strftime("%Y%m%d.%H%M%S")
     )
     folder_path = Path(
         os.path.join(APP_FOLDER, Path(f"saved_models/trained_models/{folder_id}"))

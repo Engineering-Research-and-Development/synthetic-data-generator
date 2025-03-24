@@ -1,6 +1,10 @@
 from ai_lib.browse_algorithms import browse_algorithms
 from server.file_utils import APP_FOLDER
-from server.middleware_handlers import sync_remote_trained, generator_algorithms, sync_remote_algorithm
+from server.middleware_handlers import (
+    sync_remote_trained,
+    generator_algorithms,
+    sync_remote_algorithm,
+)
 
 
 def trim_name(elem: str):

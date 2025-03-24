@@ -19,7 +19,7 @@ def get_all_subfolders_ids(folder_path: str) -> list:
 
 
 def create_trained_model_folder(dest: Path, tmp_path: str):
-        copytree(tmp_path, dest)
+    copytree(tmp_path, dest)
 
 
 def create_server_repo_folder_structure() -> None:
