@@ -31,7 +31,7 @@ class ModelInfo:
             for ad in self.allowed_data
         ]
         system_model_info = {
-            "algorithm" : {
+            "algorithm": {
                 "name": self.name,
                 "default_loss_function": self.default_loss_function,
                 "description": self.description,

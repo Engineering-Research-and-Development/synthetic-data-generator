@@ -27,7 +27,6 @@ def teardown():
 
 
 def test_train(setup):
-
     model_info = train_request["model"]
     dataset = train_request["dataset"]
     n_rows = train_request["n_rows"]
@@ -48,7 +47,6 @@ def test_train(setup):
 
 
 def test_infer(setup):
-
     model_info = infer_request["model"]
     model_info["image"] = output_folder
     dataset = infer_request["dataset"]
@@ -70,7 +68,6 @@ def test_infer(setup):
 
 
 def test_infer_nodata(setup, teardown):
-
     model_info = infer_nodata_request["model"]
     model_info["image"] = output_folder
     n_rows = infer_nodata_request["n_rows"]

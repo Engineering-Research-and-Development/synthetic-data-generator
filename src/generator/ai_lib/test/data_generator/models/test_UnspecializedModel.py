@@ -19,7 +19,6 @@ def test_initialize():
 
 
 def test_parse_stringed_input_shape():
-
     stringed_shape_1 = "(10,)"
     stringed_shape_2 = "(10)"
     stringed_shape_3 = "[10,]"
