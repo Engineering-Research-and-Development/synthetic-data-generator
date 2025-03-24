@@ -1,2 +1,2 @@
-exclude_dirs: ['.\ai_lib\test', '.\server\test']
+exclude_dirs: ['.\ai_lib\test\', '.\server\test\']
 skips: ['B113']
