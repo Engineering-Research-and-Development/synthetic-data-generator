@@ -50,7 +50,7 @@ def check_couch_model_registry():
             )
 
 
-def create_couch_entry() -> None:
+def create_couch_entry() -> str | None:
     """Creates a new document in CouchDB and returns its _id."""
     url = f"{COUCHDB_URL}/{DATABASE_NAME}/"
     headers = {"Content-Type": "application/json"}

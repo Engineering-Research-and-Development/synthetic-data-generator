@@ -6,9 +6,9 @@ from loguru import logger
 import requests
 
 from ai_lib.NumericDataset import NumericDataset
-from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from server.file_utils import get_all_subfolders_ids
+from server.utilities import format_training_info
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 generator_algorithms = []
@@ -78,24 +78,6 @@ def create_datatypes_if_not_present(feature_list: list[dict]):
             requests.post(url=f"{middleware}datatypes/", json=payload)
 
 
-def format_training_info(tr_info: dict):
-    payload = {
-        "loss_function": tr_info["loss_fn"],
-        "train_loss": tr_info["train_loss"],
-        "val_loss": tr_info["validation_loss"],
-        "train_samples": tr_info["train_samples"],
-        "val_samples": tr_info["validation_samples"],
-    }
-    return payload
-
-
-def server_startup(app_folder: str):
-    # 1. Sync with any new implemented trained models and Sync with remote
-    sync_remote_trained("trained_models/image-paths/", app_folder)
-    # 1. Sync with any new implemented algorithms and Sync with remote
-    sync_remote_algorithm()
-
-
 def sync_remote_trained(endpoint: str, folder: str):
     response = requests.get(f"{middleware}{endpoint}")
     remote_data = response.json()
@@ -108,16 +90,13 @@ def sync_remote_trained(endpoint: str, folder: str):
 
 
 def sync_remote_algorithm():
-    global generator_algorithms
     # Since the generator offers a method that lists all the implemented algorithms we only
     # need to do a sync with the remote repository
     response = requests.get(
         f"{middleware}algorithms/?include_allowed_datatypes=true&indexed_by_names=true"
     )
     remote_algorithms = response.json()
-    for algorithm in browse_algorithms():
-        # Creating a local data structure that we keep in memory
-        generator_algorithms.append(algorithm)
+    for algorithm in generator_algorithms:
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
             check_algorithm_datatypes(algorithm["allowed_data"])
             requests.post(f"{middleware}algorithms/", json=algorithm)

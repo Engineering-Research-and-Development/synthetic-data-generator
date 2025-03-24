@@ -9,22 +9,20 @@ from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from ai_lib.job import job
-from server.file_utils import create_trained_model_folder, cleanup_temp_dir
+from server.file_utils import create_trained_model_folder, cleanup_temp_dir, APP_FOLDER
 from server.couch_handlers import create_couch_entry, add_couch_data
 from server.file_utils import create_server_repo_folder_structure
 from server.middleware_handlers import (
     model_to_middleware,
-    server_startup,
     generator_algorithms,
 )
+from server.utilities import trim_name, server_startup
 from server.validation_schema import InferRequestData, TrainRequest, CouchEntry
-
-APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    server_startup(APP_FOLDER)
+    server_startup()
     create_server_repo_folder_structure()
     # if is_couch_online():
     #     check_couch_model_registry()
@@ -34,11 +32,6 @@ async def lifespan(app: FastAPI):
 
 
 generator = FastAPI(lifespan=lifespan)
-
-
-def trim_name(elem: str):
-    first_occ = elem.rfind(".")
-    return elem[first_occ + 1 :]
 
 
 @generator.post(
@@ -53,20 +46,17 @@ async def train(request: TrainRequest):
     """
     request = request.model_dump()
     # Check if the algorithm is implemented by the generator
-    flag = False
-    for algo in generator_algorithms:
-        if algo["name"] == request["model"]["algorithm_name"]:
-            flag = True
-    if not flag:
+    if request["model"]["algorithm_name"] not in generator_algorithms:
         return JSONResponse(
-            status_code=404,
+            status_code=500,
             content="This algorithm is not implemented by the generator!",
         )
+
     # Here we calculate the unique name of the folder
     folder_id = (
-        request["model"]["model_name"]
-        + trim_name(request["model"]["algorithm_name"])
-        + datetime.now().strftime("%Y%m%d.%H%M%S")
+            request["model"]["model_name"]
+            + trim_name(request["model"]["algorithm_name"])
+            + datetime.now().strftime("%Y%m%d.%H%M%S")
     )
     folder_path = Path(
         os.path.join(APP_FOLDER, Path(f"saved_models/trained_models/{folder_id}"))
