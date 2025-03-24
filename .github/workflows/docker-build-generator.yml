@@ -58,7 +58,7 @@ jobs:
 
     - name: Run the Docker container
       run: |
-        docker run -d --network ${{ job.services.middleware.network }} \
+        docker run --network ${{ job.services.middleware.network }} \
           -e MIDDLEWARE_URL="http://middleware:8001/" \
           -p 8010:8010 \
           --name test-container test-container

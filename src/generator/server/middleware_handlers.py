@@ -2,11 +2,9 @@ import json
 import os
 from pathlib import Path
 from shutil import rmtree
-
+from loguru import logger
 import requests
-from requests.exceptions import RequestException
 
-from ai_lib.Exceptions import ModelException
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
@@ -14,42 +12,6 @@ from server.file_utils import get_all_subfolders_ids
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 generator_algorithms = []
-
-
-def save_system_model(model: dict):
-    """
-    Saves a system model to the repository
-    :param model: a dictionary containing the model
-    :return: None
-    """
-    headers = {"Content-Type": "application/json"}
-    body = json.dumps(model)
-    api = f"{middleware}algorithms/"
-    try:
-        response = requests.post(api, headers=headers, data=body)
-        if response.status_code > 300:
-            raise ModelException("Something went wrong in initializing the system")
-    except RequestException:
-        raise ModelException("Impossible to reach Model Repository")
-
-    return response
-
-
-def delete_sys_model_by_id(model_id: int):
-    """
-    Deletes a system model from the repository
-    :param model_id: the unique identifier of the model
-    :return: None
-    """
-    headers = {"Content-Type": "application/json"}
-    body = json.dumps({"id": model_id})
-    api = f"{middleware}algorithms/"
-    try:
-        response = requests.delete(api, headers=headers, data=body)
-        if response.status_code > 300:
-            raise ModelException("Something went wrong in deleting the model")
-    except RequestException:
-        raise ModelException("Impossible to reach Model Repository")
 
 
 def model_to_middleware(
@@ -89,26 +51,19 @@ def model_to_middleware(
 
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
-    print(f"Creating model\n {body}")
-    try:
-        response = requests.post(
-            f"{middleware}trained_models/", headers=headers, data=body
+    response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
+    if response.status_code != 201:
+        logger.error(
+            f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
         )
-        if response.status_code != 201:
-            raise ModelException(
-                f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
-            )
-    except RequestException:
-        raise ModelException(
-            "Impossible to reach Model Repository, rollback to latest version"
-        )
+        return None
     return str(response.json()["id"])
 
 
 def create_datatypes_if_not_present(feature_list: list[dict]):
     response = requests.get(f"{middleware}datatypes/?index_by_id=true")
     if response.status_code != 200:
-        raise ConnectionError(
+        logger.error(
             f"Could not reach model repo for datatypes validation\n"
             f"{response.status_code}:{response.content}"
         )
@@ -120,9 +75,7 @@ def create_datatypes_if_not_present(feature_list: list[dict]):
                 "datatype": feature["datatype"],
                 "is_categorical": feature["is_categorical"],
             }
-            response = requests.post(url=f"{middleware}datatypes/", json=payload)
-            if response.status_code != 201:
-                raise ConnectionRefusedError("Error in creating a new datatype")
+            requests.post(url=f"{middleware}datatypes/", json=payload)
 
 
 def format_training_info(tr_info: dict):
@@ -145,11 +98,6 @@ def server_startup(app_folder: str):
 
 def sync_remote_trained(endpoint: str, folder: str):
     response = requests.get(f"{middleware}{endpoint}")
-    if response.status_code != 200:
-        raise TimeoutError(
-            f"Could not reach middleware for synchronization!\n"
-            f"{response.status_code}:{response.content}"
-        )
     remote_data = response.json()
     for path, trained_id in get_all_subfolders_ids(
         os.path.join(folder, Path("saved_models/trained_models"))
@@ -166,12 +114,6 @@ def sync_remote_algorithm():
     response = requests.get(
         f"{middleware}algorithms/?include_allowed_datatypes=true&indexed_by_names=true"
     )
-    if response.status_code != 200:
-        raise TimeoutError(
-            "Could not reach middleware for algorithms sync! Server returned the following"
-            " code",
-            response.status_code,
-        )
     remote_algorithms = response.json()
     for algorithm in browse_algorithms():
         # Creating a local data structure that we keep in memory
@@ -191,11 +133,6 @@ def sync_remote_algorithm():
 
 def check_algorithm_datatypes(datatypes: list[dict[str, str | bool]]):
     response = requests.get(f"{middleware}datatypes/?index_by_id=true")
-    if response.status_code != 200:
-        raise ConnectionError(
-            f"Could not reach model repo for datatypes validation\n"
-            f"{response.status_code}:{response.content}"
-        )
     remote_dt = response.json()
     for datatype in datatypes:
         # This means the datatype is not present, so in order to use this algo we must create it
@@ -204,6 +141,4 @@ def check_algorithm_datatypes(datatypes: list[dict[str, str | bool]]):
                 "datatype": datatype["data_type"],
                 "is_categorical": datatype["is_categorical"],
             }
-            response = requests.post(url=f"{middleware}datatypes/", json=payload)
-            if response.status_code != 201:
-                raise ConnectionRefusedError("Error in creating a new datatype")
+            requests.post(url=f"{middleware}datatypes/", json=payload)

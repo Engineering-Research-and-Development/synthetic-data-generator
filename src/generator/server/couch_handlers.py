@@ -26,6 +26,8 @@ def check_couch_model_registry():
             f"Got the following response:\n"
             f" {response.status_code}:{response.content}  "
         )
+        return
+
     if DATABASE_NAME not in response.json():
         response = requests.put(url=f"{COUCHDB_URL}/{DATABASE_NAME}")
         if response.status_code != 201:
@@ -33,10 +35,14 @@ def check_couch_model_registry():
                 "Could not create the couch db model registry\n"
                 f"{response.status_code}:{response.content}"
             )
+            return
+
         # Checking if the db has been created
         response = requests.get(f"{COUCHDB_URL}/_all_dbs")
         if response.status_code != 200:
-            raise logger.error("Could not reach couch db")
+            logger.error("Could not reach couch db")
+            return
+
         if DATABASE_NAME not in response.json():
             logger.error(
                 "Model registry has been created but couch db is not returning it in the available"
