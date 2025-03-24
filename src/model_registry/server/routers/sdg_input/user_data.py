@@ -1,3 +1,4 @@
+import json
 import os
 
 from fastapi import APIRouter
@@ -21,6 +22,7 @@ generator_url = os.environ.get("generator_url", "http://localhost:8010")
     "/",
     name="Synthetic Data Generator input collection",
     responses={400: {"model": str}, 500: {"model": str}},
+    response_model=GeneratorDataOutput,
 )
 async def collect_user_input(input_data: UserDataInput):
     """ """
@@ -69,11 +71,11 @@ async def collect_user_input(input_data: UserDataInput):
         url = generator_url + "/infer"
 
     # Invoking the generator
-    response = requests.post(url, json=body)
+    response = requests.post(url, json=body.model_dump_json())
     if response != 200:
         return JSONResponse(
             status_code=500,
             content="Something went wrong during the generator invocation"
             f"\n{response.status_code}:{response.content}",
         )
-    return JSONResponse(status_code=200, content=response.content)
+    return response
