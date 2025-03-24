@@ -49,12 +49,12 @@ async def add_algorithm_and_datatype(
             except DoesNotExist:
                 transaction.rollback()
                 return JSONResponse(
-                    status_code=400,
+                    status_code=404,
                     content={
                         "message": "This datatype is currently not supported"
                         ", to use it add it with POST /datatype",
                         "datatype": {
-                            "type": feature.datatype,
+                            "datatype": feature.datatype,
                             "is_categorical": feature.is_categorical,
                         },
                     },

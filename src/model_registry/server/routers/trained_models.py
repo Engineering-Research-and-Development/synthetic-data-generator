@@ -248,11 +248,15 @@ async def create_model_and_version(
             except DoesNotExist:
                 transaction.rollback()
                 return JSONResponse(
-                    status_code=400,
+                    status_code=404,
                     content={
-                        "message": "The datatype is currently not supported"
-                        ", to use it add it with POST /datatype"
-                    },
+                        "message": "This datatype is currently not supported"
+                        ", to use it add it with POST /datatype",
+                        "datatype": {
+                            "datatype": feature.datatype,
+                            "is_categorical": feature.is_categorical,
+                        },
+                    }
                 )
             try:
                 Features.insert(
