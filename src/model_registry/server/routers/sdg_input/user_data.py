@@ -72,8 +72,5 @@ async def collect_user_input(input_data: UserDataInput):
     # Invoking the generator
     response = requests.post(url, json=body.model_dump())
     if response != 200:
-        return JSONResponse(
-            status_code=response.status_code,
-            content=response.json()
-        )
+        return JSONResponse(status_code=response.status_code, content=response.json())
     return response
