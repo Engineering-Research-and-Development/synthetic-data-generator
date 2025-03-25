@@ -76,7 +76,8 @@ async def train(request: TrainRequest):
     except KeyError:
         delete_folder(folder_path)
         return JSONResponse(
-            status_code=500, content=str("Impossible to link algorithms to trained model")
+            status_code=500,
+            content=str("Impossible to link algorithms to trained model"),
         )
 
     couch_doc = create_couch_entry()

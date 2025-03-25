@@ -13,6 +13,7 @@ from server.file_utils import (
 )
 from server.utilities import format_training_info
 
+MIDDLEWARE_ON = True
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 generator_algorithm_names = []
 
@@ -20,11 +21,16 @@ generator_algorithm_names = []
 def server_startup():
     logger.info("Server startup")
     create_server_repo_folder_structure()
-    [generator_algorithm_names.append(algorithm["algorithm"]["name"]) for algorithm in browse_algorithms()]
+    [
+        generator_algorithm_names.append(algorithm["algorithm"]["name"])
+        for algorithm in browse_algorithms()
+    ]
     try:
         sync_trained_models()
         sync_available_algorithms()
     except ConnectionError as error:
+        global MIDDLEWARE_ON
+        MIDDLEWARE_ON = False
         logger.error(
             f"Unable to connect to the middleware. Running in isolated environment\n {error.strerror}"
         )
@@ -66,13 +72,16 @@ def model_to_middleware(
 
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
-    response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
 
-    if response.status_code != 201:
-        logger.error(
-            f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
+    if MIDDLEWARE_ON:
+        response = requests.post(
+            f"{middleware}trained_models/", headers=headers, data=body
         )
-    logger.info(f"{model.model_name} saved to middleware")
+        if response.status_code != 201:
+            logger.error(
+                f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
+            )
+        logger.info(f"{model.model_name} saved to middleware")
     return body
 
 
