@@ -25,7 +25,6 @@ class TrainRequest(BaseModel):
     n_rows: PositiveInt
 
 
-# Should I have an id here?
 class InferModelInfoData(BaseModel):
     algorithm_name: str
     model_name: str

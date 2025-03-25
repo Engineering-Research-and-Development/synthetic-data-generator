@@ -14,13 +14,13 @@ from server.file_utils import (
 from server.utilities import format_training_info
 
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
-generator_algorithms = []
+generator_algorithm_names = []
 
 
 def server_startup():
     logger.info("Server startup")
     create_server_repo_folder_structure()
-    [generator_algorithms.append(algorithm) for algorithm in browse_algorithms()]
+    [generator_algorithm_names.append(algorithm["algorithm"]["name"]) for algorithm in browse_algorithms()]
     try:
         sync_trained_models()
         sync_available_algorithms()

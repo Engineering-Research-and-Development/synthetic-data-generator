@@ -15,7 +15,7 @@ from server.file_utils import (
 )
 from server.middleware_handlers import (
     model_to_middleware,
-    generator_algorithms,
+    generator_algorithm_names,
     server_startup,
 )
 from server.utilities import trim_name
@@ -43,7 +43,7 @@ async def train(request: TrainRequest):
     """
     request = request.model_dump()
     # Check if the algorithm is implemented by the generator
-    if request["model"]["algorithm_name"] not in generator_algorithms:
+    if request["model"]["algorithm_name"] not in generator_algorithm_names:
         return JSONResponse(
             status_code=500,
             content="This algorithm is not implemented by the generator!",
@@ -76,7 +76,7 @@ async def train(request: TrainRequest):
     except KeyError:
         delete_folder(folder_path)
         return JSONResponse(
-            status_code=500, content=str("Algorithm ID not found for trained model")
+            status_code=500, content=str("Impossible to link algorithms to trained model")
         )
 
     couch_doc = create_couch_entry()
