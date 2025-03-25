@@ -18,6 +18,7 @@ generator_algorithms = []
 
 
 def server_startup():
+    logger.info("Server startup")
     create_server_repo_folder_structure()
     [generator_algorithms.append(algorithm) for algorithm in browse_algorithms()]
     try:
@@ -28,11 +29,13 @@ def server_startup():
             f"Unable to connect to the middleware. Running in isolated environment\n {error.strerror}"
         )
         return
+    logger.info("Server startup completed")
 
 
 def model_to_middleware(
     model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str
 ) -> str:
+    logger.info(f"Pushing {model.model_name} to the middleware")
     feature_list = data.parse_data_to_registry()
     training_info = format_training_info(model.training_info.to_dict())
     model_image = save_path
@@ -69,6 +72,7 @@ def model_to_middleware(
         logger.error(
             f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
         )
+    logger.info(f"{model.model_name} saved to middleware")
     return body
 
 
@@ -81,7 +85,7 @@ def sync_trained_models():
     on the server. This is a very naive approach.
 
     """
-
+    logger.info("Syncing trained models")
     remote_trained_models = requests.get(f"{middleware}trained_models/").json()
     local_trained_models = list_trained_models()  # Image Paths
 
@@ -95,6 +99,7 @@ def sync_trained_models():
                 requests.delete(
                     f"{middleware}trained_models/{model_id}/?version_id={version['id']}"
                 )
+                logger.info(f"Deleted {model_id} from remote server")
             else:
                 local_trained_models.remove(version["image_path"])
 
@@ -108,6 +113,7 @@ def sync_trained_models():
             model_payload["training_info"],
             model_payload["version"],
         )
+    logger.info("Sync completed")
 
 
 def sync_available_algorithms():
@@ -121,9 +127,11 @@ def sync_available_algorithms():
             requests.post(url=f"{middleware}datatypes/", json=datatype)
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
             requests.post(f"{middleware}algorithms/", json=algorithm)
+            logger.info(f"Saved {algorithm} to remote server")
         else:
             remote_algorithms.pop(algorithm["algorithm"]["name"])
 
     # Now we delete all the rest of the stuff from the repo
     for key, val in remote_algorithms.items():
         requests.delete(f"{middleware}algorithms/{val['id']}")
+        logger.info(f"Removed {val['id']} to remote server")
