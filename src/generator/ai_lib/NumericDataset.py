@@ -35,9 +35,11 @@ class NumericDataset:
             column_datatype: str
         }]
         :return: a pandas Dataframe where each column is structured as expected
-        :raises: DataException
+        :raises: ValueError if dataset is empty
         """
         data = self.dataset
+        if len(self.dataset) == 0:
+            raise ValueError("Dataset is empty")
         column_names = []
         categorical_columns = []
         numerical_columns = []

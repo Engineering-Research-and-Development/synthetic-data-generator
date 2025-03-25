@@ -1,46 +1,66 @@
 from server.file_utils import (
-    cleanup_temp_dir,
-    get_all_subfolders_ids,
-    create_trained_model_folder,
+    create_folder,
+    delete_folder,
+    check_folder,
+    save_model_payload,
+    retrieve_model_payload,
+    list_trained_models,
     create_server_repo_folder_structure,
     TRAINED_MODELS,
 )
 
 
-def test_create_server_repo_folder_structure(tmp_path):
-    _ = tmp_path / "saved_models" / "trained_models"
+def test_create_server_repo_folder_structure():
+    _ = TRAINED_MODELS / "saved_models" / "trained_models"
     create_server_repo_folder_structure()
     assert TRAINED_MODELS.exists() and TRAINED_MODELS.is_dir()
 
 
-def test_get_all_subfolders_ids(tmp_path):
-    # Create test folders
-    (tmp_path / "folder1").mkdir()
-    (tmp_path / "folder2").mkdir()
-
-    subfolders = get_all_subfolders_ids(str(tmp_path))
-
-    assert len(subfolders) == 2
-    assert any("folder1" in subfolder for _, subfolder in subfolders)
-    assert any("folder2" in subfolder for _, subfolder in subfolders)
+def test_create_folder():
+    folder_id = "test_folder"
+    folder_path = create_folder(folder_id)
+    assert folder_path.exists() and folder_path.is_dir()
 
 
-def test_create_trained_model_folder(tmp_path):
-    src = tmp_path / "src_folder"
-    dest = tmp_path / "dest_folder"
-    src.mkdir()
-    (src / "test_file.txt").write_text("test content")
-
-    create_trained_model_folder(dest, str(src))
-
-    assert dest.exists()
-    assert (dest / "test_file.txt").exists()
+def test_delete_folder():
+    folder_path = TRAINED_MODELS / "test_folder"
+    folder_path.mkdir(exist_ok=True)
+    delete_folder(folder_path)
+    assert not folder_path.exists()
 
 
-def test_cleanup_temp_dir(tmp_path):
-    temp_dir = tmp_path / "temp_to_remove"
-    temp_dir.mkdir()
-    assert temp_dir.exists()
+def test_check_folder():
+    folder_path = TRAINED_MODELS / "test_folder"
+    folder_path.mkdir(exist_ok=True)
+    assert check_folder(folder_path)
+    delete_folder(folder_path)
+    assert not check_folder(folder_path)
 
-    cleanup_temp_dir(temp_dir)
-    assert not temp_dir.exists()
+
+def test_save_model_payload():
+    folder_path = TRAINED_MODELS / "test_folder"
+    folder_path.mkdir(exist_ok=True)
+    model_payload = '{"key": "value"}'
+    save_model_payload(folder_path, model_payload)
+    payload_path = folder_path / "model_payload.json"
+    assert payload_path.exists()
+    with open(payload_path, "r") as f:
+        assert f.read() == model_payload
+
+
+def test_retrieve_model_payload():
+    folder_path = TRAINED_MODELS / "test_folder"
+    folder_path.mkdir(exist_ok=True)
+    payload_path = folder_path / "model_payload.json"
+    with open(payload_path, "w") as f:
+        f.write('{"key": "value"}')
+    retrieved_path = retrieve_model_payload(folder_path)
+    assert retrieved_path == payload_path
+
+
+def test_list_trained_models():
+    model_name = "test_model"
+    model_path = TRAINED_MODELS / model_name
+    model_path.mkdir(exist_ok=True)
+    models = list_trained_models()
+    assert model_name in models

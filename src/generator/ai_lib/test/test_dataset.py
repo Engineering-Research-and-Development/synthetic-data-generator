@@ -119,3 +119,9 @@ def test_get_data(correct_dataset):
     assert columns == ["A", "B", "C", "D"]
     assert continuous_columns == ["A", "C"]
     assert categorical_columns == ["B"]
+
+
+def test_empty_dataset(empty_dataset):
+    with pytest.raises(ValueError) as exception_info:
+        _ = NumericDataset(empty_dataset)
+    assert exception_info.type is ValueError

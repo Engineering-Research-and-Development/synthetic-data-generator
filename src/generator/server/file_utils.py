@@ -1,25 +1,10 @@
 import os
+import shutil
 from pathlib import Path
-from shutil import copytree, rmtree
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 TRAINED_MODELS = Path(APP_FOLDER) / "saved_models" / "trained_models"
-
-
-def cleanup_temp_dir(tmp_path):
-    rmtree(tmp_path)
-
-
-def get_all_subfolders_ids(folder_path: str) -> list:
-    keys = []
-    folders = os.walk(folder_path)
-    for folder, _, _ in list(folders)[1:]:
-        keys.append((folder, folder[folder.rfind("\\") + 1 :]))
-    return keys
-
-
-def create_trained_model_folder(dest: Path, tmp_path: str):
-    copytree(tmp_path, dest)
+MODEL_PAYLOAD_NAME = "model_payload.json"
 
 
 def create_server_repo_folder_structure() -> None:
@@ -31,3 +16,36 @@ def create_server_repo_folder_structure() -> None:
       - trained_models/
     """
     TRAINED_MODELS.mkdir(parents=True, exist_ok=True)
+
+
+def create_folder(folder_id: str):
+    folder_path = TRAINED_MODELS / folder_id
+    folder_path.mkdir(parents=True, exist_ok=True)
+    return folder_path
+
+
+def delete_folder(folder_path: Path | str):
+    if type(folder_path) is str:
+        folder_path = Path(folder_path)
+    shutil.rmtree(folder_path)
+
+
+def check_folder(folder_path: Path | str):
+    if type(folder_path) is str:
+        folder_path = Path(folder_path)
+    return folder_path.exists()
+
+
+def list_trained_models():
+    return os.listdir(TRAINED_MODELS)
+
+
+def save_model_payload(folder_path: Path, model_payload: str):
+    with open(folder_path / MODEL_PAYLOAD_NAME, "w") as f:
+        f.write(model_payload)
+
+
+def retrieve_model_payload(base_path: Path | str) -> Path:
+    if type(base_path) is str:
+        base_path = Path(base_path)
+    return base_path / MODEL_PAYLOAD_NAME

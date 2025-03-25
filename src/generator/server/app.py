@@ -1,8 +1,5 @@
-import os
-import tempfile
 from contextlib import asynccontextmanager
 from datetime import datetime
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -11,9 +8,10 @@ from starlette.responses import RedirectResponse
 from ai_lib.job import job
 from server.couch_handlers import create_couch_entry, add_couch_data
 from server.file_utils import (
-    create_trained_model_folder,
-    cleanup_temp_dir,
-    TRAINED_MODELS,
+    create_folder,
+    delete_folder,
+    check_folder,
+    save_model_payload,
 )
 from server.middleware_handlers import (
     model_to_middleware,
@@ -27,10 +25,6 @@ from server.validation_schema import InferRequestData, TrainRequest, CouchEntry
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     server_startup()
-    # if is_couch_online():
-    #     check_couch_model_registry()
-    # else:
-    #     raise ConnectionError("Could not reach couch db for server init. Is couch db online?")
     yield
 
 
@@ -61,26 +55,30 @@ async def train(request: TrainRequest):
         + trim_name(request["model"]["algorithm_name"])
         + datetime.now().strftime("%Y%m%d.%H%M%S")
     )
-    folder_path = TRAINED_MODELS / folder_id
-    # Here we create a temp directory
-    with tempfile.TemporaryDirectory(
-        dir=os.path.dirname(os.path.abspath(__file__))
-    ) as tmp_dir:
-        try:
-            results, metrics, model, data = job(
-                model_info=request["model"],
-                dataset=request["dataset"],
-                n_rows=request["n_rows"],
-                save_filepath=tmp_dir,
-                train=True,
-            )
-        except Exception as e:
-            cleanup_temp_dir(tmp_dir)
-            return JSONResponse(status_code=500, content=str(e))
-        create_trained_model_folder(folder_path, tmp_dir)
-    dataset_name = "A name passed"
-    # We invoke the model registry saving the model
-    _ = model_to_middleware(model, data, dataset_name, folder_path.as_posix())
+
+    folder_path = create_folder(folder_id)
+    try:
+        results, metrics, model, data = job(
+            model_info=request["model"],
+            dataset=request["dataset"],
+            n_rows=request["n_rows"],
+            save_filepath=folder_path,
+            train=True,
+        )
+    except (ValueError, TypeError) as e:
+        delete_folder(folder_path)
+        return JSONResponse(status_code=500, content=str(e))
+
+    # We invoke the model registry saving the model, if failing delete trained model
+    try:
+        model_payload = model_to_middleware(model, data, "dataset_name", folder_path)
+        save_model_payload(folder_path, model_payload)
+    except KeyError:
+        delete_folder(folder_path)
+        return JSONResponse(
+            status_code=500, content=str("Algorithm ID not found for trained model")
+        )
+
     couch_doc = create_couch_entry()
     add_couch_data(
         couch_doc,
@@ -90,7 +88,7 @@ async def train(request: TrainRequest):
             "data": data.parse_tabular_data_json(),
         },
     )
-    return CouchEntry(doc_id=couch_doc, model_path=folder_path.as_posix())
+    return CouchEntry(doc_id=couch_doc)
 
 
 @generator.post(
@@ -105,7 +103,7 @@ async def infer_data(request: InferRequestData):
     """
     request = request.model_dump()
     couch_doc = create_couch_entry()
-    if not os.path.isdir(Path(request["model"]["image"])):
+    if not check_folder(request["model"]["image"]):
         return JSONResponse(status_code=500, content="This model has not been found!")
     # In this case since train is false the model will be loaded
     results, metrics, model, data = job(
@@ -118,7 +116,7 @@ async def infer_data(request: InferRequestData):
 
     add_couch_data(doc_id=couch_doc, new_data={"results": results, "metrics": metrics})
     # Since the model has been only used (no training/fine-tuning) no further saving is required
-    return CouchEntry(doc_id=couch_doc, model_path=request["model"]["image"])
+    return CouchEntry(doc_id=couch_doc)
 
 
 @generator.get("/", include_in_schema=False)

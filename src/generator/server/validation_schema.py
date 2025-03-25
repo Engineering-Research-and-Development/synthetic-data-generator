@@ -62,4 +62,3 @@ class GeneratedResponse(BaseModel):
 
 class CouchEntry(BaseModel):
     doc_id: str
-    model_path: str

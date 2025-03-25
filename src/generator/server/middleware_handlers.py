@@ -1,7 +1,5 @@
 import json
 import os
-from pathlib import Path
-from shutil import rmtree
 from loguru import logger
 import requests
 from requests.exceptions import ConnectionError
@@ -9,9 +7,9 @@ from ai_lib.NumericDataset import NumericDataset
 from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from server.file_utils import (
-    get_all_subfolders_ids,
-    TRAINED_MODELS,
     create_server_repo_folder_structure,
+    list_trained_models,
+    retrieve_model_payload,
 )
 from server.utilities import format_training_info
 
@@ -34,7 +32,7 @@ def server_startup():
 
 def model_to_middleware(
     model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str
-) -> str | None:
+) -> str:
     feature_list = data.parse_data_to_registry()
     training_info = format_training_info(model.training_info.to_dict())
     model_image = save_path
@@ -47,9 +45,6 @@ def model_to_middleware(
     response = requests.get(
         f"{middleware}algorithms/name/{model.self_describe().get('name', None)}"
     )
-    # This edge case should not be happening since the existence of the algorithm is checked before this function
-    if response.status_code != 200:
-        raise SystemError
     algorithm_id = response.json()["id"]
     trained_model_misc = {
         "name": model.model_name,
@@ -69,31 +64,50 @@ def model_to_middleware(
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
     response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
-    while response.status_code == 404:
-        to_add = response.json()['datatype']
-        datatype_response = requests.post(url=f"{middleware}datatypes/", json=to_add)
-        if datatype_response != 201:
-            logger.error("Error in creating the datatype", to_add," during model save for"
-                                                                  " model",model_to_save)
-            return None
-        response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
 
     if response.status_code != 201:
         logger.error(
             f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
         )
-        return None
-    return str(response.json()["id"])
+    return body
 
 
 def sync_trained_models():
-    response = requests.get(f"{middleware}trained_models/image-paths/")
+    """
+    Syncs the trained models from the middleware to the local server.
 
-    remote_data = response.json()
-    for path, trained_id in get_all_subfolders_ids(TRAINED_MODELS):
-        # Into posix so that we search it
-        if remote_data.get(Path(path).as_posix()) is None:
-            rmtree(path)
+    This is a very basic sync, it will delete all the models on the server that are not present
+    in the middleware. Then it will create all the models on the middleware that are not present
+    on the server. This is a very naive approach.
+
+    """
+
+    remote_trained_models = requests.get(f"{middleware}trained_models/").json()
+    local_trained_models = list_trained_models()  # Image Paths
+
+    for remote_trained_model in remote_trained_models:
+        model_id = remote_trained_model["id"]
+        model_payload = requests.get(
+            f"{middleware}trained_models/{model_id}?include_versions=true"
+        ).json()
+        for version in model_payload["versions"]:
+            if version["image_path"] not in local_trained_models:
+                requests.delete(
+                    f"{middleware}trained_models/{model_id}/?version_id={version['id']}"
+                )
+            else:
+                local_trained_models.remove(version["image_path"])
+
+    for local_trained_model in local_trained_models:
+        local_payload_filepath = retrieve_model_payload(local_trained_model)
+        with open(local_payload_filepath, "r") as f:
+            model_payload = json.load(f)
+        model_to_middleware(
+            model_payload["trained_model"],
+            model_payload["feature_schema"],
+            model_payload["training_info"],
+            model_payload["version"],
+        )
 
 
 def sync_available_algorithms():
@@ -102,20 +116,11 @@ def sync_available_algorithms():
     )
 
     remote_algorithms = response.json()
-    for algorithm in generator_algorithms:
+    for algorithm in browse_algorithms():
+        for datatype in algorithm["allowed_data"]:
+            requests.post(url=f"{middleware}datatypes/", json=datatype)
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
-            response = requests.post(f"{middleware}algorithms/", json=algorithm)
-            # This is the case a datatype is not present
-            while response.status_code == 404:
-                to_add = response.json()['datatype']
-                datatype_response = requests.post(url=f"{middleware}datatypes/", json=to_add)
-                if datatype_response != 201:
-                    logger.error("Error in creating the datatype", to_add," during algorithms sync for"
-                                                                          " algorithm",algorithm)
-                    return
-                response = requests.post(f"{middleware}algorithms/", json=algorithm)
-
-
+            requests.post(f"{middleware}algorithms/", json=algorithm)
         else:
             remote_algorithms.pop(algorithm["algorithm"]["name"])
 

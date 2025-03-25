@@ -27,9 +27,6 @@ def job(
 
     if len(dataset) == 0:
         data_info = model_info.get("training_data_info", [])
-        if len(data_info) == 0:
-            pass
-            # raise ModelException("It is not possible to infer column names from model")
         data = NumericDataset(dataset=data_info)
     else:
         data = NumericDataset(dataset=dataset)
