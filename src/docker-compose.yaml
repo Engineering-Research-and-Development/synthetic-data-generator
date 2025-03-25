@@ -54,6 +54,7 @@ services:
       db_name: "postgres"
       db_password: "postgres"
       db_username: "postgres"
+      generator_url: "http://generator:8010"
       INIT_DB: "True"
       allowed_origins: '*'
 

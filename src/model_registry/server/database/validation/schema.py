@@ -52,7 +52,7 @@ class AlgorithmDataType(BaseModel):
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
         " start or end with spaces or are empty",
-        examples=["The name of analgorithm"],
+        examples=["The name of algorithm"],
     )
     data_type: str = Field(
         pattern="^[^ ](.*[^ ])?$",
