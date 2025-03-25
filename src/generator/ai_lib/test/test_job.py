@@ -84,7 +84,7 @@ def test_infer_nodata_wrong(setup):
             save_filepath=save_filepath,
             train=False,
         )
-    assert isinstance(exception_info.type, ValueError)
+    assert exception_info.type is ValueError
 
 
 def test_infer_nodata(setup, teardown):
