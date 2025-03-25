@@ -1,7 +1,7 @@
 from database.schema import (
     Algorithm,
     DataType,
-    AllowedDataType,
+    AlgorithmDataType,
     TrainedModel,
     Features,
     TrainingInfo,
@@ -31,7 +31,7 @@ def insert_data():
 
     # Insert AllowedDataType
     _ = [
-        AllowedDataType.create(
+        AlgorithmDataType.create(
             algorithm_id=systems[i], datatype=data_types[(i + 1) % 5]
         )
         for i in range(5)

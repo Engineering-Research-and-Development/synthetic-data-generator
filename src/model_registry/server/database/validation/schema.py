@@ -46,7 +46,7 @@ class CreateDataType(BaseModel):
     is_categorical: bool
 
 
-class AllowedDataType(BaseModel):
+class AlgorithmDataType(BaseModel):
     id: PositiveInt
     algorithm_name: str = Field(
         pattern="^[^ ](.*[^ ])?$",

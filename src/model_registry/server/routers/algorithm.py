@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
-from database.schema import DataType, AllowedDataType, db, Algorithm
+from database.schema import DataType, AlgorithmDataType, db, Algorithm
 from database.validation.schema import (
     CreateAlgorithm,
     Algorithm as PydanticAlgorithm,
@@ -60,7 +60,7 @@ async def add_algorithm_and_datatype(
                     },
                 )
             try:
-                AllowedDataType.insert(
+                AlgorithmDataType.insert(
                     datatype=datatype.id, algorithm_id=saved_algo.id
                 ).execute()
             except IntegrityError:
@@ -115,7 +115,7 @@ async def get_all_algorithms(
                     )
                 ).alias("allowed_data"),
             )
-            .join(AllowedDataType, JOIN.LEFT_OUTER)
+            .join(AlgorithmDataType, JOIN.LEFT_OUTER)
             .join(DataType, JOIN.LEFT_OUTER)
             .group_by(Algorithm.id)
         )
@@ -168,7 +168,7 @@ async def get_algorithm_by_id(
                             )
                         ).alias("allowed_data"),
                     )
-                    .join(AllowedDataType, JOIN.LEFT_OUTER)
+                    .join(AlgorithmDataType, JOIN.LEFT_OUTER)
                     .join(DataType, JOIN.LEFT_OUTER)
                     .where(Algorithm.id == algorithm_id)
                     .group_by(Algorithm.id)
@@ -223,7 +223,7 @@ async def get_algorithm_by_name(
                             )
                         ).alias("allowed_data"),
                     )
-                    .join(AllowedDataType, JOIN.LEFT_OUTER)
+                    .join(AlgorithmDataType, JOIN.LEFT_OUTER)
                     .join(DataType, JOIN.LEFT_OUTER)
                     .where(Algorithm.name == algorithm_name)
                     .group_by(Algorithm.id)

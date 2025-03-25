@@ -11,7 +11,7 @@ from starlette.responses import RedirectResponse
 from database.schema import (
     Algorithm,
     DataType,
-    AllowedDataType,
+    AlgorithmDataType,
     TrainedModel,
     Features,
     TrainingInfo,
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
         [
             Algorithm,
             DataType,
-            AllowedDataType,
+            AlgorithmDataType,
             TrainedModel,
             Features,
             TrainingInfo,

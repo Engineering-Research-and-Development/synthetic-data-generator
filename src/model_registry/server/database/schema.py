@@ -42,8 +42,11 @@ class DataType(BaseModelPeewee):
     type = CharField()
     is_categorical = BooleanField()
 
+    class Meta:
+        constraints  = [SQL('UNIQUE("type", "is_categorical")')]
 
-class AllowedDataType(BaseModelPeewee):
+
+class AlgorithmDataType(BaseModelPeewee):
     id = AutoField()
     algorithm_id = ForeignKeyField(
         Algorithm, backref="allowed_data_types", on_delete="CASCADE"
