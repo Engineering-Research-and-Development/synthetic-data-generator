@@ -256,7 +256,7 @@ async def create_model_and_version(
                             "datatype": feature.datatype,
                             "is_categorical": feature.is_categorical,
                         },
-                    }
+                    },
                 )
             try:
                 Features.insert(
