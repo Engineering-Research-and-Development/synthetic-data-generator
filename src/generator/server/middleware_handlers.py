@@ -70,13 +70,19 @@ def model_to_middleware(
     body = json.dumps(model_to_save)
     response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
     while response.status_code == 404:
-        to_add = response.json()['datatype']
+        to_add = response.json()["datatype"]
         datatype_response = requests.post(url=f"{middleware}datatypes/", json=to_add)
         if datatype_response != 201:
-            logger.error("Error in creating the datatype", to_add," during model save for"
-                                                                  " model",model_to_save)
+            logger.error(
+                "Error in creating the datatype",
+                to_add,
+                " during model save for" " model",
+                model_to_save,
+            )
             return None
-        response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
+        response = requests.post(
+            f"{middleware}trained_models/", headers=headers, data=body
+        )
 
     if response.status_code != 201:
         logger.error(
@@ -107,14 +113,19 @@ def sync_available_algorithms():
             response = requests.post(f"{middleware}algorithms/", json=algorithm)
             # This is the case a datatype is not present
             while response.status_code == 404:
-                to_add = response.json()['datatype']
-                datatype_response = requests.post(url=f"{middleware}datatypes/", json=to_add)
+                to_add = response.json()["datatype"]
+                datatype_response = requests.post(
+                    url=f"{middleware}datatypes/", json=to_add
+                )
                 if datatype_response != 201:
-                    logger.error("Error in creating the datatype", to_add," during algorithms sync for"
-                                                                          " algorithm",algorithm)
+                    logger.error(
+                        "Error in creating the datatype",
+                        to_add,
+                        " during algorithms sync for" " algorithm",
+                        algorithm,
+                    )
                     return
                 response = requests.post(f"{middleware}algorithms/", json=algorithm)
-
 
         else:
             remote_algorithms.pop(algorithm["algorithm"]["name"])
