@@ -36,7 +36,6 @@ def model_to_middleware(
     model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str
 ) -> str | None:
     feature_list = data.parse_data_to_registry()
-    create_datatypes_if_not_present(feature_list)
     training_info = format_training_info(model.training_info.to_dict())
     model_image = save_path
     model_version = "v0"
@@ -70,31 +69,21 @@ def model_to_middleware(
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
     response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
+    while response.status_code == 404:
+        to_add = response.json()['datatype']
+        datatype_response = requests.post(url=f"{middleware}datatypes/", json=to_add)
+        if datatype_response != 201:
+            logger.error("Error in creating the datatype", to_add," during model save for"
+                                                                  " model",model_to_save)
+            return None
+        response = requests.post(f"{middleware}trained_models/", headers=headers, data=body)
+
     if response.status_code != 201:
         logger.error(
             f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
         )
         return None
     return str(response.json()["id"])
-
-
-def create_datatypes_if_not_present(feature_list: list[dict]):
-    response = requests.get(f"{middleware}datatypes/?index_by_id=true")
-
-    if response.status_code != 200:
-        logger.error(
-            f"Could not reach model repo for datatypes validation\n"
-            f"{response.status_code}:{response.content}"
-        )
-    remote_dt = response.json()
-    for feature in feature_list:
-        # This means the datatype is not present, so in order to use this algo we must create it
-        if remote_dt.get(feature["datatype"]) is None:
-            payload = {
-                "datatype": feature["datatype"],
-                "is_categorical": feature["is_categorical"],
-            }
-            requests.post(url=f"{middleware}datatypes/", json=payload)
 
 
 def sync_trained_models():
@@ -115,24 +104,21 @@ def sync_available_algorithms():
     remote_algorithms = response.json()
     for algorithm in generator_algorithms:
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
-            check_algorithm_datatypes(algorithm["allowed_data"])
-            requests.post(f"{middleware}algorithms/", json=algorithm)
+            response = requests.post(f"{middleware}algorithms/", json=algorithm)
+            # This is the case a datatype is not present
+            while response.status_code == 404:
+                to_add = response.json()['datatype']
+                datatype_response = requests.post(url=f"{middleware}datatypes/", json=to_add)
+                if datatype_response != 201:
+                    logger.error("Error in creating the datatype", to_add," during algorithms sync for"
+                                                                          " algorithm",algorithm)
+                    return
+                response = requests.post(f"{middleware}algorithms/", json=algorithm)
+
+
         else:
             remote_algorithms.pop(algorithm["algorithm"]["name"])
 
     # Now we delete all the rest of the stuff from the repo
     for key, val in remote_algorithms.items():
         requests.delete(f"{middleware}algorithms/{val['id']}")
-
-
-def check_algorithm_datatypes(datatypes: list[dict[str, str | bool]]):
-    response = requests.get(f"{middleware}datatypes/?index_by_id=true")
-    remote_dt = response.json()
-    for datatype in datatypes:
-        # This means the datatype is not present, so in order to use this algo we must create it
-        if remote_dt.get(datatype["data_type"]) is None:
-            payload = {
-                "datatype": datatype["data_type"],
-                "is_categorical": datatype["is_categorical"],
-            }
-            requests.post(url=f"{middleware}datatypes/", json=payload)
