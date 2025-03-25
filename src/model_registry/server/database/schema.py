@@ -43,7 +43,7 @@ class DataType(BaseModelPeewee):
     is_categorical = BooleanField()
 
     class Meta:
-        constraints  = [SQL('UNIQUE("type", "is_categorical")')]
+        constraints = [SQL('UNIQUE("type", "is_categorical")')]
 
 
 class AlgorithmDataType(BaseModelPeewee):
