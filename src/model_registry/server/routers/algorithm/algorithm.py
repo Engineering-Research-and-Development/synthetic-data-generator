@@ -52,7 +52,7 @@ async def get_all_algorithms():
     responses={404: {"model": str}}
 )
 async def get_algorithm_by_id(
-    algorithm_id: AlgorithmId
+    algorithm_id: int
 ):
     """
     Given an id, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
@@ -69,7 +69,7 @@ async def get_algorithm_by_id(
     summary="It deletes an algorithm given the id and his allowed datatypes and trained models",
     responses={404: {"model": str}},
 )
-async def delete_algorithm(algorithm_id: AlgorithmId):
+async def delete_algorithm(algorithm_id: int):
     """
     Given an id, this method deletes an algorithm and all the allowed datatypes as well as trained models, training info
     and feature schema
