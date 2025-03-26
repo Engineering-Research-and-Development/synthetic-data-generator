@@ -7,7 +7,7 @@ from ..conftest import server, port
 
 endpoint = "/datatypes"
 
-test_datatype = {"datatype": "TestDatatype", "is_categorical": "false"}
+test_datatype = {"type": "TestDatatype", "is_categorical": "false"}
 
 
 def test_get_all_datatypes():
