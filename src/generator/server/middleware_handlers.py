@@ -135,8 +135,10 @@ def sync_available_algorithms():
         for datatype in algorithm["allowed_data"]:
             requests.post(url=f"{middleware}datatypes/", json=datatype)
         if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
-            requests.post(f"{middleware}algorithms/", json=algorithm)
-            logger.info(f"Saved {algorithm} to remote server")
+            r = requests.post(f"{middleware}algorithms/", json=algorithm)
+            logger.debug(r.json())
+            if r.status_code == 201:
+                logger.info(f"Saved {algorithm} to remote server")
         else:
             remote_algorithms.pop(algorithm["algorithm"]["name"])
 
