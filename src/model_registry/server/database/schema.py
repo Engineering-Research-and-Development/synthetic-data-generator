@@ -46,10 +46,10 @@ class DataType(BaseModelPeewee):
 
 class AlgorithmDataType(BaseModelPeewee):
     id = AutoField()
-    algorithm_id = ForeignKeyField(
+    algorithm = ForeignKeyField(
         Algorithm, backref="allowed_data_types", on_delete="CASCADE"
     )
-    datatype_id = ForeignKeyField(DataType, backref="allowed_data_types")
+    datatype = ForeignKeyField(DataType, backref="allowed_data_types")
 
 
 class TrainedModel(BaseModelPeewee):
@@ -58,7 +58,7 @@ class TrainedModel(BaseModelPeewee):
     dataset_name = CharField()
     size = CharField()
     input_shape = CharField()
-    algorithm_id = ForeignKeyField(
+    algorithm = ForeignKeyField(
         Algorithm, backref="trained_models", on_delete="CASCADE"
     )
 
@@ -67,8 +67,8 @@ class TrainModelDatatype(BaseModelPeewee):
     id = AutoField()
     feature_name = CharField()
     feature_position = IntegerField()
-    datatype_id = ForeignKeyField(DataType, backref="features")
-    trained_model_id = ForeignKeyField(
+    datatype = ForeignKeyField(DataType, backref="features")
+    trained_model = ForeignKeyField(
         TrainedModel, backref="features", on_delete="CASCADE"
     )
 
@@ -82,7 +82,7 @@ class ModelVersion(BaseModelPeewee):
     val_loss = DoubleField()
     train_samples = IntegerField()
     val_samples = IntegerField()
-    trained_model_id = ForeignKeyField(
+    trained_model = ForeignKeyField(
         TrainedModel, backref="model_versions", on_delete="CASCADE"
     )
 
