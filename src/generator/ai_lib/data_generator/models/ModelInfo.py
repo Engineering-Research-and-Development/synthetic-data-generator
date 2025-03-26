@@ -27,7 +27,7 @@ class ModelInfo:
         :return: dict containing the model's information
         """
         allowed_data = [
-            {"datatype": ad.dtype, "is_categorical": ad.is_categorical}
+            {"type": ad.dtype, "is_categorical": ad.is_categorical}
             for ad in self.allowed_data
         ]
         system_model_info = {

@@ -78,9 +78,9 @@ def test_self_description(model_data_no_load):
         == "A Variational Autoencoder for data generation"
     )
     assert self_description["allowed_data"] == [
-        {"datatype": "float32", "is_categorical": False},
-        {"datatype": "int32", "is_categorical": False},
-        {"datatype": "int64", "is_categorical": False},
+        {"type": "float32", "is_categorical": False},
+        {"type": "int32", "is_categorical": False},
+        {"type": "int64", "is_categorical": False},
     ]
 
 
