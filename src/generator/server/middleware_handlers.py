@@ -52,7 +52,7 @@ def model_to_middleware(
     }  # Version management as described above
     # Getting the algorithm id
     response = requests.get(
-        f"{middleware}algorithms/name/{model.self_describe().get('name', None)}"
+        f"{middleware}algorithms/name/{model.self_describe().get('algorithm').get('name')}"
     )
     algorithm_id = response.json()["id"]
     trained_model_misc = {
