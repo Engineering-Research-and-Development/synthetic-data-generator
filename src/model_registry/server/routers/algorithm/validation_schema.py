@@ -10,6 +10,6 @@ class AlgorithmDatatype(BaseModel):
     algorithm: Algorithm
     datatype: List[DataType]
 
-class AlgorithmDelete(BaseModel):
+class AlgorithmId(BaseModel):
     algorithm_id: PositiveInt
 

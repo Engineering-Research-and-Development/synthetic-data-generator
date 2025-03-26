@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
-from database.schema import DataType, AlgorithmDataType, Algorithm
 from database.validation_schema import (
     Algorithm
 )
-from routers.algorithm.validation_schema import AlgorithmList
+from routers.algorithm.validation_schema import AlgorithmList, AlgorithmId
+from routers.algorithm.validation_schema import AlgorithmDatatype
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
 
@@ -18,8 +18,8 @@ router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
     summary="It creates an algorith given the all the information and allowed datatypes",
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
 )
-async def add_algorithm_and_datatype(
-    algorithm: Algorithm, allowed_data: list[DataType]
+async def create_new_algorithm(
+    payload: AlgorithmDatatype
 ):
     """
     This method lets the user add a new algorithm to the model registry. An algorithm name must be ***unique*** (error 400
@@ -52,7 +52,7 @@ async def get_all_algorithms():
     responses={404: {"model": str}}
 )
 async def get_algorithm_by_id(
-    algorithm_id: int
+    algorithm_id: AlgorithmId
 ):
     """
     Given an id, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
@@ -69,7 +69,7 @@ async def get_algorithm_by_id(
     summary="It deletes an algorithm given the id and his allowed datatypes and trained models",
     responses={404: {"model": str}},
 )
-async def delete_algorithm(algorithm_id: int):
+async def delete_algorithm(algorithm_id: AlgorithmId):
     """
     Given an id, this method deletes an algorithm and all the allowed datatypes as well as trained models, training info
     and feature schema
