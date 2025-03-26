@@ -42,7 +42,7 @@ class DataType(BaseModel):
 
 
 class CreateDataType(BaseModel):
-    datatype: str
+    type: str
     is_categorical: bool
 
 

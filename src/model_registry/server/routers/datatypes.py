@@ -54,20 +54,29 @@ async def get_single_datatype(
 
 @router.post(
     "/",
-    status_code=201,
     name="Create a datatype",
     summary="Given the data it creates a datatype that can be used across the registry",
+    responses={200: {"model": str}, 201: {"model": str}},
 )
 def create_datatype(datatype: CreateDataType):
     """
     This method given the information of a datatype it creates it.
     """
-    # This is done so that I don't break the db schema
     datatype = datatype.model_dump()
-    datatype.update({"type": datatype["datatype"]})
-    datatype.pop("datatype")
-    dt = DataType.create(**datatype)
-    return JSONResponse(
-        status_code=201,
-        content={"message": "Created a datatype with the following id", "id": dt.id},
-    )
+    dt, created = DataType.get_or_create(**datatype)
+    if created:
+        return JSONResponse(
+            status_code=201,
+            content={
+                "message": "Created a datatype with the following id",
+                "id": dt.id,
+            },
+        )
+    else:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Datatype already in the database with the following id",
+                "id": dt.id,
+            },
+        )
