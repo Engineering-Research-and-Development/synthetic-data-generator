@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import BaseModel, PositiveInt
-from server.database.validation_schema import Algorithm, DataType
+from database.validation_schema import Algorithm, DataType
 
 
 class AlgorithmList(BaseModel):

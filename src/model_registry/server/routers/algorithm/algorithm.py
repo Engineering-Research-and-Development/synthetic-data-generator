@@ -2,8 +2,8 @@ from fastapi import APIRouter
 from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
-from server.database.schema import DataType, AlgorithmDataType, Algorithm
-from server.database.validation_schema import (
+from database.schema import DataType, AlgorithmDataType, Algorithm
+from database.validation_schema import (
     Algorithm
 )
 from server.routers.algorithm.validation_schema import AlgorithmList
