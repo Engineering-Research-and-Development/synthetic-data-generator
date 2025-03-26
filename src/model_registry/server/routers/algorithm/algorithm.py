@@ -6,7 +6,7 @@ from database.schema import DataType, AlgorithmDataType, Algorithm
 from database.validation_schema import (
     Algorithm
 )
-from server.routers.algorithm.validation_schema import AlgorithmList
+from routers.algorithm.validation_schema import AlgorithmList
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
 
