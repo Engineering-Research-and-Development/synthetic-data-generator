@@ -10,7 +10,7 @@ from .handlers import (
     check_ai_model,
     check_features_created_types,
 )
-from .schema import UserDataInput, GeneratorDataOutput
+from .validation_schema import UserDataInput, GeneratorDataOutput
 
 router = APIRouter(prefix="/sdg_input", tags=["SDG Input"])
 

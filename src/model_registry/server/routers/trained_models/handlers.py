@@ -1,6 +1,6 @@
 from peewee import fn, JOIN
 
-from ..schema import (
+from database.schema import (
     TrainedModel,
     TrainingInfo,
     ModelVersion,
@@ -8,7 +8,7 @@ from ..schema import (
     DataType,
     Algorithm,
 )
-from ..validation.schema import (
+from database.validation_schema import (
     TrainedModelAndVersionIds,
     TrainedModelAndVersions as PydanticTrainedModelAndVersions,
     ModelVersionAndTrainInfo,

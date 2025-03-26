@@ -9,7 +9,7 @@ from database.schema import (
     ModelVersion,
     Parameter,
 )
-from .schema import DatasetOutput, SupportedDatatypes, ModelOutput
+from .validation_schema import DatasetOutput, SupportedDatatypes, ModelOutput
 
 
 def check_function_parameters(functions: list[dict]) -> list:

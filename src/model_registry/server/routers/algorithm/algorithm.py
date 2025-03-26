@@ -3,7 +3,7 @@ from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
 from database.schema import DataType, AlgorithmDataType, db, Algorithm
-from database.validation.schema import (
+from database.validation_schema import (
     Algorithm,
     Algorithm as PydanticAlgorithm,
 )

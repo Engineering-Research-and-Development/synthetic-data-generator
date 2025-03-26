@@ -116,6 +116,3 @@ class FunctionParameter(BaseModel):
     parameter: int
 
 
-class FunctionParameterOut(BaseModel):
-    function: Function
-    parameter: list[Parameter]
