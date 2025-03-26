@@ -21,7 +21,6 @@ from database.schema import (
     FunctionParameter,
 )
 from dummy_data_generator import insert_data
-from routers.datatypes import datatypes
 from routers.trained_models import trained_models
 from routers.functions import functions
 from routers.algorithm import algorithm
@@ -73,7 +72,6 @@ app.add_middleware(
     allow_headers=allow_headers,
 )
 
-app.include_router(datatypes.router)
 app.include_router(user_data.router)
 app.include_router(functions.router)
 app.include_router(algorithm.router)

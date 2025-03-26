@@ -3,7 +3,7 @@ from fastapi import APIRouter, Path
 from starlette.responses import JSONResponse
 
 from database.schema import Parameter, Function, FunctionParameter
-from validation_schema import FunctionParameterOut
+from .validation_schema import FunctionParameterOut
 
 router = APIRouter(prefix="/functions", tags=["Functions"])
 

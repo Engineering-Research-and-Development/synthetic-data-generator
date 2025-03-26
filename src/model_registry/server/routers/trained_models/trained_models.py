@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Path
 
+from database.schema import TrainedModel
+
 router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
 
 
@@ -9,17 +11,14 @@ router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
     summary="Get all the trained model in the repository",
     name="Get all trained models",
 )
-async def get_all_trained_models(
-    include_version_ids: bool = False,
-    index_by_id: bool = False,
-):
+async def get_all_trained_models():
     """
     This method returns all the trained models present in the registry, if the query parameter
     `include_versions_ids` = ***True*** then for each model it is returned a list having all the ids of the versions
     that it has. The query parameter `index_by_id` (default ***False***) if set to ***True*** will return all the
     trained models in registry as a dictionary keyed by each trained model key.
     """
-    pass
+    models = TrainedModel.select()
 
 @router.get(
     "/{model_id}",
@@ -29,7 +28,7 @@ async def get_all_trained_models(
     responses={404: {"model": str}},
 )
 async def get_trained_model_id(
-    trained_model_id: int = Path(
+    model_id: int = Path(
         description="The id of the trained model you want to get", examples=[1]
     ),
     include_versions: bool = False,
