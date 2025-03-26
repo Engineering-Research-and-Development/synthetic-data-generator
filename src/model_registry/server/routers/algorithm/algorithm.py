@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
-from database.validation_schema import (
-    Algorithm
+from database.schema import (
+    Algorithm, DataType, AlgorithmDataType
 )
-from routers.algorithm.validation_schema import AlgorithmList, AlgorithmId
-from routers.algorithm.validation_schema import AlgorithmDatatype
+from routers.algorithm.validation_schema import AlgorithmList
+from routers.algorithm.validation_schema import AlgorithmDatatype as PydanticAlgorithmDataType
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
 )
 async def create_new_algorithm(
-    payload: AlgorithmDatatype
+    payload: PydanticAlgorithmDataType
 ):
     """
     This method lets the user add a new algorithm to the model registry. An algorithm name must be ***unique*** (error 400
@@ -40,7 +40,7 @@ async def get_all_algorithms():
     This method returns all the algorithms that are present in the model registry.
     """
     algorithms = Algorithm.select().dicts()
-    return AlgorithmList(algorithms=algorithms)
+    return AlgorithmList(algorithms=list(algorithms))
 
 
 
@@ -49,7 +49,8 @@ async def get_all_algorithms():
     status_code=200,
     name="Get algorithm by id",
     summary="It returns an algorithm given the id",
-    responses={404: {"model": str}}
+    responses={404: {"model": str}},
+    response_model=PydanticAlgorithmDataType
 )
 async def get_algorithm_by_id(
     algorithm_id: int
@@ -58,8 +59,9 @@ async def get_algorithm_by_id(
     Given an id, this method returns a specific algorithm. The query parameter `include_allowed_datatypes` (default ***False***)
     dictates if the method must return the associated allowed datatypes of the request algorithm
     """
-    pass
-
+    algorithm = Algorithm.select().where(Algorithm.id == algorithm_id).dicts()
+    all_dtypes = [AlgorithmDataType.select(DataType).join(DataType).where(AlgorithmDataType.algorithm_id == algorithm_id).dicts()]
+    return PydanticAlgorithmDataType(algorithm=algorithm.get(), datatypes=all_dtypes)
 
 
 @router.delete(

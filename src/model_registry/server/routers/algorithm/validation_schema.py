@@ -8,8 +8,6 @@ class AlgorithmList(BaseModel):
 
 class AlgorithmDatatype(BaseModel):
     algorithm: Algorithm
-    datatype: List[DataType]
+    datatypes: List[DataType]
 
-class AlgorithmId(BaseModel):
-    algorithm_id: PositiveInt
 

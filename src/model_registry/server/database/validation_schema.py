@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, PositiveInt
 
 # Database mapping 1:1
 class Algorithm(BaseModel):
-    _id = PositiveInt
+    id: PositiveInt
     name: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
