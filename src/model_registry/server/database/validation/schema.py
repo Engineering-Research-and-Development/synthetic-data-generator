@@ -1,11 +1,12 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
 
-from typing import Literal, Annotated
+from typing import Literal
 
-from pydantic import BaseModel, BeforeValidator, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt
 
-
-class CreateAlgorithm(BaseModel):
+# Database mapping 1:1
+class Algorithm(BaseModel):
+    _id = PositiveInt
     name: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
@@ -25,13 +26,8 @@ class CreateAlgorithm(BaseModel):
         examples=["The name of a loss function"],
     )
 
-
-class Algorithm(CreateAlgorithm):
-    id: PositiveInt
-
-
 class DataType(BaseModel):
-    id: PositiveInt
+    _id: PositiveInt
     type: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
@@ -40,38 +36,13 @@ class DataType(BaseModel):
     )
     is_categorical: bool
 
-
-class CreateDataType(BaseModel):
-    type: str
-    is_categorical: bool
-
-
 class AlgorithmDataType(BaseModel):
-    id: PositiveInt
-    algorithm_name: str = Field(
-        pattern="^[^ ](.*[^ ])?$",
-        description="This field does NOT allow strings that"
-        " start or end with spaces or are empty",
-        examples=["The name of algorithm"],
-    )
-    data_type: str = Field(
-        pattern="^[^ ](.*[^ ])?$",
-        description="This field does NOT allow strings that"
-        " start or end with spaces or are empty",
-        examples=["The data type"],
-    )
+    _id: PositiveInt
+    algorithm_id: PositiveInt
+    datatype_id: PositiveInt
 
-
-class CreateAllowedData(BaseModel):
-    datatype: str
-    is_categorical: bool
-
-
-class AlgorithmAndAllowedDatatypes(Algorithm):
-    allowed_data: list[CreateAllowedData] | None
-
-
-class CreateTrainedModel(BaseModel):
+class TrainedModel(BaseModel):
+    _id: PositiveInt
     name: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
@@ -97,43 +68,8 @@ class CreateTrainedModel(BaseModel):
     )
     algorithm_id: PositiveInt
 
-
-class TrainedModel(CreateTrainedModel):
-    id: PositiveInt
-    algorithm_name: str = Field(
-        pattern="^[^ ](.*[^ ])?$",
-        description="This field does NOT allow strings that"
-        " start or end with spaces or are empty",
-        examples=["The name of the algorithm"],
-    )
-
-
-def convert_to_list(value: int | str) -> list:
-    if type(value) is int:
-        return [value]
-    else:
-        return [int(x) for x in value.split(",")]
-
-
-class TrainedModelAndVersionIds(TrainedModel):
-    version_ids: Annotated[list[PositiveInt], BeforeValidator(convert_to_list)] | None
-
-
-class Features(BaseModel):
-    id: PositiveInt
-    feature_name: str = Field(
-        pattern="^[^ ](.*[^ ])?$",
-        description="This field does NOT allow strings that"
-        " start or end with spaces or are empty",
-        examples=["The name of a feature"],
-    )
-    datatype: PositiveInt
-    feature_position: int
-    trained_model: PositiveInt
-
-
-# This is the features that we get in input and we delegate to job to find the ids to the model registry
-class CreateFeatures(BaseModel):
+class TrainModelDatatype(BaseModel):
+    _id: PositiveInt
     feature_name: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
@@ -141,15 +77,13 @@ class CreateFeatures(BaseModel):
         examples=["The name of a feature"],
     )
     feature_position: int
-    is_categorical: bool
-    datatype: str
+    datatype_id: PositiveInt
+    trained_model_id: PositiveInt
 
-
-class TrainedModelAndFeatureSchema(TrainedModel):
-    feature_schema: list[CreateFeatures] | None = None
-
-
-class CreateTrainingInfo(BaseModel):
+class ModelVersion(BaseModel):
+    _id: PositiveInt
+    version_name: str
+    image_path: str
     loss_function: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
@@ -160,44 +94,9 @@ class CreateTrainingInfo(BaseModel):
     val_loss: float
     train_samples: int
     val_samples: int
+    trained_model_id: PositiveInt
 
-
-class TrainingInfo(CreateTrainingInfo):
-    id: PositiveInt
-    model_version_id: int
-
-
-class CreateModelVersion(BaseModel):
-    version_name: str
-    image_path: str
-
-
-class ModelVersion(CreateModelVersion):
-    id: PositiveInt
-
-
-class ModelVersionAndTrainInfo(BaseModel):
-    version: ModelVersion
-    training_info: TrainingInfo
-
-
-class TrainedModelAndVersions(TrainedModel):
-    versions: list[ModelVersionAndTrainInfo] | list[ModelVersion] | None = Field(
-        description="This is a list of the trained model versions and training infos"
-    )
-    feature_schema: list[CreateFeatures] | None = Field(
-        description="This is a list of the features that the trained model has"
-    )
-
-
-class AlgorithmsAndTrainedModels(BaseModel):
-    algorithms: list[AlgorithmAndAllowedDatatypes]
-    trained_models: list[TrainedModelAndVersionIds]
-
-
-## BEHAVIOUR MODELS
-
-
+## FUNCTIONS PYDANTIC MODELS
 class Function(BaseModel):
     id: int
     name: str

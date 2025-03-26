@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 from peewee import (
     PostgresqlDatabase,
@@ -8,7 +7,6 @@ from peewee import (
     CharField,
     BooleanField,
     ForeignKeyField,
-    DateTimeField,
     IntegerField,
     DoubleField,
     SQL,
@@ -51,7 +49,7 @@ class AlgorithmDataType(BaseModelPeewee):
     algorithm_id = ForeignKeyField(
         Algorithm, backref="allowed_data_types", on_delete="CASCADE"
     )
-    datatype = ForeignKeyField(DataType, backref="allowed_data_types")
+    datatype_id = ForeignKeyField(DataType, backref="allowed_data_types")
 
 
 class TrainedModel(BaseModelPeewee):
@@ -65,12 +63,12 @@ class TrainedModel(BaseModelPeewee):
     )
 
 
-class Features(BaseModelPeewee):
+class TrainModelDatatype(BaseModelPeewee):
     id = AutoField()
     feature_name = CharField()
-    datatype = ForeignKeyField(DataType, backref="features")
     feature_position = IntegerField()
-    trained_model = ForeignKeyField(
+    datatype_id = ForeignKeyField(DataType, backref="features")
+    trained_model_id = ForeignKeyField(
         TrainedModel, backref="features", on_delete="CASCADE"
     )
 
@@ -79,21 +77,13 @@ class ModelVersion(BaseModelPeewee):
     id = AutoField()
     version_name = CharField()
     image_path = CharField()
-    timestamp = DateTimeField(default=datetime.now)
-    trained_model = ForeignKeyField(
-        TrainedModel, backref="model_versions", on_delete="CASCADE"
-    )
-
-
-class TrainingInfo(BaseModelPeewee):
-    id = AutoField()
     loss_function = CharField()
     train_loss = DoubleField()
     val_loss = DoubleField()
     train_samples = IntegerField()
     val_samples = IntegerField()
-    model_version_id = ForeignKeyField(
-        ModelVersion, backref="training_info", on_delete="CASCADE", unique=True
+    trained_model_id = ForeignKeyField(
+        TrainedModel, backref="model_versions", on_delete="CASCADE"
     )
 
 

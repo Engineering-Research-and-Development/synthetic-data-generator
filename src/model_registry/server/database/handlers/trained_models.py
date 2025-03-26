@@ -4,7 +4,7 @@ from ..schema import (
     TrainedModel,
     TrainingInfo,
     ModelVersion,
-    Features,
+    TrainModelDatatype,
     DataType,
     Algorithm,
 )
@@ -39,9 +39,9 @@ def get_trained_model_versions(
                 fn.JSON_AGG(
                     fn.JSON_BUILD_OBJECT(
                         "feature_name",
-                        Features.feature_name,
+                        TrainModelDatatype.feature_name,
                         "feature_position",
-                        Features.feature_position,
+                        TrainModelDatatype.feature_position,
                         "is_categorical",
                         DataType.is_categorical,
                         "datatype",
@@ -52,7 +52,7 @@ def get_trained_model_versions(
             )
             .join(Algorithm, on=TrainedModel.algorithm_id == Algorithm.id)
             .switch(TrainedModel)
-            .join(Features)
+            .join(TrainModelDatatype)
             .join(DataType)
             .where(TrainedModel.id == model_id)
             .group_by(TrainedModel.id, Algorithm.name)

@@ -3,7 +3,7 @@ from database.schema import (
     DataType,
     AlgorithmDataType,
     TrainedModel,
-    Features,
+    TrainModelDatatype,
     TrainingInfo,
     ModelVersion,
     Function,
@@ -51,7 +51,7 @@ def insert_data():
 
     # Insert Features
     _ = [
-        Features.create(
+        TrainModelDatatype.create(
             feature_name=f"Feature_{i}",
             datatype=data_types[(i + 3) % 5],
             feature_position=i + 10,

@@ -4,10 +4,8 @@ from starlette.responses import JSONResponse
 
 from database.schema import DataType, AlgorithmDataType, db, Algorithm
 from database.validation.schema import (
-    CreateAlgorithm,
+    Algorithm,
     Algorithm as PydanticAlgorithm,
-    CreateAllowedData,
-    AlgorithmAndAllowedDatatypes,
 )
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
@@ -21,7 +19,7 @@ router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
 )
 async def add_algorithm_and_datatype(
-    algorithm: CreateAlgorithm, allowed_data: list[CreateAllowedData]
+    algorithm: Algorithm, allowed_data: list[DataType]
 ):
     """
     This method lets the user add a new algorithm to the model registry. An algorithm name must be ***unique*** (error 400
@@ -29,15 +27,7 @@ async def add_algorithm_and_datatype(
     returned and the user must add the new datatype it wants to use with POST /datatypes
     """
     with db.atomic() as transaction:
-        try:
-            saved_algo = Algorithm.create(**algorithm.model_dump())
-        except IntegrityError:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": "Algorithm names must be uniques! Try another name!"
-                },
-            )
+        saved_algo, _ = Algorithm.get_or_create(**algorithm.model_dump())
         for feature in allowed_data:
             try:
                 datatype = (
@@ -78,9 +68,9 @@ async def add_algorithm_and_datatype(
     status_code=200,
     name="Get all algorithms",
     response_model=list[PydanticAlgorithm]
-    | list[AlgorithmAndAllowedDatatypes]
+    | list[AlgorithmDatatypes]
     | dict[str, PydanticAlgorithm]
-    | dict[str, AlgorithmAndAllowedDatatypes],
+    | dict[str, AlgorithmDatatypes],
 )
 async def get_all_algorithms(
     include_allowed_datatypes: bool = False, indexed_by_names: bool = False
@@ -121,11 +111,11 @@ async def get_all_algorithms(
         )
         if indexed_by_names:
             return {
-                row["name"]: AlgorithmAndAllowedDatatypes(**row)
+                row["name"]: AlgorithmDatatypes(**row)
                 for row in query.dicts()
             }
         else:
-            return [AlgorithmAndAllowedDatatypes(**row) for row in query.dicts()]
+            return [AlgorithmDatatypes(**row) for row in query.dicts()]
 
 
 @router.get(
@@ -134,7 +124,7 @@ async def get_all_algorithms(
     name="Get algorithm by id",
     summary="It returns an algorithm given the id",
     responses={404: {"model": str}},
-    response_model=PydanticAlgorithm | AlgorithmAndAllowedDatatypes,
+    response_model=PydanticAlgorithm | AlgorithmDatatypes,
 )
 async def get_algorithm_by_id(
     algorithm_id: int, include_allowed_datatypes: bool = False
@@ -180,7 +170,7 @@ async def get_algorithm_by_id(
             return JSONResponse(
                 status_code=404, content={"message": "Algorithm not present"}
             )
-        return AlgorithmAndAllowedDatatypes(**algorithm)
+        return AlgorithmDatatypes(**algorithm)
 
 
 @router.get(
@@ -189,7 +179,7 @@ async def get_algorithm_by_id(
     name="Get algorithm by name",
     summary="It returns an algorithm given the name",
     responses={404: {"model": str}},
-    response_model=PydanticAlgorithm | AlgorithmAndAllowedDatatypes,
+    response_model=PydanticAlgorithm | AlgorithmDatatypes,
 )
 async def get_algorithm_by_name(
     algorithm_name: str, include_allowed_datatypes: bool = False
@@ -235,7 +225,7 @@ async def get_algorithm_by_name(
             return JSONResponse(
                 status_code=404, content={"message": "Algorithm not present"}
             )
-        return AlgorithmAndAllowedDatatypes(**algorithm)
+        return AlgorithmDatatypes(**algorithm)
 
 
 @router.delete(

@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from database.handlers import trained_models as db_handler
 from database.schema import (
     TrainedModel,
-    Features,
+    TrainModelDatatype,
     TrainingInfo,
     ModelVersion,
     db,
@@ -16,10 +16,10 @@ from database.validation.schema import (
     TrainedModel as PydanticTrainedModel,
     TrainedModelAndVersionIds,
     TrainedModelAndVersions,
-    CreateTrainedModel,
+    TrainedModel,
     CreateModelVersion,
     CreateFeatures,
-    CreateTrainingInfo,
+    TrainingInfo,
     TrainedModelAndFeatureSchema,
 )
 
@@ -120,9 +120,9 @@ async def get_trained_model_id(
                         fn.JSON_AGG(
                             fn.JSON_BUILD_OBJECT(
                                 "feature_name",
-                                Features.feature_name,
+                                TrainModelDatatype.feature_name,
                                 "feature_position",
-                                Features.feature_position,
+                                TrainModelDatatype.feature_position,
                                 "is_categorical",
                                 DataType.is_categorical,
                                 "datatype",
@@ -133,7 +133,7 @@ async def get_trained_model_id(
                     )
                     .join(Algorithm, on=TrainedModel.algorithm_id == Algorithm.id)
                     .switch(TrainedModel)
-                    .join(Features)
+                    .join(TrainModelDatatype)
                     .join(DataType)
                     .where(TrainedModel.id == trained_model_id)
                     .group_by(TrainedModel.id, Algorithm.name)
@@ -155,7 +155,7 @@ async def get_trained_model_id(
     name="Get a single trained model by their image id, which is the name of the folder given by the generator",
     summary="It returns a trained model given the passed image id",
     responses={404: {"model": str}},
-    response_model=dict[str, CreateTrainedModel],
+    response_model=dict[str, TrainedModel],
 )
 async def get_all_trained_model_by_image_path():
     """
@@ -175,7 +175,7 @@ async def get_all_trained_model_by_image_path():
     for elem in results:
         path = elem["image_path"]
         del elem["image_path"]
-        payload[path] = CreateTrainedModel(**elem)
+        payload[path] = TrainedModel(**elem)
     return payload
 
 
@@ -185,7 +185,7 @@ async def get_all_trained_model_by_image_path():
     name="Get a single trained model by their image id, which is the name of the folder given by the generator",
     summary="It returns a trained model given the passed image id",
     responses={404: {"model": str}},
-    response_model=CreateTrainedModel,
+    response_model=TrainedModel,
 )
 async def get_trained_model_by_image_path(
     image_id: str = Path(
@@ -207,7 +207,7 @@ async def get_trained_model_by_image_path(
         return JSONResponse(
             status_code=404, content={"message": "Trained Model not found"}
         )
-    return CreateTrainedModel(**tr)
+    return TrainedModel(**tr)
 
 
 @router.post(
@@ -217,9 +217,9 @@ async def get_trained_model_by_image_path(
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
 )
 async def create_model_and_version(
-    trained_model: CreateTrainedModel,
+    trained_model: TrainedModel,
     version: CreateModelVersion,
-    training_info: CreateTrainingInfo,
+    training_info: TrainingInfo,
     feature_schema: list[CreateFeatures],
 ):
     """
@@ -229,13 +229,7 @@ async def create_model_and_version(
     by the user
     """
     with db.atomic() as transaction:
-        try:
-            saved_tr = TrainedModel.create(**trained_model.model_dump())
-        except IntegrityError:
-            return JSONResponse(
-                status_code=400,
-                content={"message": "No algorithm has been found with this id"},
-            )
+        saved_tr, created = TrainedModel.get_or_create(**trained_model.model_dump())
         # We need to check if the datatypes passed are allowed, i.e. present in the registry
         for feature in feature_schema:
             try:
@@ -259,7 +253,7 @@ async def create_model_and_version(
                     },
                 )
             try:
-                Features.insert(
+                TrainModelDatatype.insert(
                     feature_name=feature.feature_name,
                     feature_position=feature.feature_position,
                     datatype=datatype.id,
