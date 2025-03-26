@@ -26,41 +26,7 @@ async def add_algorithm_and_datatype(
     will be returned if not) and the datatypes must be ***already present*** in the model registry, otherwise an error will be
     returned and the user must add the new datatype it wants to use with POST /datatypes
     """
-    with db.atomic() as transaction:
-        saved_algo, _ = Algorithm.get_or_create(**algorithm.model_dump())
-        for feature in allowed_data:
-            try:
-                datatype = (
-                    DataType.select()
-                    .where(DataType.type == feature.datatype)
-                    .where(DataType.is_categorical == feature.is_categorical)
-                    .get()
-                )
-            except DoesNotExist:
-                transaction.rollback()
-                return JSONResponse(
-                    status_code=404,
-                    content={
-                        "message": "This datatype is currently not supported"
-                        ", to use it add it with POST /datatype",
-                        "datatype": {
-                            "datatype": feature.datatype,
-                            "is_categorical": feature.is_categorical,
-                        },
-                    },
-                )
-            try:
-                AlgorithmDataType.insert(
-                    datatype=datatype.id, algorithm_id=saved_algo.id
-                ).execute()
-            except IntegrityError:
-                transaction.rollback()
-                return JSONResponse(
-                    status_code=500,
-                    content={"message": "Error in processing the request"},
-                )
-
-    return {"message": "Created algorithm with id", "id": str(saved_algo.id)}
+    pass
 
 
 @router.get(
