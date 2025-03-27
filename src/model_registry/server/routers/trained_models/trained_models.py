@@ -49,7 +49,7 @@ async def get_all_trained_models():
             .where(ModelVersion.trained_model == model["id"])
             .dicts()
         )
-        response.append(TrainedModelVersion(model=model, version=model_versions))
+        response.append(TrainedModelVersion(model=model, versions=model_versions))
     return TrainedModelVersionList(models=response)
 
 
@@ -89,7 +89,7 @@ async def get_trained_model_id(
         .dicts()
     )
     return TrainedModelVersionDatatype(
-        model=trained_model.get(), version=model_versions, datatypes=datatypes
+        model=trained_model.get(), versions=model_versions, datatypes=datatypes
     )
 
 
@@ -120,18 +120,25 @@ async def create_model_and_version(payload: PostTrainedModelVersionDatatype):
     except peewee.DoesNotExist:
         return JSONResponse(status_code=404, content={"message": "Algorithm not found"})
 
-    datatypes = payload.datatypes
-    db_datatypes = []
-    for datatype in datatypes:
-        datatype, _ = DataType.get_or_create(
-            type=datatype.type, is_categorical=datatype.is_categorical
-        )
-        db_datatypes.append(datatype)
-
     trained_model, _ = TrainedModel.get_or_create(**payload.model.model_dump())
     model_version = payload.version.model_dump()
     model_version["trained_model"] = trained_model
     model_version = ModelVersion.create(**model_version)
+
+    datatypes = payload.datatypes
+    for datatype in datatypes:
+        retrieved_datatype, _ = DataType.get_or_create(
+            type=datatype.type, is_categorical=datatype.is_categorical
+        )
+        _ = TrainModelDatatype.create(
+            trained_model=trained_model,
+            datatype=retrieved_datatype,
+            feature_name=datatype.feature_name,
+            feature_position=datatype.feature_position,
+        )
+
+
+
     return PostTrainedModelOut(
         trained_model_id=trained_model.id, model_version_id=model_version.id
     )

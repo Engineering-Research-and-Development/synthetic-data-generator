@@ -18,7 +18,7 @@ class TrainedModelPublic(TrainedModel):
 
 class TrainedModelVersion(BaseModel):
     model: TrainedModelPublic
-    version: List[ModelVersionPublic]
+    versions: List[ModelVersionPublic]
 
 
 class TrainedModelVersionList(BaseModel):

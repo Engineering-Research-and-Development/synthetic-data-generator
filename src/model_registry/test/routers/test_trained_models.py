@@ -1,11 +1,17 @@
+import pytest
 import requests
 
 BASE_URL = "http://localhost:8001/trained_models"
 train_id = None
 version_id = None
 
+@pytest.fixture
+def get_valid_algorithm_id():
+    response = requests.get("http://localhost:8001/algorithms")
+    algo_id = response.json()["algorithms"][0]["id"]
+    return algo_id
 
-def test_create_model_and_version():
+def test_create_model_and_version(get_valid_algorithm_id):
     global train_id, version_id
     payload = {
         "model": {
@@ -13,7 +19,7 @@ def test_create_model_and_version():
             "dataset_name": "Test Dataset",
             "size": "100MB",
             "input_shape": "(1,28,28)",
-            "algorithm": 2,
+            "algorithm": get_valid_algorithm_id,
         },
         "version": {
             "version_name": "v1.0",
@@ -52,7 +58,7 @@ def test_get_trained_model_by_id():
     response = requests.get(f"{BASE_URL}/{model_id}")
     assert response.status_code == 200
     assert "model" in response.json()
-    assert "version" in response.json()
+    assert "versions" in response.json()
     assert "datatypes" in response.json()
 
 
