@@ -1,6 +1,3 @@
-"""This module is the main entry point of FASTApi. It also defines the life-cycle of the application as well as
-the database initialization on startup"""
-
 import os
 from contextlib import asynccontextmanager
 
@@ -58,11 +55,16 @@ async def lifespan(app: FastAPI):
         insert_data()
 
     yield
-    #  This part is done after the FASTAPI application is run
 
 
 # Program entry point
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="Synthetic Data Generator",
+    description="Middleware component for the ENG Synthetic Data Generator."
+    "It gives persistent storage capabilities to support the model generator",
+    version="0.0.1",
+    lifespan=lifespan,
+)
 # Authorizing all CORS
 app.add_middleware(
     CORSMiddleware,

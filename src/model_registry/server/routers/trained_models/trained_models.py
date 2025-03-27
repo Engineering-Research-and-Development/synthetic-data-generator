@@ -28,6 +28,19 @@ router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
     response_model=TrainedModelVersionList,
 )
 async def get_all_trained_models():
+    """
+    Retrieves a complete list of all trained models in the repository with their associated versions.
+
+    This endpoint returns:
+
+    - A comprehensive list of all trained models
+
+    - Each model's metadata (name, description, algorithm, etc.)
+
+    - All versions associated with each model
+
+    - Basic information about each version (version number, creation date)
+    """
     response = []
     trained_models = TrainedModel.select().dicts()
     for model in trained_models:
@@ -53,6 +66,15 @@ async def get_trained_model_id(
         description="The id of the trained model you want to get", examples=[1]
     ),
 ):
+    """
+    Retrieves comprehensive information about a specific trained model including:
+
+    - Model metadata (name, description, algorithm)
+
+    - All associated versions with their details
+
+    - Feature schema (data types and their characteristics)
+    """
     try:
         trained_model = TrainedModel.select().where(TrainedModel.id == model_id).dicts()
     except peewee.DoesNotExist:
@@ -77,14 +99,21 @@ async def get_trained_model_id(
     status_code=201,
     summary="It creates a trained model given the all the information,version,training infos and feature schema",
     responses={500: {"model": str}, 400: {"model": str}},
-    response_model=PostTrainedModelOut
+    response_model=PostTrainedModelOut,
 )
 async def create_model_and_version(payload: PostTrainedModelVersionDatatype):
     """
-    This method lets the user create a new training model inside the repository. All the information is ***mandatory***
-    and it is validated by the backend. Only datatypes that are already present in the model registry are ***accepted***
-    , otherwise a 400 error will be returned. If a new datatype is being used, then it must be inserted with POST manually
-    by the user
+    Creates a new trained model and its initial version in the system.
+
+    This endpoint accepts comprehensive information including:
+
+    - Model details (algorithm, name, description)
+
+    - Version information (version number, performance metrics)
+
+    - Training configuration (parameters, training data info)
+
+    - Feature schema (data types and their characteristics)
     """
     try:
         Algorithm.get_by_id(payload.model.algorithm)
@@ -122,10 +151,13 @@ async def delete_train_model(
     version_name: str = Query(default=None, description="The version to delete"),
 ):
     """
-    This method lets the user delete a specific trained model in the registry, this operation will delete
-    all the trained model versions, feature schema and as well as training info. If not present, an 404 error will be raised.
-    The query parameter `version_id` (default ***None***) lets the user delete a specific version and associated training info,
-    leaving the trained model data and feature schema untouched.
+    Delete a trained model or a specific version of a trained model.
+
+    This endpoint allows you to:
+
+    - Delete an entire trained model (all versions) if no version_name is specified
+
+    - Delete only a specific version of a trained model if version_name is provided
     """
     try:
         trained_model = TrainedModel.get_by_id(model_id)
