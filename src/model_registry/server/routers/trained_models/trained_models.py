@@ -137,8 +137,6 @@ async def create_model_and_version(payload: PostTrainedModelVersionDatatype):
             feature_position=datatype.feature_position,
         )
 
-
-
     return PostTrainedModelOut(
         trained_model_id=trained_model.id, model_version_id=model_version.id
     )

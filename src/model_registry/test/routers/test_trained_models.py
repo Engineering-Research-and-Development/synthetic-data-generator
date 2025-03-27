@@ -5,11 +5,13 @@ BASE_URL = "http://localhost:8001/trained_models"
 train_id = None
 version_id = None
 
+
 @pytest.fixture
 def get_valid_algorithm_id():
     response = requests.get("http://localhost:8001/algorithms")
     algo_id = response.json()["algorithms"][0]["id"]
     return algo_id
+
 
 def test_create_model_and_version(get_valid_algorithm_id):
     global train_id, version_id
