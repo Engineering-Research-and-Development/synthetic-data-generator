@@ -28,7 +28,7 @@ def server_startup():
     ]
     try:
         sync_available_algorithms()
-        #sync_trained_models()
+        # sync_trained_models()
     except ConnectionError as error:
         global MIDDLEWARE_ON
         MIDDLEWARE_ON = False
@@ -52,7 +52,9 @@ def model_to_middleware(
         "image_path": model_image,
     }  # Version management as described above
     # Getting the algorithm id
-    algorithm_id = algorithm_name_to_index.get(model.self_describe().get('algorithm').get('name'))
+    algorithm_id = algorithm_name_to_index.get(
+        model.self_describe().get("algorithm").get("name")
+    )
     trained_model_misc = {
         "name": model.model_name,
         "dataset_name": dataset_name,
@@ -92,14 +94,14 @@ def sync_trained_models():
 
     """
     logger.info("Syncing trained models")
-    remote_trained_models = requests.get(f"{middleware}trained_models/").json()["models"]
+    remote_trained_models = requests.get(f"{middleware}trained_models/").json()[
+        "models"
+    ]
     local_trained_models = list_trained_models()  # Image Paths
 
     for remote_trained_model in remote_trained_models:
         model_id = remote_trained_model["id"]
-        model_payload = requests.get(
-            f"{middleware}trained_models/{model_id}"
-        ).json()
+        model_payload = requests.get(f"{middleware}trained_models/{model_id}").json()
         for version in model_payload["versions"]:
             if version["image_path"] not in local_trained_models:
                 requests.delete(
@@ -123,18 +125,14 @@ def sync_trained_models():
 
 
 def sync_available_algorithms():
-    response = requests.get(
-        f"{middleware}algorithms/"
-    )
+    response = requests.get(f"{middleware}algorithms/")
 
     for remote_algo in response.json().get("algorithms", []):
         if remote_algo.get("name") not in generator_algorithm_names:
             requests.delete(url=f"{middleware}algorithms/{remote_algo.get("id")}")
 
     for algorithm in browse_algorithms():
-        response = requests.post(
-            url=f"{middleware}algorithms/", json=algorithm
-        )
+        response = requests.post(url=f"{middleware}algorithms/", json=algorithm)
 
         if not response.status_code == 201:
             logger.error(f"Error syncing algorithm: {response.text}")
@@ -143,4 +141,3 @@ def sync_available_algorithms():
             algorithm_name_to_index[algorithm["algorithm"]["name"]] = algo_id
 
     logger.info("Algorithm sync completed")
-
