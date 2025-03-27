@@ -52,23 +52,19 @@ def model_to_middleware(
         "image_path": model_image,
     }  # Version management as described above
     # Getting the algorithm id
-    response = requests.get(
-        f"{middleware}algorithms/name/{model.self_describe().get('algorithm').get('name')}"
-    )
-    algorithm_id = response.json()["id"]
+    algorithm_id = algorithm_name_to_index.get(model.self_describe().get('algorithm').get('name'))
     trained_model_misc = {
         "name": model.model_name,
+        "dataset_name": dataset_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm_id": algorithm_id,
-        "dataset_name": dataset_name,
+        "algorithm": algorithm_id,
     }
 
     model_to_save = {
         "trained_model": trained_model_misc,
-        "version": version_info,
-        "training_info": training_info,
-        "feature_schema": feature_list,
+        "version": version_info.update(training_info),
+        "datatypes": feature_list,
     }
 
     headers = {"Content-Type": "application/json"}
@@ -96,13 +92,13 @@ def sync_trained_models():
 
     """
     logger.info("Syncing trained models")
-    remote_trained_models = requests.get(f"{middleware}trained_models/").json()
+    remote_trained_models = requests.get(f"{middleware}trained_models/").json()["models"]
     local_trained_models = list_trained_models()  # Image Paths
 
     for remote_trained_model in remote_trained_models:
         model_id = remote_trained_model["id"]
         model_payload = requests.get(
-            f"{middleware}trained_models/{model_id}?include_versions=true"
+            f"{middleware}trained_models/{model_id}"
         ).json()
         for version in model_payload["versions"]:
             if version["image_path"] not in local_trained_models:
@@ -132,8 +128,8 @@ def sync_available_algorithms():
     )
 
     for remote_algo in response.json().get("algorithms", []):
-        remote_algo_id = remote_algo.get("id")
-        requests.delete(url=f"{middleware}algorithms/{remote_algo_id}")
+        if remote_algo.get("name") not in generator_algorithm_names:
+            requests.delete(url=f"{middleware}algorithms/{remote_algo.get("id")}")
 
     for algorithm in browse_algorithms():
         response = requests.post(
