@@ -77,7 +77,7 @@ async def get_trained_model_id(
     status_code=201,
     summary="It creates a trained model given the all the information,version,training infos and feature schema",
     responses={500: {"model": str}, 400: {"model": str}},
-    response_model=PostTrainedModelOut
+    response_model=PostTrainedModelOut,
 )
 async def create_model_and_version(payload: PostTrainedModelVersionDatatype):
     """
