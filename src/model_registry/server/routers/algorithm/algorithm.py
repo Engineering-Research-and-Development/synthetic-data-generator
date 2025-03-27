@@ -5,10 +5,9 @@ from routers.algorithm.validation_schema import (
     AlgorithmList,
     AlgorithmDataTypeOut,
     AlgorithmID,
-)
-from routers.algorithm.validation_schema import (
     AlgorithmDatatype as PydanticAlgorithmDataType,
 )
+
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
 
@@ -39,6 +38,9 @@ async def create_new_algorithm(payload: PydanticAlgorithmDataType):
     for data_type in data_types:
         data_type, _ = DataType.get_or_create(
             type=data_type.type, is_categorical=data_type.is_categorical
+        )
+        _ = AlgorithmDataType.create(
+            algorithm=alg, datatype=data_type
         )
 
     return AlgorithmID(id=alg.id)
