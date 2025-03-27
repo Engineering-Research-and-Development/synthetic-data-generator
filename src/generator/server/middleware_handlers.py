@@ -16,6 +16,7 @@ from server.utilities import format_training_info
 MIDDLEWARE_ON = True
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 generator_algorithm_names = []
+algorithm_name_to_index = {}
 
 
 def server_startup():
@@ -26,8 +27,8 @@ def server_startup():
         for algorithm in browse_algorithms()
     ]
     try:
-        sync_trained_models()
         sync_available_algorithms()
+        #sync_trained_models()
     except ConnectionError as error:
         global MIDDLEWARE_ON
         MIDDLEWARE_ON = False
@@ -127,22 +128,23 @@ def sync_trained_models():
 
 def sync_available_algorithms():
     response = requests.get(
-        f"{middleware}algorithms/?include_allowed_datatypes=true&indexed_by_names=true"
+        f"{middleware}algorithms/"
     )
 
-    remote_algorithms = response.json()
-    for algorithm in browse_algorithms():
-        for datatype in algorithm["allowed_data"]:
-            requests.post(url=f"{middleware}datatypes/", json=datatype)
-        if remote_algorithms.get(algorithm["algorithm"]["name"]) is None:
-            r = requests.post(f"{middleware}algorithms/", json=algorithm)
-            logger.debug(r.json())
-            if r.status_code == 201:
-                logger.info(f"Saved {algorithm} to remote server")
-        else:
-            remote_algorithms.pop(algorithm["algorithm"]["name"])
+    for remote_algo in response.json().get("algorithms", []):
+        remote_algo_id = remote_algo.get("id")
+        requests.delete(url=f"{middleware}algorithms/{remote_algo_id}")
 
-    # Now we delete all the rest of the stuff from the repo
-    for key, val in remote_algorithms.items():
-        requests.delete(f"{middleware}algorithms/{val['id']}")
-        logger.info(f"Removed {val['id']} to remote server")
+    for algorithm in browse_algorithms():
+        response = requests.post(
+            url=f"{middleware}algorithms/", json=algorithm
+        )
+
+        if not response.status_code == 201:
+            logger.error(f"Error syncing algorithm: {response.text}")
+        else:
+            algo_id = response.json().get("id")
+            algorithm_name_to_index[algorithm["algorithm"]["name"]] = algo_id
+
+    logger.info("Algorithm sync completed")
+

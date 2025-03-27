@@ -36,7 +36,7 @@ class ModelInfo:
                 "default_loss_function": self.default_loss_function,
                 "description": self.description,
             },
-            "allowed_data": allowed_data,
+            "datatypes": allowed_data,
         }
 
         return system_model_info
