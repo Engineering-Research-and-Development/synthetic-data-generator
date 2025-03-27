@@ -70,7 +70,7 @@ async def get_algorithm_by_id(
     Returns an algorithm given its ID
     """
     algorithm = Algorithm.select().where(Algorithm.id == algorithm_id).dicts()
-    all_dtypes = AlgorithmDataType.select(DataType).join(DataType).where(AlgorithmDataType.algorithm_id == algorithm_id).dicts()
+    all_dtypes = AlgorithmDataType.select(DataType).join(DataType).where(AlgorithmDataType.algorithm == algorithm_id).dicts()
     return AlgorithmDataTypeOut(algorithm=algorithm.get(), datatypes=list(all_dtypes))
 
 
