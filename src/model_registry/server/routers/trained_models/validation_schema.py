@@ -25,18 +25,18 @@ class TrainedModelVersionList(BaseModel):
     models: List[TrainedModelVersion]
 
 
-class TrainedModelVersionDatatype(TrainedModelVersion):
-    datatypes: List[TrainModelDatatype]
-
-
-class MergedDatatypes(TrainModelDatatype, DataType):
+class MergedDataType(TrainModelDatatype, DataType):
     pass
+
+class TrainedModelVersionDatatype(TrainedModelVersion):
+    datatypes: List[MergedDataType]
+
 
 
 class PostTrainedModelVersionDatatype(BaseModel):
     model: TrainedModelPublic
     version: ModelVersion
-    datatypes: List[MergedDatatypes]
+    datatypes: List[MergedDataType]
 
 
 class PostTrainedModelOut(BaseModel):

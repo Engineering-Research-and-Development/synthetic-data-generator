@@ -14,7 +14,7 @@ from routers.trained_models.validation_schema import (
     TrainedModelVersion,
     TrainedModelVersionDatatype,
     PostTrainedModelVersionDatatype,
-    PostTrainedModelOut,
+    PostTrainedModelOut, MergedDataType,
 )
 
 router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
@@ -84,12 +84,17 @@ async def get_trained_model_id(
         ModelVersion.select().where(ModelVersion.trained_model == trained_model).dicts()
     )
     datatypes = (
-        TrainModelDatatype.select()
+        DataType.select(DataType, TrainModelDatatype)
+        .join(TrainModelDatatype)
         .where(TrainModelDatatype.trained_model == trained_model)
         .dicts()
     )
+    merged_datatypes = []
+    for datatype in datatypes:
+        merged_datatypes.append(MergedDataType(**datatype))
+
     return TrainedModelVersionDatatype(
-        model=trained_model.get(), versions=model_versions, datatypes=datatypes
+        model=trained_model.get(), versions=model_versions, datatypes=merged_datatypes
     )
 
 
