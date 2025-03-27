@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, PositiveInt
 
+
 # Database mapping 1:1
 class Algorithm(BaseModel):
     _id: PositiveInt
@@ -26,6 +27,7 @@ class Algorithm(BaseModel):
         examples=["The name of a loss function"],
     )
 
+
 class DataType(BaseModel):
     _id: PositiveInt
     type: str = Field(
@@ -36,10 +38,12 @@ class DataType(BaseModel):
     )
     is_categorical: bool
 
+
 class AlgorithmDataType(BaseModel):
     _id: PositiveInt
-    algorithm: PositiveInt
-    datatype: PositiveInt
+    _algorithm: PositiveInt
+    _datatype: PositiveInt
+
 
 class TrainedModel(BaseModel):
     _id: PositiveInt
@@ -66,7 +70,8 @@ class TrainedModel(BaseModel):
         description="The shape of the input that must be in the format of (number,...,number)",
         examples=["(1,3,200,200)"],
     )
-    algorithm: PositiveInt
+    _algorithm: PositiveInt
+
 
 class TrainModelDatatype(BaseModel):
     _id: PositiveInt
@@ -77,8 +82,9 @@ class TrainModelDatatype(BaseModel):
         examples=["The name of a feature"],
     )
     feature_position: int
-    datatype: PositiveInt
-    trained_model: PositiveInt
+    _datatype: PositiveInt
+    _trained_model: PositiveInt
+
 
 class ModelVersion(BaseModel):
     _id: PositiveInt
@@ -94,7 +100,8 @@ class ModelVersion(BaseModel):
     val_loss: float
     train_samples: int
     val_samples: int
-    trained_model: PositiveInt
+    _trained_model: PositiveInt
+
 
 ## FUNCTIONS PYDANTIC MODELS
 class Function(BaseModel):
@@ -114,5 +121,3 @@ class Parameter(BaseModel):
 class FunctionParameter(BaseModel):
     function: int
     parameter: int
-
-

@@ -1,13 +1,24 @@
 from typing import List
-
 from pydantic import BaseModel, PositiveInt
+from database.validation_schema import (
+    TrainedModel,
+    ModelVersion,
+    TrainModelDatatype,
+    DataType,
+)
 
-from database.validation_schema import TrainedModel, ModelVersion, TrainModelDatatype
+
+class ModelVersionPublic(ModelVersion):
+    trained_model: PositiveInt
+
+
+class TrainedModelPublic(TrainedModel):
+    algorithm: PositiveInt
 
 
 class TrainedModelVersion(BaseModel):
-    model: TrainedModel
-    version: List[ModelVersion]
+    model: TrainedModelPublic
+    version: List[ModelVersionPublic]
 
 
 class TrainedModelVersionList(BaseModel):
@@ -15,7 +26,22 @@ class TrainedModelVersionList(BaseModel):
 
 
 class TrainedModelVersionDatatype(TrainedModelVersion):
-    datatype: List[TrainModelDatatype]
+    datatypes: List[TrainModelDatatype]
+
+
+class MergedDatatypes(TrainModelDatatype, DataType):
+    pass
+
+
+class PostTrainedModelVersionDatatype(BaseModel):
+    model: TrainedModelPublic
+    version: ModelVersion
+    datatypes: List[MergedDatatypes]
+
+
+class PostTrainedModelOut(BaseModel):
+    trained_model_id: PositiveInt
+    model_version_id: PositiveInt
 
 
 class TrainedModelDelete(BaseModel):
