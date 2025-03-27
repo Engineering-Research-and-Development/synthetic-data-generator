@@ -60,7 +60,7 @@ def insert_data():
         num_types = random.randint(2, 4)
         selected_types = random.sample(dtype_objs, num_types)
         for dtype in selected_types:
-            AlgorithmDataType.create(algorithm_id=algo, datatype_id=dtype)
+            AlgorithmDataType.create(algorithm=algo, datatype=dtype)
 
     # Create TrainedModels
     trained_models = [
@@ -69,28 +69,28 @@ def insert_data():
             "dataset_name": "CIFAR-10",
             "size": "50MB",
             "input_shape": "(32,32,3)",
-            "algorithm_id": algo_objs[1],
+            "algorithm": algo_objs[1],
         },
         {
             "name": "Fraud Detector",
             "dataset_name": "Credit Card Fraud",
             "size": "5MB",
             "input_shape": "(30,)",
-            "algorithm_id": algo_objs[0],
+            "algorithm": algo_objs[0],
         },
         {
             "name": "Sentiment Analyzer",
             "dataset_name": "IMDB Reviews",
             "size": "15MB",
             "input_shape": "(1000,)",
-            "algorithm_id": algo_objs[3],
+            "algorithm": algo_objs[3],
         },
         {
             "name": "Object Detector",
             "dataset_name": "COCO",
             "size": "120MB",
             "input_shape": "(256,256,3)",
-            "algorithm_id": algo_objs[1],
+            "algorithm": algo_objs[1],
         },
     ]
 
@@ -116,8 +116,8 @@ def insert_data():
             TrainModelDatatype.create(
                 feature_name=f"{random.choice(feature_names)}_{i}",
                 feature_position=i,
-                datatype_id=random.choice(dtype_objs),
-                trained_model_id=model,
+                datatype=random.choice(dtype_objs),
+                trained_model=model,
             )
 
     # Create ModelVersions
@@ -126,12 +126,12 @@ def insert_data():
             ModelVersion.create(
                 version_name=f"v{v}.0",
                 image_path=f"/models/{model.name.replace(' ', '_')}_v{v}.h5",
-                loss_function=model.algorithm_id.default_loss_function,
+                loss_function=model.algorithm.default_loss_function,
                 train_loss=random.uniform(0.1, 1.0),
                 val_loss=random.uniform(0.1, 1.0),
                 train_samples=random.randint(1000, 10000),
                 val_samples=random.randint(200, 2000),
-                trained_model_id=model,
+                trained_model=model,
             )
 
     # Create Functions
