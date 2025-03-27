@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from database.schema import (
     Algorithm, DataType, AlgorithmDataType
 )
-from routers.algorithm.validation_schema import AlgorithmList, AlgorithmDataTypeOut
+from routers.algorithm.validation_schema import AlgorithmList, AlgorithmDataTypeOut, AlgorithmID
 from routers.algorithm.validation_schema import AlgorithmDatatype as PydanticAlgorithmDataType
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
@@ -16,10 +16,11 @@ router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
     name="Create a new algorithm",
     summary="It creates an algorith given the all the information and allowed datatypes",
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
+    response_model=AlgorithmID
 )
 async def create_new_algorithm(
     payload: PydanticAlgorithmDataType
-):
+) :
     """
     This method lets the user add a new algorithm to the model registry. An algorithm name must be ***unique*** (error 400
     will be returned if not) and the datatypes must be ***already present*** in the model registry, otherwise an error will be
@@ -39,6 +40,8 @@ async def create_new_algorithm(
             type=data_type.type,
             is_categorical=data_type.is_categorical
         )
+
+    return AlgorithmID(id=alg.id)
 
 
 @router.get(

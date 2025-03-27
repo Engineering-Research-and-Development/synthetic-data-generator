@@ -16,5 +16,6 @@ class AlgorithmDatatype(BaseModel):
     algorithm: Algorithm
     datatypes: List[DataType]
 
-
+class AlgorithmID(BaseModel):
+    id: PositiveInt
 
