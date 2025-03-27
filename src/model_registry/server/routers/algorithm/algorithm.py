@@ -39,9 +39,7 @@ async def create_new_algorithm(payload: PydanticAlgorithmDataType):
         data_type, _ = DataType.get_or_create(
             type=data_type.type, is_categorical=data_type.is_categorical
         )
-        _ = AlgorithmDataType.create(
-            algorithm=alg, datatype=data_type
-        )
+        _ = AlgorithmDataType.create(algorithm=alg, datatype=data_type)
 
     return AlgorithmID(id=alg.id)
 
