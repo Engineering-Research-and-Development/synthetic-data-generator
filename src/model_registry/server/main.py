@@ -78,7 +78,6 @@ app.include_router(algorithm.router)
 app.include_router(trained_models.router)
 
 
-
 @app.get("/", include_in_schema=False)
 async def home_to_docs():
     return RedirectResponse(url="/docs")

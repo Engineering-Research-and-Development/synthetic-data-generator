@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Path
 
 from database.schema import TrainedModel, ModelVersion
-from routers.trained_models.validation_schema import TrainedModelVersionList, TrainedModelVersion
+from routers.trained_models.validation_schema import (
+    TrainedModelVersionList,
+    TrainedModelVersion,
+)
 
 router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
 
@@ -11,7 +14,7 @@ router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
     status_code=200,
     summary="Get all the trained model in the repository",
     name="Get all trained models",
-    response_model=TrainedModelVersionList
+    response_model=TrainedModelVersionList,
 )
 async def get_all_trained_models():
     """
@@ -23,10 +26,15 @@ async def get_all_trained_models():
     response = []
     trained_models = TrainedModel.select().dicts()
     for model in trained_models:
-        model_versions = ModelVersion.select().where(ModelVersion.trained_model==model['id']).dicts()
-        response.append(TrainedModelVersion(model=model,version=model_versions))
+        model_versions = (
+            ModelVersion.select()
+            .where(ModelVersion.trained_model == model["id"])
+            .dicts()
+        )
+        response.append(TrainedModelVersion(model=model, version=model_versions))
     response = TrainedModelVersionList(models=response)
     return response
+
 
 @router.get(
     "/{model_id}",
@@ -66,8 +74,7 @@ async def get_trained_model_id(
     summary="It creates a trained model given the all the information,version,training infos and feature schema",
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
 )
-async def create_model_and_version(
-):
+async def create_model_and_version():
     """
     This method lets the user create a new training model inside the repository. All the information is ***mandatory***
     and it is validated by the backend. Only datatypes that are already present in the model registry are ***accepted***

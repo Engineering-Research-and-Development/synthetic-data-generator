@@ -2,13 +2,18 @@ from fastapi import APIRouter
 from peewee import DoesNotExist, IntegrityError, fn, JOIN
 from starlette.responses import JSONResponse
 
-from database.schema import (
-    Algorithm, DataType, AlgorithmDataType
+from database.schema import Algorithm, DataType, AlgorithmDataType
+from routers.algorithm.validation_schema import (
+    AlgorithmList,
+    AlgorithmDataTypeOut,
+    AlgorithmID,
 )
-from routers.algorithm.validation_schema import AlgorithmList, AlgorithmDataTypeOut, AlgorithmID
-from routers.algorithm.validation_schema import AlgorithmDatatype as PydanticAlgorithmDataType
+from routers.algorithm.validation_schema import (
+    AlgorithmDatatype as PydanticAlgorithmDataType,
+)
 
 router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
+
 
 @router.post(
     "/",
@@ -16,11 +21,9 @@ router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
     name="Create a new algorithm",
     summary="It creates an algorith given the all the information and allowed datatypes",
     responses={500: {"model": str}, 400: {"model": str}, 201: {"model": str}},
-    response_model=AlgorithmID
+    response_model=AlgorithmID,
 )
-async def create_new_algorithm(
-    payload: PydanticAlgorithmDataType
-) :
+async def create_new_algorithm(payload: PydanticAlgorithmDataType):
     """
     This method lets the user add a new algorithm to the model registry. An algorithm name must be ***unique*** (error 400
     will be returned if not) and the datatypes must be ***already present*** in the model registry, otherwise an error will be
@@ -32,23 +35,19 @@ async def create_new_algorithm(
         name=algorithm.name,
         defaults={
             "description": algorithm.description,
-            "default_loss_function": algorithm.default_loss_function
-        }
+            "default_loss_function": algorithm.default_loss_function,
+        },
     )
     for data_type in data_types:
         data_type, _ = DataType.get_or_create(
-            type=data_type.type,
-            is_categorical=data_type.is_categorical
+            type=data_type.type, is_categorical=data_type.is_categorical
         )
 
     return AlgorithmID(id=alg.id)
 
 
 @router.get(
-    "/",
-    status_code=200,
-    name="Get all algorithms",
-    response_model=AlgorithmList
+    "/", status_code=200, name="Get all algorithms", response_model=AlgorithmList
 )
 async def get_all_algorithms():
     """
@@ -64,16 +63,19 @@ async def get_all_algorithms():
     name="Get algorithm by id",
     summary="It returns an algorithm given the id",
     responses={404: {"model": str}},
-    response_model=AlgorithmDataTypeOut
+    response_model=AlgorithmDataTypeOut,
 )
-async def get_algorithm_by_id(
-    algorithm_id: int
-):
+async def get_algorithm_by_id(algorithm_id: int):
     """
     Returns an algorithm given its ID
     """
     algorithm = Algorithm.select().where(Algorithm.id == algorithm_id).dicts()
-    all_dtypes = AlgorithmDataType.select(DataType).join(DataType).where(AlgorithmDataType.algorithm == algorithm_id).dicts()
+    all_dtypes = (
+        AlgorithmDataType.select(DataType)
+        .join(DataType)
+        .where(AlgorithmDataType.algorithm == algorithm_id)
+        .dicts()
+    )
     return AlgorithmDataTypeOut(algorithm=algorithm.get(), datatypes=list(all_dtypes))
 
 
