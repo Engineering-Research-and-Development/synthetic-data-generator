@@ -12,7 +12,7 @@ def init_db():
         response = requests.get(url)
         if response.status_code != 200:
             requests.put(url)
-    except ConnectionError:
+    except (ConnectionError, ConnectionRefusedError):
         logger.error("Cannot reach CouchDB, running in isolated environment")
         pass
 
