@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette.responses import JSONResponse
 
 from database.schema import Algorithm, DataType, AlgorithmDataType
 from routers.algorithm.validation_schema import (
@@ -68,6 +69,9 @@ async def get_algorithm_by_id(algorithm_id: int):
     Returns an algorithm given its ID
     """
     algorithm = Algorithm.select().where(Algorithm.id == algorithm_id).dicts()
+    if len(algorithm) == 0:
+        return JSONResponse(status_code=404, content={"message": "Algorithm not found"})
+
     all_dtypes = (
         AlgorithmDataType.select(DataType)
         .join(DataType)
@@ -90,3 +94,4 @@ async def delete_algorithm(algorithm_id: int):
     and feature schema
     """
     Algorithm.delete_by_id(algorithm_id)
+    return JSONResponse(status_code=200, content="ok")

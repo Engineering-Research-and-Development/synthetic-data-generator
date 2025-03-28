@@ -76,9 +76,8 @@ async def get_trained_model_id(
 
     - Feature schema (data types and their characteristics)
     """
-    try:
-        trained_model = TrainedModel.select().where(TrainedModel.id == model_id).dicts()
-    except peewee.DoesNotExist:
+    trained_model = TrainedModel.select().where(TrainedModel.id == model_id).dicts()
+    if len(trained_model) == 0:
         return JSONResponse(status_code=404, content={"message": "Model not found"})
 
     model_versions = (
