@@ -28,9 +28,9 @@ class TrainedModelVersionList(BaseModel):
 class MergedDataType(TrainModelDatatype, DataType):
     pass
 
+
 class TrainedModelVersionDatatype(TrainedModelVersion):
     datatypes: List[MergedDataType]
-
 
 
 class PostTrainedModelVersionDatatype(BaseModel):

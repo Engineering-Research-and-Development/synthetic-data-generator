@@ -14,7 +14,8 @@ from routers.trained_models.validation_schema import (
     TrainedModelVersion,
     TrainedModelVersionDatatype,
     PostTrainedModelVersionDatatype,
-    PostTrainedModelOut, MergedDataType,
+    PostTrainedModelOut,
+    MergedDataType,
 )
 
 router = APIRouter(prefix="/trained_models", tags=["Trained Models"])
@@ -90,8 +91,7 @@ async def get_trained_model_id(
         .dicts()
     )
     merged_datatypes = []
-    for datatype in datatypes:
-        merged_datatypes.append(MergedDataType(**datatype))
+    [merged_datatypes.append(MergedDataType(**datatype)) for datatype in datatypes]
 
     return TrainedModelVersionDatatype(
         model=trained_model.get(), versions=model_versions, datatypes=merged_datatypes
@@ -135,7 +135,7 @@ async def create_model_and_version(payload: PostTrainedModelVersionDatatype):
         retrieved_datatype, _ = DataType.get_or_create(
             type=datatype.type, is_categorical=datatype.is_categorical
         )
-        _ = TrainModelDatatype.create(
+        TrainModelDatatype.create(
             trained_model=trained_model,
             datatype=retrieved_datatype,
             feature_name=datatype.feature_name,
