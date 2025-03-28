@@ -1,12 +1,11 @@
 from contextlib import asynccontextmanager
-from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from ai_lib.job import job
-from server.couch_handlers import create_couch_entry, add_couch_data
+from server.couch_handlers import create_couch_entry, add_couch_data, init_db
 from server.file_utils import (
     create_folder,
     delete_folder,
@@ -24,6 +23,7 @@ from server.validation_schema import InferRequestData, TrainRequest, CouchEntry
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_db()
     server_startup()
     yield
 

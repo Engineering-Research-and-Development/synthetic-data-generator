@@ -97,7 +97,6 @@ def post_model_to_middleware(model_to_save: dict):
     """
 
     headers = {"Content-Type": "application/json"}
-    print(model_to_save)
     body = json.dumps(model_to_save)
     if MIDDLEWARE_ON:
         response = requests.post(
@@ -107,6 +106,9 @@ def post_model_to_middleware(model_to_save: dict):
             logger.error(
                 f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
             )
+        else:
+            logger.info("Model pushed successfully")
+
     return body
 
 def sync_trained_models():
@@ -123,13 +125,14 @@ def sync_trained_models():
             f"{middleware}trained_models/{model_id}"
         ).json()
         for version in model_payload["versions"]:
-            if version["image_path"] not in local_trained_models:
+            version_trimmed_name = version["image_path"].split("/")[-1]
+            if version_trimmed_name not in local_trained_models:
                 requests.delete(
                     f"{middleware}trained_models/{model_id}/?version_id={version['id']}"
                 )
                 logger.info(f"Deleted {model_id} from remote server")
             else:
-                local_trained_models.remove(version["image_path"])
+                local_trained_models.remove(version_trimmed_name)
 
     for local_trained_model in local_trained_models:
         local_payload_filepath = retrieve_model_payload(local_trained_model)
