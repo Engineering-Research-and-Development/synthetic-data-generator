@@ -39,7 +39,7 @@ def check_latest_version(model_dir: Path | str):
     folder_path = TRAINED_MODELS / model_dir
     version = 0
     if check_folder(folder_path):
-        version = len(os.listdir(folder_path))
+        version = len([path for path in os.listdir(folder_path) if model_dir in path])
     return version
 
 def list_trained_models():
