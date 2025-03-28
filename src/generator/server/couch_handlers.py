@@ -5,6 +5,7 @@ import requests
 COUCHDB_URL = os.environ.get("couch_db", "http://admin:password@127.0.0.1:5984")
 DATABASE_NAME = "model_results"
 
+
 def init_db():
     url = f"{COUCHDB_URL}/{DATABASE_NAME}/"
     response = requests.get(url)

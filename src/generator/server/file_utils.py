@@ -18,8 +18,12 @@ def create_server_repo_folder_structure() -> None:
     TRAINED_MODELS.mkdir(parents=True, exist_ok=True)
 
 
+def get_folder_full_path(folder_name: str):
+    return TRAINED_MODELS / folder_name
+
+
 def create_folder(folder_id: str):
-    folder_path = TRAINED_MODELS / folder_id
+    folder_path = get_folder_full_path(folder_id)
     folder_path.mkdir(parents=True, exist_ok=True)
     return folder_path
 
@@ -35,13 +39,20 @@ def check_folder(folder_path: Path | str):
         folder_path = Path(folder_path)
     return folder_path.exists()
 
+
 def check_latest_version(model_dir: Path | str):
-    folder_path = TRAINED_MODELS / model_dir
     version = 0
-    if check_folder(folder_path):
-        versions = [int(path.split("-")[-1].split("v")[0]) for path in os.listdir(folder_path) if model_dir in path]
+    try:
+        versions = [
+            int(path.split("-")[-1].split("v")[-1])
+            for path in os.listdir(TRAINED_MODELS)
+            if model_dir in path
+        ]
         version = max(versions)
+    except FileNotFoundError:
+        pass
     return version
+
 
 def list_trained_models():
     return os.listdir(TRAINED_MODELS)
@@ -55,4 +66,4 @@ def save_model_payload(folder_path: Path, model_payload: str):
 def retrieve_model_payload(base_path: Path | str) -> Path:
     if type(base_path) is str:
         base_path = Path(base_path)
-    return TRAINED_MODELS/ base_path / MODEL_PAYLOAD_NAME
+    return TRAINED_MODELS / base_path / MODEL_PAYLOAD_NAME
