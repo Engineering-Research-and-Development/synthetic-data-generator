@@ -111,6 +111,26 @@ def test_parse_tabular_data_json(correct_dataset):
     assert list_dict[3]["column_datatype"] == "int64"
     assert list_dict[3]["column_data"] == [1, 2, 3, 4, 5]
 
+def test_parse_data_to_registry(correct_dataset):
+    dataset = NumericDataset(correct_dataset)
+    feature_list = dataset.parse_data_to_registry()
+    assert len(feature_list) == len(dataset.columns)
+    assert feature_list[0]["feature_name"] == "A"
+    assert feature_list[0]["feature_position"] == 0
+    assert feature_list[0]["is_categorical"] is False
+    assert feature_list[0]["type"] == "float64"
+    assert feature_list[1]["feature_name"] == "B"
+    assert feature_list[1]["feature_position"] == 1
+    assert feature_list[1]["is_categorical"] is True
+    assert feature_list[1]["type"] == "object"
+    assert feature_list[2]["feature_name"] == "C"
+    assert feature_list[2]["feature_position"] == 2
+    assert feature_list[2]["is_categorical"] is False
+    assert feature_list[2]["type"] == "int64"
+    assert feature_list[3]["feature_name"] == "D"
+    assert feature_list[3]["feature_position"] == 3
+    assert feature_list[3]["is_categorical"] is False
+    assert feature_list[3]["type"] == "int64"
 
 def test_get_data(correct_dataset):
     dataset = NumericDataset(correct_dataset)

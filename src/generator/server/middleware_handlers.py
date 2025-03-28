@@ -11,15 +11,19 @@ from server.file_utils import (
     list_trained_models,
     retrieve_model_payload,
 )
-from server.utilities import format_training_info
 
 MIDDLEWARE_ON = True
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 generator_algorithm_names = []
-algorithm_name_to_index = {}
+algorithm_name_to_id = {}
 
 
 def server_startup():
+    """
+    Called at server startup to initialize the server.
+    It creates a folder structure for saving models on the server and
+    syncs the available algorithms from the middleware to the local server.
+    """
     logger.info("Server startup")
     create_server_repo_folder_structure()
     [
@@ -28,7 +32,7 @@ def server_startup():
     ]
     try:
         sync_available_algorithms()
-        #sync_trained_models()
+        sync_trained_models()
     except ConnectionError as error:
         global MIDDLEWARE_ON
         MIDDLEWARE_ON = False
@@ -40,36 +44,61 @@ def server_startup():
 
 
 def model_to_middleware(
-    model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str
+    model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str, version_name: str,
 ) -> str:
+    """
+    Pushes a trained model to the middleware.
+
+    This function logs the process of pushing a trained model to the middleware.
+    It gathers necessary information from the model and dataset, such as feature list
+    and training information, and constructs a payload to send to the middleware.
+    The payload includes model metadata, version information, and datatype details.
+    The function ultimately posts the model to the middleware for storage and returns
+    the response body of the POST request.
+
+    :param model: The trained model to be pushed
+    :param data: The dataset used for training the model
+    :param dataset_name: The name of the dataset
+    :param save_path: The path where the model is saved
+    :param version_name: The version name of the model
+    :return: The response body of the POST request
+    """
     logger.info(f"Pushing {model.model_name} to the middleware")
     feature_list = data.parse_data_to_registry()
-    training_info = format_training_info(model.training_info.to_dict())
-    model_image = save_path
-    model_version = "v0"
+    training_info = model.training_info.to_dict()
     version_info = {
-        "version_name": model_version,
-        "image_path": model_image,
-    }  # Version management as described above
+        "version_name": version_name,
+        "image_path": save_path,
+    }
     # Getting the algorithm id
-    algorithm_id = algorithm_name_to_index.get(model.self_describe().get('algorithm').get('name'))
+    algorithm_name = algorithm_name_to_id.get(model.self_describe().get('algorithm').get('name'))
     trained_model_misc = {
         "name": model.model_name,
         "dataset_name": dataset_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm": algorithm_id,
+        "algorithm": algorithm_name
     }
-
+    version_info.update(training_info)
     model_to_save = {
-        "trained_model": trained_model_misc,
-        "version": version_info.update(training_info),
+        "model": trained_model_misc,
+        "version": version_info,
         "datatypes": feature_list,
     }
+    return post_model_to_middleware(model_to_save)
+
+
+def post_model_to_middleware(model_to_save: dict):
+    """
+    Posts a trained model to the middleware
+
+    :param model_to_save: The model to be saved
+    :return: The body of the POST request
+    """
 
     headers = {"Content-Type": "application/json"}
+    print(model_to_save)
     body = json.dumps(model_to_save)
-
     if MIDDLEWARE_ON:
         response = requests.post(
             f"{middleware}trained_models/", headers=headers, data=body
@@ -78,25 +107,18 @@ def model_to_middleware(
             logger.error(
                 f"Something went wrong in saving the model, rollback to latest version\n {response.content}"
             )
-        logger.info(f"{model.model_name} saved to middleware")
     return body
-
 
 def sync_trained_models():
     """
     Syncs the trained models from the middleware to the local server.
-
-    This is a very basic sync, it will delete all the models on the server that are not present
-    in the middleware. Then it will create all the models on the middleware that are not present
-    on the server. This is a very naive approach.
-
     """
     logger.info("Syncing trained models")
     remote_trained_models = requests.get(f"{middleware}trained_models/").json()["models"]
     local_trained_models = list_trained_models()  # Image Paths
 
     for remote_trained_model in remote_trained_models:
-        model_id = remote_trained_model["id"]
+        model_id = remote_trained_model["model"]["id"]
         model_payload = requests.get(
             f"{middleware}trained_models/{model_id}"
         ).json()
@@ -113,16 +135,16 @@ def sync_trained_models():
         local_payload_filepath = retrieve_model_payload(local_trained_model)
         with open(local_payload_filepath, "r") as f:
             model_payload = json.load(f)
-        model_to_middleware(
-            model_payload["trained_model"],
-            model_payload["feature_schema"],
-            model_payload["training_info"],
-            model_payload["version"],
-        )
+
+        post_model_to_middleware(model_payload)
+
     logger.info("Sync completed")
 
 
 def sync_available_algorithms():
+    """
+    Syncs the available algorithms from the middleware to the local server.
+    """
     response = requests.get(
         f"{middleware}algorithms/"
     )
@@ -140,7 +162,7 @@ def sync_available_algorithms():
             logger.error(f"Error syncing algorithm: {response.text}")
         else:
             algo_id = response.json().get("id")
-            algorithm_name_to_index[algorithm["algorithm"]["name"]] = algo_id
+            algorithm_name_to_id[algorithm["algorithm"]["name"]] = algo_id
 
     logger.info("Algorithm sync completed")
 

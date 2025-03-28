@@ -35,6 +35,12 @@ def check_folder(folder_path: Path | str):
         folder_path = Path(folder_path)
     return folder_path.exists()
 
+def check_latest_version(model_dir: Path | str):
+    folder_path = TRAINED_MODELS / model_dir
+    version = 0
+    if check_folder(folder_path):
+        version = len(os.listdir(folder_path))
+    return version
 
 def list_trained_models():
     return os.listdir(TRAINED_MODELS)
@@ -48,4 +54,4 @@ def save_model_payload(folder_path: Path, model_payload: str):
 def retrieve_model_payload(base_path: Path | str) -> Path:
     if type(base_path) is str:
         base_path = Path(base_path)
-    return base_path / MODEL_PAYLOAD_NAME
+    return TRAINED_MODELS/ base_path / MODEL_PAYLOAD_NAME

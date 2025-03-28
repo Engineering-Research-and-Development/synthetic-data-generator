@@ -116,7 +116,7 @@ class NumericDataset:
                 "is_categorical": (
                     True if col.get("column_type", "") == CATEGORICAL else False
                 ),
-                "datatype": col.get("column_datatype", ""),
+                "type": col.get("column_datatype", ""),
             }
             feature_list.append(feat)
         return feature_list

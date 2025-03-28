@@ -23,11 +23,11 @@ class TrainingInfo:
         :return: dict: A dictionary with the training info
         """
         return {
-            "loss_fn": self._loss_fn,
+            "loss_function": self._loss_fn,
             "train_samples": self._train_samples,
             "train_loss": self._train_loss,
-            "validation_samples": self._validation_samples,
-            "validation_loss": self._validation_loss,
+            "val_samples": self._validation_samples,
+            "val_loss": self._validation_loss,
         }
 
     def to_json(self) -> str:

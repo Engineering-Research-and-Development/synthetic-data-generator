@@ -11,7 +11,7 @@ from server.file_utils import (
     create_folder,
     delete_folder,
     check_folder,
-    save_model_payload,
+    save_model_payload, check_latest_version,
 )
 from server.middleware_handlers import (
     model_to_middleware,
@@ -50,11 +50,9 @@ async def train(request: TrainRequest):
         )
 
     # Here we calculate the unique name of the folder
-    folder_id = str(
-        request["model"]["model_name"]
-        + trim_name(request["model"]["algorithm_name"])
-        + datetime.now().strftime("%Y%m%d.%H%M%S")
-    )
+    model_folder_name = f"{request["model"]["model_name"]}-{trim_name(request["model"]["algorithm_name"])}"
+    new_version_name = f"v{check_latest_version(model_folder_name)+1}"
+    folder_id = f"{model_folder_name}-{new_version_name}"
 
     folder_path = create_folder(folder_id)
     try:
@@ -71,7 +69,7 @@ async def train(request: TrainRequest):
 
     # We invoke the model registry saving the model, if failing delete trained model
     try:
-        model_payload = model_to_middleware(model, data, "dataset_name", folder_path)
+        model_payload = model_to_middleware(model, data, "dataset_name", str(folder_path), new_version_name)
         save_model_payload(folder_path, model_payload)
     except KeyError:
         delete_folder(folder_path)
