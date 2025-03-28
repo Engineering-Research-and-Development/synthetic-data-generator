@@ -44,7 +44,11 @@ def server_startup():
 
 
 def model_to_middleware(
-    model: UnspecializedModel, data: NumericDataset, dataset_name: str, save_path: str, version_name: str,
+    model: UnspecializedModel,
+    data: NumericDataset,
+    dataset_name: str,
+    save_path: str,
+    version_name: str,
 ) -> str:
     """
     Pushes a trained model to the middleware.
@@ -71,13 +75,15 @@ def model_to_middleware(
         "image_path": save_path,
     }
     # Getting the algorithm id
-    algorithm_name = algorithm_name_to_id.get(model.self_describe().get('algorithm').get('name'))
+    algorithm_name = algorithm_name_to_id.get(
+        model.self_describe().get("algorithm").get("name")
+    )
     trained_model_misc = {
         "name": model.model_name,
         "dataset_name": dataset_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm": algorithm_name
+        "algorithm": algorithm_name,
     }
     version_info.update(training_info)
     model_to_save = {
@@ -111,19 +117,20 @@ def post_model_to_middleware(model_to_save: dict):
 
     return body
 
+
 def sync_trained_models():
     """
     Syncs the trained models from the middleware to the local server.
     """
     logger.info("Syncing trained models")
-    remote_trained_models = requests.get(f"{middleware}trained_models/").json()["models"]
+    remote_trained_models = requests.get(f"{middleware}trained_models/").json()[
+        "models"
+    ]
     local_trained_models = list_trained_models()  # Image Paths
 
     for remote_trained_model in remote_trained_models:
         model_id = remote_trained_model["model"]["id"]
-        model_payload = requests.get(
-            f"{middleware}trained_models/{model_id}"
-        ).json()
+        model_payload = requests.get(f"{middleware}trained_models/{model_id}").json()
         for version in model_payload["versions"]:
             version_trimmed_name = version["image_path"].split("/")[-1]
             if version_trimmed_name not in local_trained_models:
@@ -148,18 +155,14 @@ def sync_available_algorithms():
     """
     Syncs the available algorithms from the middleware to the local server.
     """
-    response = requests.get(
-        f"{middleware}algorithms/"
-    )
+    response = requests.get(f"{middleware}algorithms/")
 
     for remote_algo in response.json().get("algorithms", []):
         if remote_algo.get("name") not in generator_algorithm_names:
             requests.delete(url=f"{middleware}algorithms/{remote_algo.get("id")}")
 
     for algorithm in browse_algorithms():
-        response = requests.post(
-            url=f"{middleware}algorithms/", json=algorithm
-        )
+        response = requests.post(url=f"{middleware}algorithms/", json=algorithm)
 
         if not response.status_code == 201:
             logger.error(f"Error syncing algorithm: {response.text}")
@@ -168,4 +171,3 @@ def sync_available_algorithms():
             algorithm_name_to_id[algorithm["algorithm"]["name"]] = algo_id
 
     logger.info("Algorithm sync completed")
-

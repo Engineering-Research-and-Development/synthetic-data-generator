@@ -10,7 +10,8 @@ from server.file_utils import (
     create_folder,
     delete_folder,
     check_folder,
-    save_model_payload, check_latest_version,
+    save_model_payload,
+    check_latest_version,
 )
 from server.middleware_handlers import (
     model_to_middleware,
@@ -69,7 +70,9 @@ async def train(request: TrainRequest):
 
     # We invoke the model registry saving the model, if failing delete trained model
     try:
-        model_payload = model_to_middleware(model, data, "dataset_name", str(folder_path), new_version_name)
+        model_payload = model_to_middleware(
+            model, data, "dataset_name", str(folder_path), new_version_name
+        )
         save_model_payload(folder_path, model_payload)
     except KeyError:
         delete_folder(folder_path)
