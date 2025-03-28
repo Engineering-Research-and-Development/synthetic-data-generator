@@ -13,12 +13,15 @@ class ModelVersionPublic(ModelVersion):
 
 
 class TrainedModelPublic(TrainedModel):
-    id: PositiveInt
     algorithm: PositiveInt
 
 
+class TrainModelOut(TrainedModelPublic):
+    id: PositiveInt
+
+
 class TrainedModelVersion(BaseModel):
-    model: TrainedModelPublic
+    model: TrainModelOut
     versions: List[ModelVersionPublic]
 
 
