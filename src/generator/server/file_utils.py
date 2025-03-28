@@ -49,7 +49,7 @@ def check_latest_version(model_dir: Path | str):
             if model_dir in path
         ]
         version = max(versions)
-    except FileNotFoundError:
+    except ValueError:
         pass
     return version
 
