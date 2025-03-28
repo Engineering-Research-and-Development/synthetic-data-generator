@@ -38,3 +38,9 @@ def test_delete_algorithm():
     algorithm_id = algo_id
     response = requests.delete(f"{BASE_URL}/{algorithm_id}")
     assert response.status_code == 200
+
+
+def test_get_algorithm_wrong_id():
+    algorithm_id = 999999
+    response = requests.get(f"{BASE_URL}/{algorithm_id}")
+    assert response.status_code == 404

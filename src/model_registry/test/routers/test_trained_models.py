@@ -68,3 +68,9 @@ def test_delete_trained_model():
     model_id = train_id
     response = requests.delete(f"{BASE_URL}/{model_id}")
     assert response.status_code == 200
+
+
+def test_get_trained_model_wrong_id():
+    model_id = 999999
+    response = requests.get(f"{BASE_URL}/{model_id}")
+    assert response.status_code == 404

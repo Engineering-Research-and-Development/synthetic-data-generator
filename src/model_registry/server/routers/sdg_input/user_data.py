@@ -20,7 +20,7 @@ generator_url = os.environ.get("generator_url", "http://localhost:8010")
 @router.post(
     "/",
     name="Synthetic Data Generator input collection",
-    responses={400: {"model": str}, 500: {"model": str}},
+    responses={400: {"model": str}},
     response_model=GeneratorDataOutput,
 )
 async def collect_user_input(input_data: UserDataInput):
