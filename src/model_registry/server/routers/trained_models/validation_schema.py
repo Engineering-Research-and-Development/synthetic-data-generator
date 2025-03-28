@@ -9,7 +9,7 @@ from database.validation_schema import (
 
 
 class ModelVersionPublic(ModelVersion):
-    trained_model: PositiveInt
+    id: PositiveInt
 
 
 class TrainedModelPublic(TrainedModel):
