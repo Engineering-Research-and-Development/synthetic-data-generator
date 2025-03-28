@@ -6,6 +6,3 @@ def test_trim_name():
     assert trim_name("data.file.csv") == "csv"
     assert trim_name("no_extension") == "no_extension"
     assert trim_name(".hiddenfile") == "hiddenfile"
-
-
-
