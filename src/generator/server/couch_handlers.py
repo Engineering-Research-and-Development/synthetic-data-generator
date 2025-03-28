@@ -7,10 +7,14 @@ DATABASE_NAME = "model_results"
 
 
 def init_db():
-    url = f"{COUCHDB_URL}/{DATABASE_NAME}/"
-    response = requests.get(url)
-    if response.status_code != 200:
-        requests.put(url)
+    try:
+        url = f"{COUCHDB_URL}/{DATABASE_NAME}/"
+        response = requests.get(url)
+        if response.status_code != 200:
+            requests.put(url)
+    except ConnectionError:
+        logger.error("Cannot reach CouchDB, running in isolated environment")
+        pass
 
 
 def create_couch_entry() -> str | None:
