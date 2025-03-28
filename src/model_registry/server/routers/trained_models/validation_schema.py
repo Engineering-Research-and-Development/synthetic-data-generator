@@ -13,6 +13,7 @@ class ModelVersionPublic(ModelVersion):
 
 
 class TrainedModelPublic(TrainedModel):
+    id: PositiveInt
     algorithm: PositiveInt
 
 
