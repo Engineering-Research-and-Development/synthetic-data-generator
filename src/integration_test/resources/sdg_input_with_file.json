@@ -1,0 +1,113 @@
+{
+  "additional_rows": 222,
+  "functions": [
+    {
+      "feature": "Salary",
+      "function_id": 1,
+      "parameters": [
+        {
+          "param_id": 2,
+          "value": 10
+        }
+      ]
+    }
+  ],
+  "ai_model": {
+    "selected_model_id": 6,
+    "model_version": "0",
+    "new_model": true,
+    "new_model_name": "test_name"
+  },
+  "user_file": [
+    {
+      "Name": "Alice",
+      "Age": "30",
+      "Occupation": "Engineer",
+      "Salary": "75000"
+    },
+    {
+      "Name": "Bob",
+      "Age": "25",
+      "Occupation": "Designer",
+      "Salary": "60000"
+    },
+    {
+      "Name": "Charlie",
+      "Age": "35",
+      "Occupation": "Teacher",
+      "Salary": "55000"
+    },
+    {
+      "Name": "David",
+      "Age": "40",
+      "Occupation": "Doctor",
+      "Salary": "90000"
+    },
+    {
+      "Name": "Eve",
+      "Age": "28",
+      "Occupation": "Artist",
+      "Salary": "45000"
+    },
+    {
+      "Name": "Frank",
+      "Age": "32",
+      "Occupation": "Lawyer",
+      "Salary": "80000"
+    },
+    {
+      "Name": "Grace",
+      "Age": "27",
+      "Occupation": "Nurse",
+      "Salary": "50000"
+    },
+    {
+      "Name": "Heidi",
+      "Age": "33",
+      "Occupation": "Architect",
+      "Salary": "70000"
+    },
+    {
+      "Name": "Ivan",
+      "Age": "29",
+      "Occupation": "Chef",
+      "Salary": "55000"
+    },
+    {
+      "Name": "Judy",
+      "Age": "31",
+      "Occupation": "Accountant",
+      "Salary": "65000"
+    },
+    {
+      "Name": "Mallory",
+      "Age": "26",
+      "Occupation": "Writer",
+      "Salary": "48000"
+    },
+    {
+      "Name": "Niaj",
+      "Age": "34",
+      "Occupation": "Scientist",
+      "Salary": "85000"
+    },
+    {
+      "Name": "Olivia",
+      "Age": "36",
+      "Occupation": "Musician",
+      "Salary": "52000"
+    },
+    {
+      "Name": "Peggy",
+      "Age": "38",
+      "Occupation": "Photographer",
+      "Salary": "58000"
+    },
+    {
+      "Name": "Quentin",
+      "Age": "37",
+      "Occupation": "Consultant",
+      "Salary": "72000"
+    }
+  ]
+}

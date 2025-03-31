@@ -79,4 +79,4 @@ services:
     container_name: sdg-frontend
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:frontend
     ports:
-      - "5173:5173"
+      - "5173:3000"
