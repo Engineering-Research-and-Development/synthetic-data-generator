@@ -9,15 +9,22 @@ from server.file_utils import (
     save_model_payload,
     check_folder,
 )
-from server.middleware_handlers import generator_algorithm_names, model_to_middleware
+from server.middleware_handlers import (
+    GENERATOR_ALGORITHM_NAMES,
+    ALGORITHM_SHORT_TO_LONG,
+    model_to_middleware,
+)
 from server.utilities import trim_name
 from server.validation_schema import TrainRequest, InferRequest
 
 
 def execute_train(request: TrainRequest, couch_doc: str):
     request = request.model_dump()
+    request["model"]["algorithm_name"] = ALGORITHM_SHORT_TO_LONG[
+        request["model"]["algorithm_name"]
+    ]
     # Check if the algorithm is implemented by the generator
-    if request["model"]["algorithm_name"] not in generator_algorithm_names:
+    if request["model"]["algorithm_name"] not in GENERATOR_ALGORITHM_NAMES:
         return JSONResponse(
             status_code=500,
             content="This algorithm is not implemented by the generator!",
@@ -66,6 +73,9 @@ def execute_train(request: TrainRequest, couch_doc: str):
 
 def execute_infer(request: InferRequest, couch_doc: str):
     request = request.model_dump()
+    request["model"]["algorithm_name"] = ALGORITHM_SHORT_TO_LONG[
+        request["model"]["algorithm_name"]
+    ]
     if not check_folder(request["model"]["image"]):
         return JSONResponse(status_code=500, content="This model has not been found!")
     # In this case since train is false the model will be loaded

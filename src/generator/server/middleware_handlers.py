@@ -16,8 +16,10 @@ from server.file_utils import (
 
 MIDDLEWARE_ON = True
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
-generator_algorithm_names = []
-algorithm_name_to_id = {}
+GENERATOR_ALGORITHM_NAMES = []
+ALGORITHM_NAME_TO_ID = {}
+ALGORITHM_LONG_TO_SHORT = {}
+ALGORITHM_SHORT_TO_LONG = {}
 
 
 def server_startup():
@@ -29,9 +31,13 @@ def server_startup():
     logger.info("Server startup")
     create_server_repo_folder_structure()
     [
-        generator_algorithm_names.append(algorithm["algorithm"]["name"])
+        GENERATOR_ALGORITHM_NAMES.append(algorithm["algorithm"]["name"])
         for algorithm in browse_algorithms()
     ]
+    for algorithm in GENERATOR_ALGORITHM_NAMES:
+        ALGORITHM_LONG_TO_SHORT[algorithm] = algorithm.split(".")[-1]
+        ALGORITHM_SHORT_TO_LONG[ALGORITHM_LONG_TO_SHORT[algorithm]] = algorithm
+
     try:
         sync_available_algorithms()
         sync_trained_models()
@@ -77,7 +83,7 @@ def model_to_middleware(
         "image_path": save_path,
     }
     # Getting the algorithm id
-    algorithm_name = algorithm_name_to_id.get(
+    algorithm_id = ALGORITHM_NAME_TO_ID.get(
         model.self_describe().get("algorithm").get("name")
     )
     trained_model_misc = {
@@ -85,7 +91,7 @@ def model_to_middleware(
         "dataset_name": dataset_name,
         "size": model.self_describe().get("size", "Not Available"),
         "input_shape": str(model.input_shape),
-        "algorithm": algorithm_name,
+        "algorithm": algorithm_id,
     }
     version_info.update(training_info)
     model_to_save = {
@@ -163,16 +169,20 @@ def sync_available_algorithms():
     response = requests.get(f"{middleware}algorithms/")
 
     for remote_algo in response.json().get("algorithms", []):
-        if remote_algo.get("name") not in generator_algorithm_names:
+        long_name = ALGORITHM_LONG_TO_SHORT[remote_algo.get("name")]
+        if long_name not in GENERATOR_ALGORITHM_NAMES:
             requests.delete(url=f"{middleware}algorithms/{remote_algo.get('id')}")
 
     for algorithm in browse_algorithms():
+        algorithm["algorithm"]["name"] = ALGORITHM_LONG_TO_SHORT[
+            algorithm["algorithm"]["name"]
+        ]
         response = requests.post(url=f"{middleware}algorithms/", json=algorithm)
 
         if not response.status_code == 201:
             logger.error(f"Error syncing algorithm: {response.text}")
         else:
             algo_id = response.json().get("id")
-            algorithm_name_to_id[algorithm["algorithm"]["name"]] = algo_id
+            ALGORITHM_NAME_TO_ID[algorithm["algorithm"]["name"]] = algo_id
 
     logger.info("Algorithm sync completed")
