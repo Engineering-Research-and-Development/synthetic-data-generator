@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
@@ -19,7 +19,7 @@ from server.middleware_handlers import (
     server_startup,
 )
 from server.utilities import trim_name
-from server.validation_schema import InferRequestData, TrainRequest, CouchEntry
+from server.validation_schema import InferRequest, TrainRequest, CouchEntry
 
 
 @asynccontextmanager
@@ -37,11 +37,39 @@ generator = FastAPI(lifespan=lifespan)
     responses={400: {"model": str}, 500: {"model": str}},
     response_model=CouchEntry,
 )
-async def train(request: TrainRequest):
+async def train(request: TrainRequest, background_tasks: BackgroundTasks):
     """
+    :param background_tasks: task to execute in background
     :param request: a request for train and infer
     :return:
     """
+    couch_doc = create_couch_entry()
+    background_tasks.add_task(execute_train, request, couch_doc)
+    return CouchEntry(doc_id=couch_doc)
+
+
+@generator.post(
+    "/infer",
+    responses={400: {"model": str}, 500: {"model": str}},
+    response_model=CouchEntry,
+)
+async def infer_data(request: InferRequest, background_tasks):
+    """
+    :param background_tasks: task to execute in background
+    :param request: a request for train and infer
+    :return:
+    """
+    couch_doc = create_couch_entry()
+    background_tasks.add_task(execute_infer, request, couch_doc)
+    return CouchEntry(doc_id=couch_doc)
+
+
+@generator.get("/", include_in_schema=False)
+async def home_to_docs():
+    return RedirectResponse(url="/docs")
+
+
+def execute_train(request: TrainRequest, couch_doc: str):
     request = request.model_dump()
     # Check if the algorithm is implemented by the generator
     if request["model"]["algorithm_name"] not in generator_algorithm_names:
@@ -81,7 +109,6 @@ async def train(request: TrainRequest):
             content=str("Impossible to link algorithms to trained model"),
         )
 
-    couch_doc = create_couch_entry()
     add_couch_data(
         couch_doc,
         new_data={
@@ -90,21 +117,10 @@ async def train(request: TrainRequest):
             "data": data.parse_tabular_data_json(),
         },
     )
-    return CouchEntry(doc_id=couch_doc)
 
 
-@generator.post(
-    "/infer",
-    responses={400: {"model": str}, 500: {"model": str}},
-    response_model=CouchEntry,
-)
-async def infer_data(request: InferRequestData):
-    """
-    :param request: a request for train and infer
-    :return:
-    """
+def execute_infer(request: InferRequest, couch_doc: str):
     request = request.model_dump()
-    couch_doc = create_couch_entry()
     if not check_folder(request["model"]["image"]):
         return JSONResponse(status_code=500, content="This model has not been found!")
     # In this case since train is false the model will be loaded
@@ -117,13 +133,6 @@ async def infer_data(request: InferRequestData):
     )
 
     add_couch_data(doc_id=couch_doc, new_data={"results": results, "metrics": metrics})
-    # Since the model has been only used (no training/fine-tuning) no further saving is required
-    return CouchEntry(doc_id=couch_doc)
-
-
-@generator.get("/", include_in_schema=False)
-async def home_to_docs():
-    return RedirectResponse(url="/docs")
 
 
 if __name__ == "__main__":

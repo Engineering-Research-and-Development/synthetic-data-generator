@@ -42,7 +42,7 @@ class InferRequestNoData(BaseModel):
     n_rows: PositiveInt
 
 
-class InferRequestData(InferRequestNoData):
+class InferRequest(InferRequestNoData):
     dataset: List[DatasetIn]
 
 
