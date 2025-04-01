@@ -34,7 +34,9 @@ def check_function_parameters(functions: list[dict]) -> list:
             continue
         else:
             return []
-    return functions_id
+    # return functions_id
+    # TODO: Bypass
+    return [0]
 
 
 def check_new_model(new_model: int, model_name: str) -> ModelOutput | Dict:

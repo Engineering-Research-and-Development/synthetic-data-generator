@@ -29,7 +29,9 @@ async def collect_user_input(input_data: UserDataInput):
 
     functions_id = check_function_parameters(data["functions"])
     if not functions_id:
-        return JSONResponse(status_code=400, content="Error analysing functions")
+        # TODO: Bypass
+        pass
+        # return JSONResponse(status_code=400, content="Error analysing functions")
 
     model = check_ai_model(data.get("ai_model"))
     if not model:

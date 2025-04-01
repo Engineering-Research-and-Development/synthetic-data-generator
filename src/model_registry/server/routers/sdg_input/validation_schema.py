@@ -60,7 +60,7 @@ class FeaturesCreated(BaseModel):
 
 class UserDataInput(BaseModel):
     additional_rows: PositiveInt
-    functions: List[FunctionData]
+    functions: Optional[List[FunctionData]] = []
     ai_model: AiModel
     user_file: Optional[List[Dict]] = None
     features_created: Optional[List[FeaturesCreated]] = None
