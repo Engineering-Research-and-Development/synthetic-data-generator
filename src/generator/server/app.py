@@ -24,7 +24,6 @@ from server.validation_schema import InferRequest, TrainRequest, CouchEntry
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
     server_startup()
     yield
 
