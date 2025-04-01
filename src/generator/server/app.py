@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
 from ai_lib.job import job
-from server.couch_handlers import create_couch_entry, add_couch_data, init_db
+from server.couch_handlers import create_couch_entry, add_couch_data
 from server.file_utils import (
     create_folder,
     delete_folder,
