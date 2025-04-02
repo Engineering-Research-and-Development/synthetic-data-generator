@@ -20,7 +20,7 @@ generator_url = os.environ.get("generator_url", "http://localhost:8010")
 @router.post(
     "/",
     name="Synthetic Data Generator input collection",
-    responses={400: {"model": str}},
+    responses={500: {"model": str}},
     response_model=GeneratorDataOutput,
 )
 async def collect_user_input(input_data: UserDataInput):
@@ -31,7 +31,7 @@ async def collect_user_input(input_data: UserDataInput):
     if not functions_id:
         # TODO: Bypass
         pass
-        # return JSONResponse(status_code=400, content="Error analysing functions")
+        # return JSONResponse(status_code=500, content="Error analysing functions")
 
     model = check_ai_model(data.get("ai_model"))
     if not model:
@@ -55,7 +55,7 @@ async def collect_user_input(input_data: UserDataInput):
         )
         if not result:
             return JSONResponse(
-                status_code=400,
+                status_code=500,
                 content="The functions chosen are not compatible with the following"
                 f" feature that you want to create ({error})",
             )
