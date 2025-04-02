@@ -1,4 +1,3 @@
-from starlette.responses import JSONResponse
 from loguru import logger
 
 from ai_lib.job import job
