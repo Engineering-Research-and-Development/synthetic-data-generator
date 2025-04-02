@@ -169,7 +169,7 @@ def sync_available_algorithms():
     response = requests.get(f"{middleware}algorithms/")
 
     for remote_algo in response.json().get("algorithms", []):
-        long_name = ALGORITHM_LONG_TO_SHORT[remote_algo.get("name")]
+        long_name = ALGORITHM_SHORT_TO_LONG[remote_algo.get("name")]
         if long_name not in GENERATOR_ALGORITHM_NAMES:
             requests.delete(url=f"{middleware}algorithms/{remote_algo.get('id')}")
 
