@@ -35,13 +35,13 @@ async def collect_user_input(input_data: UserDataInput):
 
     model = check_ai_model(data.get("ai_model"))
     if not model:
-        return JSONResponse(status_code=400, content="Wrong model")
+        return JSONResponse(status_code=500, content="AI model not found in database")
 
     body = {}
     if data.get("user_file") is not None:
         user_file = check_user_file(data.get("user_file"))
         if not user_file:
-            return JSONResponse(status_code=400, content="Error parsing input dataset")
+            return JSONResponse(status_code=500, content="Error parsing input dataset")
         body = GeneratorDataOutput(
             functions_id=functions_id,
             n_rows=data.get("additional_rows"),
