@@ -21,16 +21,18 @@ from server.validation_schema import TrainRequest, InferRequest
 
 def execute_train(request: TrainRequest, couch_doc: str):
     request = request.model_dump()
-    logger.info(f"Starting Train Request")
+    logger.info("Starting Train Request")
     request["model"]["algorithm_name"] = ALGORITHM_SHORT_TO_LONG[
         request["model"]["algorithm_name"]
     ]
     # Check if the algorithm is implemented by the generator
     if request["model"]["algorithm_name"] not in GENERATOR_ALGORITHM_NAMES:
-        return JSONResponse(
-            status_code=500,
-            content="This algorithm is not implemented by the generator!",
+        logger.error("Error finding algorithm locally")
+        add_couch_data(
+            couch_doc,
+            new_data={"error": "This algorithm does not exist locally"},
         )
+        return
 
     # Here we calculate the unique name of the folder
     model_folder_name = f"{request['model']['model_name']}-{trim_name(request['model']['algorithm_name'])}"
@@ -68,21 +70,19 @@ def execute_train(request: TrainRequest, couch_doc: str):
         couch_doc,
         new_data={
             "results": results,
-            "metrics": metrics,
-            "data": data.parse_tabular_data_json(),
-        },
+            "metrics": metrics,        },
     )
     logger.info("Training Job completed successfully")
 
 
 def execute_infer(request: InferRequest, couch_doc: str):
     request = request.model_dump()
-    logger.info(f"Starting Infer Request")
+    logger.info("Starting Infer Request")
     request["model"]["algorithm_name"] = ALGORITHM_SHORT_TO_LONG[
         request["model"]["algorithm_name"]
     ]
     if not check_folder(request["model"]["image"]):
-        logger.error(f"Error finding trained model model")
+        logger.error("Error finding trained model model")
         add_couch_data(
             couch_doc,
             new_data={"error": "This model has not been found!"},
