@@ -1,4 +1,5 @@
 from starlette.responses import JSONResponse
+from loguru import logger
 
 from ai_lib.job import job
 from server.couch_handlers import add_couch_data
@@ -20,6 +21,7 @@ from server.validation_schema import TrainRequest, InferRequest
 
 def execute_train(request: TrainRequest, couch_doc: str):
     request = request.model_dump()
+    logger.info(f"Starting Train Request")
     request["model"]["algorithm_name"] = ALGORITHM_SHORT_TO_LONG[
         request["model"]["algorithm_name"]
     ]
@@ -73,6 +75,7 @@ def execute_train(request: TrainRequest, couch_doc: str):
 
 def execute_infer(request: InferRequest, couch_doc: str):
     request = request.model_dump()
+    logger.info(f"Starting Infer Request")
     request["model"]["algorithm_name"] = ALGORITHM_SHORT_TO_LONG[
         request["model"]["algorithm_name"]
     ]
