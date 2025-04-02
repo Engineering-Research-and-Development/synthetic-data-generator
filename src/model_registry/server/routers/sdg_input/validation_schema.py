@@ -29,7 +29,7 @@ class AiModel(BaseModel):
         "This field does NOT allow strings that"
         " start or end with spaces or are empty",
         examples=["A name of a new model"],
-        default=None
+        default=None,
     )
     model_version: Optional[str] = Field(
         pattern="^[^ ](.*[^ ])?$",
@@ -37,7 +37,7 @@ class AiModel(BaseModel):
         "This field does NOT allow strings that"
         " start or end with spaces or are empty",
         examples=["The name of a version"],
-        default=None
+        default=None,
     )
 
 
