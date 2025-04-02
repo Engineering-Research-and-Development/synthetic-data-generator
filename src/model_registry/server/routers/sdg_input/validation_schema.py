@@ -64,7 +64,9 @@ class UserDataInput(BaseModel):
     additional_rows: PositiveInt
     functions: Optional[List[FunctionData]] = []
     ai_model: AiModel
-    user_file: Optional[List[Dict]] = None
+    user_file: Optional[List[Dict]] = Field(
+        default=None, description="The representation of key-value of the data content"
+    )
     features_created: Optional[List[FeaturesCreated]] = None
 
     @model_validator(mode="after")
@@ -99,3 +101,7 @@ class GeneratorDataOutput(BaseModel):
     model: ModelOutput
     n_rows: PositiveInt
     dataset: List[DatasetOutput] | None = None
+
+
+class GeneratorResponse(BaseModel):
+    doc_id: str

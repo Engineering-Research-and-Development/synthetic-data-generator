@@ -10,7 +10,7 @@ from .handlers import (
     check_ai_model,
     check_features_created_types,
 )
-from .validation_schema import UserDataInput, GeneratorDataOutput
+from .validation_schema import UserDataInput, GeneratorDataOutput, GeneratorResponse
 
 router = APIRouter(prefix="/sdg_input", tags=["SDG Input"])
 
@@ -21,7 +21,7 @@ generator_url = os.environ.get("generator_url", "http://localhost:8010")
     "/",
     name="Synthetic Data Generator input collection",
     responses={500: {"model": str}},
-    response_model=GeneratorDataOutput,
+    response_model=GeneratorResponse,
 )
 async def collect_user_input(input_data: UserDataInput):
     """ """
@@ -71,8 +71,8 @@ async def collect_user_input(input_data: UserDataInput):
     else:
         url = generator_url + "/infer"
 
-    # Invoking the generator
+    # Sending data to the generator
     response = requests.post(url, json=body.model_dump())
     if response != 200:
         return JSONResponse(status_code=response.status_code, content=response.json())
-    return response
+    return GeneratorResponse(**response.json())
