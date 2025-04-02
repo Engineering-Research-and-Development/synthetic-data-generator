@@ -48,7 +48,14 @@ def execute_train(request: TrainRequest, couch_doc: str):
         )
     except (ValueError, TypeError) as e:
         delete_folder(folder_path)
-        return JSONResponse(status_code=500, content=str(e))
+        logger.error(f"Error training model: {e}")
+        add_couch_data(
+            couch_doc,
+            new_data={
+                "error": e.args[0]
+            }
+        )
+        return
 
     # We invoke the model registry saving the model, if failing delete trained model
     try:
@@ -56,12 +63,16 @@ def execute_train(request: TrainRequest, couch_doc: str):
             model, data, "dataset_name", str(folder_path), new_version_name
         )
         save_model_payload(folder_path, model_payload)
-    except KeyError:
+    except KeyError as e:
+        logger.error(f"Error training model: {e}")
         delete_folder(folder_path)
-        return JSONResponse(
-            status_code=500,
-            content=str("Impossible to link algorithms to trained model"),
+        add_couch_data(
+            couch_doc,
+            new_data={
+                "error": e.args[0]
+            }
         )
+        return
 
     add_couch_data(
         couch_doc,
@@ -71,6 +82,7 @@ def execute_train(request: TrainRequest, couch_doc: str):
             "data": data.parse_tabular_data_json(),
         },
     )
+    logger.info("Training Job completed successfully")
 
 
 def execute_infer(request: InferRequest, couch_doc: str):
@@ -80,14 +92,30 @@ def execute_infer(request: InferRequest, couch_doc: str):
         request["model"]["algorithm_name"]
     ]
     if not check_folder(request["model"]["image"]):
-        return JSONResponse(status_code=500, content="This model has not been found!")
-    # In this case since train is false the model will be loaded
-    results, metrics, model, data = job(
-        model_info=request["model"],
-        dataset=request["dataset"],
-        n_rows=request["n_rows"],
-        save_filepath="",
-        train=False,
-    )
+        logger.error(f"Error finding trained model model")
+        add_couch_data(
+            couch_doc,
+            new_data={"error": "This model has not been found!"},
+        )
+        return
+
+    try:
+        results, metrics, model, data = job(
+            model_info=request["model"],
+            dataset=request["dataset"],
+            n_rows=request["n_rows"],
+            save_filepath="",
+            train=False,
+        )
+    except (ValueError, TypeError) as e:
+        logger.error(f"Error while making inference: {e}")
+        add_couch_data(
+            couch_doc,
+            new_data={
+                "error": e.args[0]
+            }
+        )
+        return
 
     add_couch_data(doc_id=couch_doc, new_data={"results": results, "metrics": metrics})
+    logger.info("Infer Job completed successfully")
