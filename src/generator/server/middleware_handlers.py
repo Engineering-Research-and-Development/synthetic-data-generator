@@ -75,7 +75,7 @@ def model_to_middleware(
     :param version_name: The version name of the model
     :return: The response body of the POST request
     """
-    logger.info(f"Pushing {model.model_name} to the middleware")
+
     feature_list = data.parse_data_to_registry()
     training_info = model.training_info.to_dict()
     version_info = {
@@ -113,6 +113,7 @@ def post_model_to_middleware(model_to_save: dict):
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
     if MIDDLEWARE_ON:
+        logger.info(f"Pushing {model_to_save.get('model').get('name')} middleware")
         response = requests.post(
             f"{middleware}trained_models/", headers=headers, data=body
         )
