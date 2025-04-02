@@ -36,7 +36,7 @@ def check_function_parameters(functions: list[dict]) -> list:
             return []
     # return functions_id
     # TODO: Bypass
-    return [0]
+    return [1]
 
 
 def check_new_model(new_model: int, model_name: str) -> ModelOutput | Dict:
