@@ -49,12 +49,7 @@ def execute_train(request: TrainRequest, couch_doc: str):
     except (ValueError, TypeError) as e:
         delete_folder(folder_path)
         logger.error(f"Error training model: {e}")
-        add_couch_data(
-            couch_doc,
-            new_data={
-                "error": e.args[0]
-            }
-        )
+        add_couch_data(couch_doc, new_data={"error": e.args[0]})
         return
 
     # We invoke the model registry saving the model, if failing delete trained model
@@ -66,12 +61,7 @@ def execute_train(request: TrainRequest, couch_doc: str):
     except KeyError as e:
         logger.error(f"Error training model: {e}")
         delete_folder(folder_path)
-        add_couch_data(
-            couch_doc,
-            new_data={
-                "error": e.args[0]
-            }
-        )
+        add_couch_data(couch_doc, new_data={"error": e.args[0]})
         return
 
     add_couch_data(
@@ -109,12 +99,7 @@ def execute_infer(request: InferRequest, couch_doc: str):
         )
     except (ValueError, TypeError) as e:
         logger.error(f"Error while making inference: {e}")
-        add_couch_data(
-            couch_doc,
-            new_data={
-                "error": e.args[0]
-            }
-        )
+        add_couch_data(couch_doc, new_data={"error": e.args[0]})
         return
 
     add_couch_data(doc_id=couch_doc, new_data={"results": results, "metrics": metrics})
