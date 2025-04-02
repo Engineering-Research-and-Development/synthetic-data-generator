@@ -70,7 +70,8 @@ def execute_train(request: TrainRequest, couch_doc: str):
         couch_doc,
         new_data={
             "results": results,
-            "metrics": metrics,        },
+            "metrics": metrics,
+        },
     )
     logger.info("Training Job completed successfully")
 
