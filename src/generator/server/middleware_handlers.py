@@ -174,9 +174,7 @@ def sync_available_algorithms():
 
     for algorithm in browse_algorithms():
         long_name = algorithm["algorithm"]["name"]
-        algorithm["algorithm"]["name"] = ALGORITHM_LONG_TO_SHORT[
-            long_name
-        ]
+        algorithm["algorithm"]["name"] = ALGORITHM_LONG_TO_SHORT[long_name]
         response = requests.post(url=f"{middleware}algorithms/", json=algorithm)
 
         if not response.status_code == 201:
