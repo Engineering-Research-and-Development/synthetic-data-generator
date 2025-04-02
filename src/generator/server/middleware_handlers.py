@@ -17,7 +17,7 @@ from server.file_utils import (
 MIDDLEWARE_ON = True
 middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
 GENERATOR_ALGORITHM_NAMES = []
-ALGORITHM_NAME_TO_ID = {}
+ALGORITHM_LONG_NAME_TO_ID = {}
 ALGORITHM_LONG_TO_SHORT = {}
 ALGORITHM_SHORT_TO_LONG = {}
 
@@ -83,7 +83,7 @@ def model_to_middleware(
         "image_path": save_path,
     }
     # Getting the algorithm id
-    algorithm_id = ALGORITHM_NAME_TO_ID.get(
+    algorithm_id = ALGORITHM_LONG_NAME_TO_ID.get(
         model.self_describe().get("algorithm").get("name")
     )
     trained_model_misc = {
@@ -169,13 +169,13 @@ def sync_available_algorithms():
     response = requests.get(f"{middleware}algorithms/")
 
     for remote_algo in response.json().get("algorithms", []):
-        long_name = ALGORITHM_SHORT_TO_LONG.get(remote_algo.get("name"))
-        if long_name not in GENERATOR_ALGORITHM_NAMES:
+        if remote_algo.get("name") not in ALGORITHM_SHORT_TO_LONG.keys():
             requests.delete(url=f"{middleware}algorithms/{remote_algo.get('id')}")
 
     for algorithm in browse_algorithms():
+        long_name = algorithm["algorithm"]["name"]
         algorithm["algorithm"]["name"] = ALGORITHM_LONG_TO_SHORT[
-            algorithm["algorithm"]["name"]
+            long_name
         ]
         response = requests.post(url=f"{middleware}algorithms/", json=algorithm)
 
@@ -183,6 +183,6 @@ def sync_available_algorithms():
             logger.error(f"Error syncing algorithm: {response.text}")
         else:
             algo_id = response.json().get("id")
-            ALGORITHM_NAME_TO_ID[algorithm["algorithm"]["name"]] = algo_id
+            ALGORITHM_LONG_NAME_TO_ID[long_name] = algo_id
 
     logger.info("Algorithm sync completed")
