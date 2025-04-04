@@ -1,6 +1,7 @@
 import os
 from loguru import logger
 import requests
+
 COUCHDB_USER = os.environ.get("COUCHDB_USER", "admin")
 COUCHDB_PASSWORD = os.environ.get("COUCHDB_PASSWORD", "password")
 COUCHDB_HOST = os.environ.get("COUCHDB_HOST", "127.0.0.1")
