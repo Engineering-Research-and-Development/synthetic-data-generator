@@ -47,7 +47,7 @@ jobs:
       - name: Run the Docker container
         run: |
           docker run -d --network ${{ job.services.postgres.network }} \
-            -e db_host=postgres \
+            -e POSTGRES_HOST=postgres \
             -e INIT_DB=True \
             -p 8001:8001 \
             --name test-container test-container
