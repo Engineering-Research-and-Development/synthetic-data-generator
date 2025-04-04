@@ -1,9 +1,11 @@
 import os
 from loguru import logger
 import requests
-
-COUCHDB_URL = os.environ.get("couch_db", "http://admin:password@127.0.0.1:5984")
-DATABASE_NAME = "model_results"
+COUCHDB_USER = os.environ.get("COUCHDB_USER", "admin")
+COUCHDB_PASSWORD = os.environ.get("COUCHDB_PASSWORD", "password")
+COUCHDB_HOST = os.environ.get("COUCHDB_HOST", "127.0.0.1")
+DATABASE_NAME = os.environ.get("COUCHDB_DB", "model_results")
+COUCHDB_URL = f"http://{COUCHDB_USER}:{COUCHDB_PASSWORD}@{COUCHDB_HOST}:5984"
 
 
 def init_db():
