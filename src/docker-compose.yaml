@@ -1,5 +1,4 @@
 services:
-
   database:
     container_name: sdg-database
     image: "postgres:latest"
@@ -56,12 +55,12 @@ services:
     ports:
       - "8001:8001"
     environment:
-      db_host: "database"
-      db_name: "postgres"
-      db_password: "postgres"
-      db_username: "postgres"
+      POSTGRES_HOST: "database"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
       generator_url: "http://generator:8010"
-      INIT_DB: "True"
       allowed_origins: '*'
 
   generator:
@@ -71,7 +70,10 @@ services:
       - couchDb
     image: ghcr.io/engineering-research-and-development/synthetic-data-generator:generator
     environment:
-      couch_db: "http://admin:password@couchDb:5984"
+      COUCHDB_USER: "admin"
+      COUCHDB_PASSWORD: "password"
+      COUCHDB_DB: "model_results"
+      COUCHDB_HOST: "couch"
     ports:
       - "8010:8010"
 
