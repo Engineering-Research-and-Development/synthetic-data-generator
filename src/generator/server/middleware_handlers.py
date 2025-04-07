@@ -90,7 +90,7 @@ def model_to_middleware(
         "name": model.model_name,
         "dataset_name": dataset_name,
         "size": model.self_describe().get("size", "Not Available"),
-        "input_shape": str(model.input_shape),
+        "input_shape": str(model.input_shape).replace(" ", ""),
         "algorithm": algorithm_id,
     }
     version_info.update(training_info)
