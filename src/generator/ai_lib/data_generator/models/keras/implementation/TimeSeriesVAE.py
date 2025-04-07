@@ -58,18 +58,18 @@ class TimeSeriesVAE(KerasBaseVAE):
         encoder_inputs_permute = layers.Permute((2, 1))(encoder_inputs)
         x = layers.Conv1D(
             32,
-            3,
+            9,
             activation="relu",
             padding="valid",
-            strides=2,
+            strides=1,
             data_format="channels_last",
         )(encoder_inputs_permute)
         x = layers.Conv1D(
             64,
-            3,
+            5,
             activation="relu",
             padding="valid",
-            strides=2,
+            strides=1,
             data_format="channels_last",
         )(x)
         shape_before_flatten = x.shape[1:]
@@ -87,18 +87,18 @@ class TimeSeriesVAE(KerasBaseVAE):
         y = layers.Reshape(shape_before_flatten)(y)
         y = layers.Conv1DTranspose(
             64,
-            3,
+            5,
             activation="relu",
             padding="valid",
-            strides=2,
+            strides=1,
             data_format="channels_last",
         )(y)
         y = layers.Conv1DTranspose(
             32,
-            3,
+            9,
             activation="relu",
             padding="valid",
-            strides=2,
+            strides=1,
             data_format="channels_last",
         )(y)
         decoder_outputs = layers.Conv1DTranspose(
