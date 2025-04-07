@@ -49,6 +49,7 @@ class SupportedDatatypes(str, Enum):
 class SupportedDatatypesCategory(str, Enum):
     continuous = "continuous"
     categorical = "categorical"
+    time_series = "time_series"
 
 
 class FeaturesCreated(BaseModel):
@@ -87,7 +88,7 @@ class ModelOutput(BaseModel):
 
 
 class DatasetOutput(BaseModel):
-    column_data: List[float | int]
+    column_data: List[float | int | list]
     column_name: str
     column_type: str
     column_datatype: SupportedDatatypes

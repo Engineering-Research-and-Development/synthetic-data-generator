@@ -113,15 +113,21 @@ def determine_column_type(values: list) -> str:
     :param values: List of values in the column.
     :return: "continuous" if all values are integers or floats, otherwise "categorical".
     """
-    return (
-        "continuous"
-        if all(
-            isinstance(v, (int, float))
-            or (isinstance(v, str) and v.replace(".", "", 1).isdigit())
-            for v in values
+    if isinstance(values[0], list):
+        return "time_series"
+    else:
+        return "continuous"
+
+
+def determine_column_datatype(values: list) -> SupportedDatatypes:
+    if isinstance(values[0], list):
+        return determine_column_datatype(values[0])
+    else:
+        return (
+            SupportedDatatypes.int
+            if all(isinstance(v, int) for v in values)
+            else SupportedDatatypes.float.value
         )
-        else "categorical"
-    )
 
 
 def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
@@ -138,21 +144,15 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
 
     for column_name, values in columns.items():
         column_type = determine_column_type(values)
-        # TODO: Are we sure we want to check only for continuous columns??
-        if column_type == "continuous":
-            column_datatype = (
-                SupportedDatatypes.int
-                if all(isinstance(v, int) for v in values)
-                else SupportedDatatypes.float.value
+        column_datatype = determine_column_datatype(values)
+        dataset_outputs.append(
+            DatasetOutput(
+                column_data=values,
+                column_name=column_name,
+                column_type=column_type,
+                column_datatype=column_datatype,
             )
-            dataset_outputs.append(
-                DatasetOutput(
-                    column_data=values,
-                    column_name=column_name,
-                    column_type=column_type,
-                    column_datatype=column_datatype,
-                )
-            )
+        )
 
     return dataset_outputs
 
