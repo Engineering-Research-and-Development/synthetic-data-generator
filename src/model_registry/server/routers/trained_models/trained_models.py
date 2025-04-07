@@ -122,7 +122,7 @@ async def create_model_and_version(payload: PostTrainedModelVersionDatatype):
     try:
         Algorithm.get_by_id(payload.model.algorithm)
     except peewee.DoesNotExist:
-        return JSONResponse(status_code=404, content={"message": "Algorithm not found"})
+        return JSONResponse(status_code=500, content={"message": "Algorithm not found"})
 
     trained_model, model_created = TrainedModel.get_or_create(
         **payload.model.model_dump()
