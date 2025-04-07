@@ -140,8 +140,11 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
     dataset_outputs = []
 
     # Transpose user_file to a column-wise structure
-    columns = {key: [ast.literal_eval(entry[key]) for entry in user_file]
-               for key in user_file[0].keys() if key != ""}
+    columns = {
+        key: [ast.literal_eval(entry[key]) for entry in user_file]
+        for key in user_file[0].keys()
+        if key != ""
+    }
 
     for column_name, values in columns.items():
         column_type = determine_column_type(values)
