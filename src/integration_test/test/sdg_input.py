@@ -24,6 +24,6 @@ def load_jsons():
 @pytest.mark.parametrize("filename,payload", load_jsons())
 def test_sdg_input(filename, payload):
     response = requests.post(url, json=payload)
-    assert response.status_code == 200, (
-        f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
-    )
+    assert (
+        response.status_code == 200
+    ), f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
