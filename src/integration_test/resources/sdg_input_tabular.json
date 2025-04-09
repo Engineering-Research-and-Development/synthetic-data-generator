@@ -1,6 +1,7 @@
 {
   "additional_rows": 100,
   "functions": [],
+  "test": "TabularVAE",
   "ai_model": {
     "selected_model_id": 6,
     "model_version": "0",

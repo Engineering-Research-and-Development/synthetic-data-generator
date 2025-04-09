@@ -1,6 +1,7 @@
 {
   "additional_rows": 100,
   "functions": [],
+  "test": "TimeSeriesVAE",
   "ai_model": {
     "selected_model_id": 5,
     "model_version": "0",
