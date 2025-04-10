@@ -29,9 +29,9 @@ def test_algorithms_available():
 @pytest.mark.parametrize("filename,payload", load_jsons("../resources/algorithms"))
 def test_post_algorithms(filename, payload, algorithms_available):
     response = requests.post(url, json=payload)
-    assert response.status_code == 201, (
-        f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
-    )
+    assert (
+        response.status_code == 201
+    ), f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
 
 
 @pytest.mark.dependency(depends=["test_post_algorithms", "test_sdg_input"])

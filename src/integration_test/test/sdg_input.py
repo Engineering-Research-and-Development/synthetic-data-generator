@@ -18,9 +18,9 @@ def test_sdg_input(filename, payload, algorithms_available):
     payload.pop("test")
     payload["ai_model"]["selected_model_id"] = model_id
     response = requests.post(url, json=payload)
-    assert response.status_code == 200, (
-        f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
-    )
+    assert (
+        response.status_code == 200
+    ), f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
 
 
 @pytest.mark.dependency(name="test_sdg_input")
