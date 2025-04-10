@@ -1,3 +1,4 @@
 pytest == 8.3.4
 requests
 pytest-env
+pytest-dependency
