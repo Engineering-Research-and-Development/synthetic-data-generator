@@ -14,10 +14,6 @@ jobs:
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
           compose-file: "./docker-compose.yaml"
-          services: |
-            database
-            couchDb
-            couchdb-init
 
       - name: Wait the container to be up and running
         run: |
