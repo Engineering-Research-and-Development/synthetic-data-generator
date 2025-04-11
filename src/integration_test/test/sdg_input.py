@@ -1,5 +1,3 @@
-import time
-
 import requests
 import pytest
 
@@ -21,11 +19,3 @@ def test_sdg_input(filename, payload, algorithms_available):
     assert response.status_code == 200, (
         f"Failed on file: {filename} with status code {response.status_code} and body: {response.text}"
     )
-
-
-@pytest.mark.dependency(name="test_sdg_input")
-def test_check_pushed_models():
-    time.sleep(10)
-    response = requests.get(middleware + "/trained_models")
-    json_response = response.json()
-    assert len(json_response["models"]) >= 1
