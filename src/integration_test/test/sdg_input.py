@@ -7,7 +7,6 @@ from algorithms import algorithms_available
 url = middleware + "/sdg_input/"
 
 
-@pytest.mark.dependency()
 @pytest.mark.parametrize("filename,payload", load_jsons("../resources/sdg_input"))
 def test_sdg_input(filename, payload, algorithms_available):
     model_id = list(algorithms_available.keys())[
