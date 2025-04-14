@@ -141,7 +141,7 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
 
     # Transpose user_file to a column-wise structure
     columns = {
-        key: [ast.literal_eval(entry[key]) for entry in user_file]
+        key: [ast.literal_eval(str(entry[key])) for entry in user_file]
         for key in user_file[0].keys()
         if key != ""
     }
