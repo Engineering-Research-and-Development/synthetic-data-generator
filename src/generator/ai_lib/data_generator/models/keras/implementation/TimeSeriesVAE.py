@@ -107,7 +107,7 @@ class TimeSeriesVAE(KerasBaseVAE):
         decoder_outputs_permute = layers.Permute((2, 1))(decoder_outputs)
         decoder = keras.Model(latent_inputs, decoder_outputs_permute, name="decoder")
 
-        vae = VAE(encoder, decoder, self._beta)
+        vae = VAE(encoder, decoder, self._beta, name="TimeSeriesVAE")
         encoder.summary()
         decoder.summary()
         vae.summary()

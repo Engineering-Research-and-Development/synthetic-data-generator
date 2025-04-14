@@ -67,7 +67,7 @@ class TabularVAE(KerasBaseVAE):
         decoder_outputs = layers.Dense(input_shape[0], activation="linear")(y)
         decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 
-        vae = VAE(encoder, decoder, self._beta)
+        vae = VAE(encoder, decoder, self._beta, name="TabularVAE")
         vae.summary()
         return vae
 
