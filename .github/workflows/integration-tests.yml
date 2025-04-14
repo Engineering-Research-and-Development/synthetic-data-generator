@@ -14,6 +14,11 @@ jobs:
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
           compose-file: "./docker-compose.yaml"
+          services: |
+            sdg-middleware
+            generator
+            couchDb
+          
 
       - name: Wait the container to be up and running
         run: |
