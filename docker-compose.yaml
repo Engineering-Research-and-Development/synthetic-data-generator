@@ -44,8 +44,9 @@ services:
             \"admins\": { \"names\": [], \"roles\": [\"_admin\"] },
             \"members\": { \"names\": [], \"roles\": [] }
           }'
+          curl -X PUT http://$${COUCHDB_USER}:$${COUCHDB_PASSWORD}@couch:5984/_node/nonode@nohost/_config/chttpd/enable_cors -d '\"true\"'
+          curl -X PUT http://$${COUCHDB_USER}:$${COUCHDB_PASSWORD}@couch:5984/_node/nonode@nohost/_config/cors/origins -d '\"*\"'
         "
-    restart: on-failure
 
   sdg-middleware:
     container_name: sdg-middleware
