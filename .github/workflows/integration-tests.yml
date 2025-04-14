@@ -18,6 +18,7 @@ jobs:
             sdg-middleware
             generator
             couchDb
+            couchdb-init
           
 
       - name: Wait the container to be up and running
