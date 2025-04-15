@@ -136,29 +136,34 @@ class TabularComparisonEvaluator:
             + len(self._numerical_columns) * wass_distance
         ) / n_features
 
-        self.report.add_metric(
-            StatisticalMetric(
-                title="Total Statistical Compliance",
-                unit_measure="%",
-                value=np.round(stat_compliance * 100, 2).item(),
+        if not (
+            len(self._numerical_columns) == 0 or len(self._categorical_columns) == 0
+        ):
+            self.report.add_metric(
+                StatisticalMetric(
+                    title="Total Statistical Compliance",
+                    unit_measure="%",
+                    value=np.round(stat_compliance * 100, 2).item(),
+                )
             )
-        )
 
-        self.report.add_metric(
-            StatisticalMetric(
-                title="Categorical Features Cramer's V",
-                unit_measure="%",
-                value=np.round(cramer_v * 100, 2).item(),
+        if not len(self._categorical_columns) == 0:
+            self.report.add_metric(
+                StatisticalMetric(
+                    title="Categorical Features Cramer's V",
+                    unit_measure="%",
+                    value=np.round(cramer_v * 100, 2).item(),
+                )
             )
-        )
 
-        self.report.add_metric(
-            StatisticalMetric(
-                title="Numerical Features Wasserstein Distance",
-                unit_measure="%",
-                value=np.round(wass_distance * 100, 2).item(),
+        if not len(self._numerical_columns) == 0:
+            self.report.add_metric(
+                StatisticalMetric(
+                    title="Numerical Features Wasserstein Distance",
+                    unit_measure="%",
+                    value=np.round(wass_distance * 100, 2).item(),
+                )
             )
-        )
 
     def _evaluate_novelty(self):
         """
@@ -252,18 +257,20 @@ class TabularComparisonEvaluator:
             adherence_percentage = np.round(in_boundary_count / total_records * 100, 2)
             boundary_adherence_score[col] = float(adherence_percentage)
 
-        self.report.add_metric(
-            AdherenceMetric(
-                title="Synthetic Categories Adherence to Real Categories",
-                unit_measure="%",
-                value=category_adherence_score,
+        if not len(self._categorical_columns) == 0:
+            self.report.add_metric(
+                AdherenceMetric(
+                    title="Synthetic Categories Adherence to Real Categories",
+                    unit_measure="%",
+                    value=category_adherence_score,
+                )
             )
-        )
 
-        self.report.add_metric(
-            AdherenceMetric(
-                title="Synthetic Numerical Min-Max Boundaries Adherence",
-                unit_measure="%",
-                value=boundary_adherence_score,
+        if not len(self._numerical_columns) == 0:
+            self.report.add_metric(
+                AdherenceMetric(
+                    title="Synthetic Numerical Min-Max Boundaries Adherence",
+                    unit_measure="%",
+                    value=boundary_adherence_score,
+                )
             )
-        )
