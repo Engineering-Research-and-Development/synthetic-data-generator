@@ -82,7 +82,7 @@ class UserDataInput(BaseModel):
 
 class ModelOutput(BaseModel):
     algorithm_name: str
-    model_name: Optional[str]
+    model_name: str
     input_shape: Optional[str] = None
     image: Optional[str] = None
 
