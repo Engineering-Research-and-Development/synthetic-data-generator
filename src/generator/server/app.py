@@ -17,13 +17,27 @@ async def lifespan(app: FastAPI):
     yield
 
 
-generator = FastAPI(lifespan=lifespan)
+generator = FastAPI(
+    lifespan=lifespan,
+    title="Generator APIary",
+    description="""This is the core of the whole architecture where model blueprints \
+                    (algorithms) resides. It exposes two endpoints to start a new training or inference \
+                    process.
+                    """,
+)
 
 
 @generator.post(
     "/train",
     responses={400: {"model": str}, 500: {"model": str}},
     response_model=CouchEntry,
+    description="""
+    This endpoint is used to start a new training process. \
+    It returns a doc_id that can be used to retrieve the status of the training process. \
+    The training process is executed in the background, updating the document \
+    in CouchDB as soon as new results are available
+    When a new model is trained, it is pushed to the middleware for storage.
+    """,
 )
 async def train(request: TrainRequest, background_tasks: BackgroundTasks):
     """
@@ -40,6 +54,15 @@ async def train(request: TrainRequest, background_tasks: BackgroundTasks):
     "/infer",
     responses={400: {"model": str}, 500: {"model": str}},
     response_model=CouchEntry,
+    description="""
+    This endpoint is used to start a new inference process. \
+    Inference processes accept two kind of inputs: the first one include an example \
+    dataset from which the generator will evaluate synthetic data.
+    Alternatively, it is possible to uniquely send the data structure (included in model)
+    It returns a doc_id that can be used to retrieve the status of the inference process. \
+    The inference process is executed in the background, updating the document \
+    in CouchDB as soon as new results are available
+    """,
 )
 async def infer_data(request: InferRequest, background_tasks):
     """

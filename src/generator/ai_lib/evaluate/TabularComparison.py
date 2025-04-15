@@ -2,6 +2,13 @@ import numpy as np
 import pandas as pd
 import scipy.stats as ss
 
+from ai_lib.evaluate.Metrics import (
+    MetricReport,
+    StatisticalMetric,
+    AdherenceMetric,
+    NoveltyMetric,
+)
+
 
 class TabularComparisonEvaluator:
     """
@@ -26,17 +33,17 @@ class TabularComparisonEvaluator:
         self._synthetic_data = synthetic_data
         self._numerical_columns = numerical_columns
         self._categorical_columns = categorical_columns
+        self.report = MetricReport()
 
     def compute(self):
         if len(self._numerical_columns) <= 1 and len(self._categorical_columns) <= 1:
-            return {"available": False}
+            return
 
-        report = {
-            "statistical_metrics": self._evaluate_statistical_properties(),
-            "adherence_metrics": self._evaluate_adherence(),
-            "novelty_metrics": self._evaluate_novelty(),
-        }
-        return report
+        self._evaluate_statistical_properties()
+        self._evaluate_adherence()
+        self._evaluate_novelty()
+
+        return self.report.to_json()
 
     @staticmethod
     def _compute_cramer_v(data1: np.array, data2: np.array):
@@ -116,11 +123,10 @@ class TabularComparisonEvaluator:
 
         return 1 - np.mean(wass_distance_scores)
 
-    def _evaluate_statistical_properties(self) -> dict:
+    def _evaluate_statistical_properties(self):
         """
         This function evaluates both Wasserstein distance for numerical features and Cramer's V for categorical ones,
         providing a weighted mean of the scores based on the number of features
-        :return: a dictionary report containing a brief statistical report
         """
         cramer_v = self._evaluate_cramer_v_distance()
         wass_distance = self._evaluate_wasserstein_distance()
@@ -130,24 +136,35 @@ class TabularComparisonEvaluator:
             + len(self._numerical_columns) * wass_distance
         ) / n_features
 
-        report = {
-            "Total Statistical Compliance [%]": np.round(
-                stat_compliance * 100, 2
-            ).item(),
-            "Categorical Features Cramer's V [%]": np.round(cramer_v * 100, 2).item(),
-            "Numerical Features Wasserstein Distance [%]": np.round(
-                wass_distance * 100, 2
-            ).item(),
-        }
+        self.report.add_metric(
+            StatisticalMetric(
+                title="Total Statistical Compliance",
+                unit_measure="%",
+                value=np.round(stat_compliance * 100, 2).item(),
+            )
+        )
 
-        return report
+        self.report.add_metric(
+            StatisticalMetric(
+                title="Categorical Features Cramer's V",
+                unit_measure="%",
+                value=np.round(cramer_v * 100, 2).item(),
+            )
+        )
+
+        self.report.add_metric(
+            StatisticalMetric(
+                title="Numerical Features Wasserstein Distance",
+                unit_measure="%",
+                value=np.round(wass_distance * 100, 2).item(),
+            )
+        )
 
     def _evaluate_novelty(self):
         """
         This function evaluates in two steps the following metrics
         1) The number of unique samples generated in the synthetic dataset with respect to the real data
         2) The number of duplicated samples in the synthetic dataset
-        :return: a dictionary report with percentage of duplicated data
         """
         synth_len = self._synthetic_data.shape[0]
 
@@ -165,15 +182,21 @@ class TabularComparisonEvaluator:
             (real_unique_len + synth_unique_len) - conc_unique_len
         )
 
-        report = {
-            "Unique Synthetic Data [%]": np.round(
-                synth_unique_len / synth_len * 100, 2
-            ).item(),
-            "New Synthetic Data [%]": np.round(
-                new_synt_data / synth_len * 100, 2
-            ).item(),
-        }
-        return report
+        self.report.add_metric(
+            NoveltyMetric(
+                title="Unique Synthetic Data",
+                unit_measure="%",
+                value=np.round(synth_unique_len / conc_unique_len * 100, 2).item(),
+            )
+        )
+
+        self.report.add_metric(
+            NoveltyMetric(
+                title="New Synthetic Data",
+                unit_measure="%",
+                value=np.round(new_synt_data / conc_unique_len * 100, 2).item(),
+            )
+        )
 
     def _evaluate_adherence(self):
         """
@@ -229,8 +252,18 @@ class TabularComparisonEvaluator:
             adherence_percentage = np.round(in_boundary_count / total_records * 100, 2)
             boundary_adherence_score[col] = float(adherence_percentage)
 
-        report = {
-            "category_adherence_score [%]": category_adherence_score,
-            "boundary_adherence_score [%]": boundary_adherence_score,
-        }
-        return report
+        self.report.add_metric(
+            AdherenceMetric(
+                title="Synthetic Categories Adherence to Real Categories",
+                unit_measure="%",
+                value=category_adherence_score,
+            )
+        )
+
+        self.report.add_metric(
+            AdherenceMetric(
+                title="Synthetic Numerical Min-Max Boundaries Adherence",
+                unit_measure="%",
+                value=boundary_adherence_score,
+            )
+        )

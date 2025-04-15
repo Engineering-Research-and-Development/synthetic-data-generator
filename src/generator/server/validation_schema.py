@@ -1,4 +1,4 @@
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, PositiveInt, Field
 
@@ -54,9 +54,21 @@ class GeneratedData(BaseModel):
     column_type: Literal["continuous", "categorical"]
 
 
+class Metric(BaseModel):
+    title: str
+    value: float | int | dict
+    unit_measure: str
+
+
+class MetricReport(BaseModel):
+    statistical_metrics: list[Metric]
+    adherence_metrics: list[Metric]
+    novelty_metrics: list[Metric]
+
+
 class GeneratedResponse(BaseModel):
     result_data: GeneratedData
-    metrics: dict
+    metrics: Optional[MetricReport] = {}
 
 
 class CouchEntry(BaseModel):
