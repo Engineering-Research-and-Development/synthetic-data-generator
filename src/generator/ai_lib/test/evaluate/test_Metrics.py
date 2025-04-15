@@ -1,4 +1,3 @@
-import pytest
 from ai_lib.evaluate.Metrics import (
     Metric,
     StatisticalMetric,
