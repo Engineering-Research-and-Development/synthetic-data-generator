@@ -17,20 +17,13 @@ from server.file_utils import (
     save_model_payload,
 )
 
-MIDDLEWARE_ON = True
-middleware = os.environ.get("MIDDLEWARE_URL", "http://sdg-middleware:8001/")
+MIDDLEWARE_ON = False
+MAX_RETRIES = 10
+middleware = os.environ.get("MIDDLEWARE_URL")
 GENERATOR_ALGORITHM_NAMES = []
 ALGORITHM_LONG_NAME_TO_ID = {}
 ALGORITHM_LONG_TO_SHORT = {}
 ALGORITHM_SHORT_TO_LONG = {}
-
-
-def middleware_connect():
-    sync_available_algorithms()
-    sync_trained_models()
-    global MIDDLEWARE_ON
-    MIDDLEWARE_ON = True
-    logger.info("Connection to middleware successful")
 
 
 def server_startup():
@@ -48,35 +41,32 @@ def server_startup():
     for algorithm in GENERATOR_ALGORITHM_NAMES:
         ALGORITHM_LONG_TO_SHORT[algorithm] = algorithm.split(".")[-1]
         ALGORITHM_SHORT_TO_LONG[ALGORITHM_LONG_TO_SHORT[algorithm]] = algorithm
-    try:
-        middleware_connect()
-    except ConnectionError as error:
-        global MIDDLEWARE_ON
-        MIDDLEWARE_ON = False
-        logger.error(
-            f"Unable to connect to the middleware. Running in isolated environment\n {error.strerror}"
-        )
-        reconnection_thread = threading.Thread(target=exponential_connection_retry)
-        reconnection_thread.start()
-        return
+
+    logger.info("Starting connection procedure to middleware")
+    reconnection_thread = threading.Thread(target=middleware_connect)
+    reconnection_thread.start()
     logger.info("Server startup completed")
 
 
-def exponential_connection_retry(max_retries: int = 10):
-    logger.info("Starting reconnection procedure")
-    for i in range(max_retries):
-        time.sleep(2**i)
-        try:
-            logger.info(f"Waited for {2**i} seconds, retry connection:")
-            middleware_connect()
-            return
-        except ConnectionError:
-            logger.info(f"Unable to connect to {middleware} after {i + 1} tries")
-            pass
-    logger.error(
-        f"{max_retries} connection attempts failed, restart to try new connections"
-    )
-    return
+def middleware_connect(tries: int = 1):
+    if tries >= MAX_RETRIES:
+        logger.error(
+            f"{tries} connection attempts failed, restart to try new connections"
+        )
+        return
+    if not middleware:
+        logger.error("Middleware not available, running in isolated environment")
+        return
+    try:
+        logger.info(f"Connection attempt n.{tries}")
+        sync_available_algorithms()
+        sync_trained_models()
+    except ConnectionError:
+        time.sleep(2**tries)
+        middleware_connect(tries + 1)
+    global MIDDLEWARE_ON
+    MIDDLEWARE_ON = True
+    logger.info("Middleware connection successful")
 
 
 def model_to_middleware(
