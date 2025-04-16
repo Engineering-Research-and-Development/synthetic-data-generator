@@ -11,7 +11,8 @@ from server.file_utils import (
     list_trained_models,
     retrieve_model_payload,
     delete_folder,
-    get_folder_full_path, save_model_payload,
+    get_folder_full_path,
+    save_model_payload,
 )
 
 MIDDLEWARE_ON = True
@@ -168,7 +169,9 @@ def sync_trained_models():
                     model_payload["model"]["algorithm"] = ALGORITHM_LONG_NAME_TO_ID.get(
                         algo_long_name
                     )
-                    save_model_payload(get_folder_full_path(local_trained_model), model_payload)
+                    save_model_payload(
+                        get_folder_full_path(local_trained_model), model_payload
+                    )
                 post_model_to_middleware(model_payload)
         except FileNotFoundError:
             logger.error("Local Payload not found, deleting folder")
