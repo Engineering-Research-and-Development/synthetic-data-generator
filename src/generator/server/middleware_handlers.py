@@ -2,6 +2,8 @@ import json
 import os
 from loguru import logger
 import requests
+import time
+import threading
 from requests.exceptions import ConnectionError
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.browse_algorithms import browse_algorithms
@@ -11,7 +13,8 @@ from server.file_utils import (
     list_trained_models,
     retrieve_model_payload,
     delete_folder,
-    get_folder_full_path, save_model_payload,
+    get_folder_full_path,
+    save_model_payload,
 )
 
 MIDDLEWARE_ON = True
@@ -20,6 +23,14 @@ GENERATOR_ALGORITHM_NAMES = []
 ALGORITHM_LONG_NAME_TO_ID = {}
 ALGORITHM_LONG_TO_SHORT = {}
 ALGORITHM_SHORT_TO_LONG = {}
+
+
+def middleware_connect():
+    sync_available_algorithms()
+    sync_trained_models()
+    global MIDDLEWARE_ON
+    MIDDLEWARE_ON = True
+    logger.info("Connection to middleware successful")
 
 
 def server_startup():
@@ -37,18 +48,35 @@ def server_startup():
     for algorithm in GENERATOR_ALGORITHM_NAMES:
         ALGORITHM_LONG_TO_SHORT[algorithm] = algorithm.split(".")[-1]
         ALGORITHM_SHORT_TO_LONG[ALGORITHM_LONG_TO_SHORT[algorithm]] = algorithm
-
     try:
-        sync_available_algorithms()
-        sync_trained_models()
+        middleware_connect()
     except ConnectionError as error:
         global MIDDLEWARE_ON
         MIDDLEWARE_ON = False
         logger.error(
             f"Unable to connect to the middleware. Running in isolated environment\n {error.strerror}"
         )
+        reconnection_thread = threading.Thread(target=exponential_connection_retry)
+        reconnection_thread.start()
         return
     logger.info("Server startup completed")
+
+
+def exponential_connection_retry(max_retries: int = 10):
+    logger.info("Starting reconnection procedure")
+    for i in range(max_retries):
+        time.sleep(2**i)
+        try:
+            logger.info(f"Waited for {2**i} seconds, retry connection:")
+            middleware_connect()
+            return
+        except ConnectionError:
+            logger.info(f"Unable to connect to {middleware} after {i + 1} tries")
+            pass
+    logger.error(
+        f"{max_retries} connection attempts failed, restart to try new connections"
+    )
+    return
 
 
 def model_to_middleware(
@@ -168,7 +196,9 @@ def sync_trained_models():
                     model_payload["model"]["algorithm"] = ALGORITHM_LONG_NAME_TO_ID.get(
                         algo_long_name
                     )
-                    save_model_payload(get_folder_full_path(local_trained_model), model_payload)
+                    save_model_payload(
+                        get_folder_full_path(local_trained_model), model_payload
+                    )
                 post_model_to_middleware(model_payload)
         except FileNotFoundError:
             logger.error("Local Payload not found, deleting folder")
