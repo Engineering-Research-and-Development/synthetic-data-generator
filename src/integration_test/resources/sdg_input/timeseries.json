@@ -6,7 +6,7 @@
     "selected_model_id": 5,
     "model_version": "0",
     "new_model": true,
-    "new_model_name": "time_series_test"
+    "new_model_name":"timeSeriesVae_test"
   },
   "user_file": [
     {
