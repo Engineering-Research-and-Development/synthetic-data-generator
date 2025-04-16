@@ -63,7 +63,7 @@ def middleware_connect(tries: int = 1):
         sync_trained_models()
     except ConnectionError:
         time.sleep(2**tries)
-        middleware_connect(tries + 1)
+        return middleware_connect(tries + 1)
     global MIDDLEWARE_ON
     MIDDLEWARE_ON = True
     logger.info("Middleware connection successful")
