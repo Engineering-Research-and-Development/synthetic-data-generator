@@ -75,7 +75,7 @@ services:
       COUCHDB_PASSWORD: "password"
       COUCHDB_DB: "model_results"
       COUCHDB_HOST: "couch"
-      MIDDLEWARE_URL: "http://sdg-middleware:8001"
+      MIDDLEWARE_URL: "http://sdg-middleware:8001/"
     ports:
       - "8010:8010"
 
