@@ -1,6 +1,15 @@
-# Generator Folder Structure
+# Generator 
 
-The generator folder contains the source code for the AI-LIB's data generation models and the server API.
+The generator is a tool for generating synthetic data.
+
+The generator is based on the [FastAPI](https://fastapi.tiangolo.com/) framework
+and uses [Keras](https://keras.io/) as its deep learning engine. It is designed
+to be highly extensible and customizable.
+
+The generator is designed to support a variety of algorithms, ranging from AI models to simple statistical models
+The generator also supports a variety of data types, currently includes tabular data and time series data.
+
+
 
 ## Project Structure
 
