@@ -2,7 +2,7 @@
 
 The generator folder contains the source code for the AI-LIB's data generation models and the server API.
 
-## Structure
+## Overall Structure
 
 The generator folder is structured as follows:
 
@@ -13,18 +13,10 @@ The generator folder is structured as follows:
 				- `implementation/`: Contains the source code for the model implementations.
     + `preprocess/`: Contains the source code for the preprocessing logic.
     + `evaluate/`: Contains the source code for synthetic data evaluation logic.
-	+ `NumericDataset.py`: Contains the source code for the NumericDataset class.
-	+ `browse_algorithms.py`: Contains the source code for providing available blueprints.
-	+ `job.py`: Contains the source code for the training and infer job function.
-    + `test`: Contains the source code for the tests.
+    + `test/`: Contains the source code for the tests.
 * `server/`: Contains the source code for the server API.
 	+ `app.py`: Contains the source code for the FastAPI application.
-	+ `file_utils.py`: Contains the source code for the file utilities.
-	+ `middleware_handlers.py`: Contains the source code for the middleware handlers.
-	+ `validation_schema.py`: Contains the source code for the validation schema.
-    + `couch_handlers.py`: Contains the source code for the CouchDB handlers.
-    + `utilities.py`: Contains the source code for generic utilities.
-    + `test/`: Contains the source code for the tests.
+  	+ `test/`: Contains the source code for the tests.
 
 ### Model Structure
 
