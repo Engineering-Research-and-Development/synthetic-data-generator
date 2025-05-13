@@ -29,18 +29,20 @@ async def create_new_algorithm(payload: PydanticAlgorithmDataType):
     """
     algorithm = payload.algorithm
     data_types = payload.datatypes
-    alg, _ = Algorithm.get_or_create(
+    alg, algo_is_created = Algorithm.get_or_create(
         name=algorithm.name,
         defaults={
             "description": algorithm.description,
             "default_loss_function": algorithm.default_loss_function,
         },
     )
-    for data_type in data_types:
-        data_type, _ = DataType.get_or_create(
-            type=data_type.type, is_categorical=data_type.is_categorical
-        )
-        _ = AlgorithmDataType.create(algorithm=alg, datatype=data_type)
+
+    if algo_is_created:
+        for data_type in data_types:
+            data_type, _ = DataType.get_or_create(
+                type=data_type.type, is_categorical=data_type.is_categorical
+            )
+            _ = AlgorithmDataType.create(algorithm=alg, datatype=data_type)
 
     return AlgorithmID(id=alg.id)
 
