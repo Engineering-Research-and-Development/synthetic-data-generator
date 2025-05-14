@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import os
 import shutil
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import  MinMaxScaler
 
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
