@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import os
 import shutil
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from ai_lib.NumericDataset import NumericDataset
 from ai_lib.data_generator.models.TrainingInfo import TrainingInfo
@@ -57,7 +57,7 @@ def test_preprocess(model_data_correct_train, data):
     model = TimeSeriesVAE(**model_data_correct_train)
     assert model._scaler is None
     scaled_data = model._pre_process(data)
-    assert model._scaler is not None and type(model._scaler) is StandardScaler
+    assert model._scaler is not None and type(model._scaler) is MinMaxScaler
     assert type(scaled_data) is np.ndarray
     assert scaled_data.shape == data.get_numpy_data(data.dataframe).shape
     assert scaled_data.shape[1:] == model.input_shape
@@ -68,7 +68,7 @@ def test_train_correct(model_data_correct_train, data):
     assert model.training_info is None
     assert model._scaler is None
     model.train(data)
-    assert type(model._scaler) is StandardScaler
+    assert type(model._scaler) is MinMaxScaler
     assert type(model.training_info) is TrainingInfo
 
 
