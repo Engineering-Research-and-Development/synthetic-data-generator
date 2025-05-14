@@ -37,10 +37,10 @@ class TimeSeriesVAE(KerasBaseVAE):
         model_name: str,
         input_shape: str,
         load_path: str,
-        latent_dim: int = 6,
-        learning_rate: float = 3e-3,
+        latent_dim: int = 2,
+        learning_rate: float = 1e-3,
         batch_size: int = 16,
-        epochs: int = 100,
+        epochs: int = 60,
     ):
         super().__init__(metadata, model_name, input_shape, load_path, latent_dim)
         self._beta = 0.15
@@ -117,17 +117,20 @@ class TimeSeriesVAE(KerasBaseVAE):
         batch, feats, steps = data.shape
         if self._scaler is None:
             return data
-        return self._scaler.transform(data.reshape(-1, feats * steps)).reshape(
-            -1, feats, steps
-        )
+        data_reshaped = data.transpose(0,2,1).reshape(-1, feats)
+        data_scaled = self._scaler.transform(data_reshaped)
+        data_scaled = data_scaled.reshape(batch, steps, feats).transpose(0,2,1)
+        return data_scaled
 
     def _inverse_scale(self, data: np.array):
         if self._scaler is None:
             return data
         batch, feats, steps = data.shape
-        return self._scaler.inverse_transform(data.reshape(-1, feats * steps)).reshape(
-            -1, feats, steps
-        )
+        data_reshaped = data.transpose(0, 2, 1).reshape(-1, feats)
+        data_unscaled = self._scaler.inverse_transform(data_reshaped)
+        data_unscaled = data_unscaled.reshape(batch, steps, feats).transpose(0, 2, 1)
+        return data_unscaled
+
 
     def _pre_process(self, data: NumericDataset, **kwargs):
         np_data = np.array(data.dataframe.values.tolist())
