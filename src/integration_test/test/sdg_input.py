@@ -14,7 +14,9 @@ url = middleware + "/sdg_input/"
 
 
 @pytest.mark.order1
-@pytest.mark.parametrize("filename,payload", load_jsons("../resources/no_functions/sdg_input"))
+@pytest.mark.parametrize(
+    "filename,payload", load_jsons("../resources/no_functions/sdg_input")
+)
 def test_train_sdg_input(filename, payload):
     algorithms_available = get_algorithms_available()
     model_id = list(algorithms_available.keys())[
@@ -31,7 +33,9 @@ def test_train_sdg_input(filename, payload):
 
 
 @pytest.mark.order2
-@pytest.mark.parametrize("filename,payload", load_jsons("../resources/no_functions/sdg_input"))
+@pytest.mark.parametrize(
+    "filename,payload", load_jsons("../resources/no_functions/sdg_input")
+)
 def test_infer_sdg_input(filename, payload):
     trained_models = get_trained_models()
 
