@@ -6,7 +6,7 @@ from pydantic import BaseModel, PositiveInt, model_validator, Field
 
 class ParametersInput(BaseModel):
     param_id: PositiveInt
-    value: float
+    value: str
 
 
 class FunctionData(BaseModel):
@@ -98,7 +98,7 @@ class DatasetOutput(BaseModel):
 
 
 class GeneratorDataOutput(BaseModel):
-    functions_id: List[PositiveInt]
+    functions_id: Optional[List[FunctionData]]
     model: ModelOutput
     n_rows: PositiveInt
     dataset: List[DatasetOutput] | None = None

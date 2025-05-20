@@ -99,7 +99,9 @@ class Parameter(BaseModelPeewee):
     id = AutoField()
     name = CharField()
     value = CharField()
-    parameter_type = CharField(constraints=[SQL("CHECK (parameter_type IN ('float'))")])
+    parameter_type = (
+        CharField()
+    )  # constraints=[SQL("CHECK (parameter_type IN ('float'))")])
 
 
 class FunctionParameter(BaseModelPeewee):

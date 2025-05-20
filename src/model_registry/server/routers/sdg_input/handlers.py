@@ -9,17 +9,23 @@ from database.schema import (
     ModelVersion,
     Parameter,
 )
-from .validation_schema import DatasetOutput, SupportedDatatypes, ModelOutput
+from .validation_schema import (
+    DatasetOutput,
+    SupportedDatatypes,
+    ModelOutput,
+    FunctionData,
+    GeneratorDataOutput,
+)
 
 
-def check_function_parameters(functions: list[dict]) -> list:
+def check_function_parameters(functions: list[FunctionData]) -> list[FunctionData]:
     """
     Validates function parameters by checking if all input parameters match those in the database.
 
     :param functions: List of function dictionaries containing function_id and parameters.
     :return: List of valid function IDs if all parameters match, otherwise an empty list.
     """
-    functions_id = []
+    function_data = []
     for function in functions:
         parameter_ids = FunctionParameter.select(FunctionParameter.parameter).where(
             FunctionParameter.function == function.get("function_id")
@@ -30,13 +36,11 @@ def check_function_parameters(functions: list[dict]) -> list:
         if len(input_param) != len(parameter_ids_list):
             return []
         if all(p in parameter_ids_list for p in input_param):
-            functions_id.append(function["function_id"])
+            function_data.append(function)
             continue
         else:
             return []
-    # return functions_id
-    # TODO: Bypass
-    return [1]
+    return function_data
 
 
 def check_new_model(new_model: int, model_name: str) -> ModelOutput | Dict:
@@ -180,3 +184,47 @@ def check_features_created_types(features: list[dict], function_ids: list[int]):
         if function_params_dict.get(feature["type"]) is None:
             return False, feature["type"]
     return True, None
+
+
+def handle_user_file(
+    data: dict, function_data: list[FunctionData] | None, model
+) -> (GeneratorDataOutput, str):
+    user_file = check_user_file(data.get("user_file"))
+    if not user_file:
+        return None, "Error parsing input dataset"
+
+    return GeneratorDataOutput(
+        functions_id=function_data,
+        n_rows=data.get("additional_rows"),
+        model=model,
+        dataset=user_file,
+    ), ""
+
+
+def handle_feature_creation(
+    data: dict, function_data: list[FunctionData] | None, model
+) -> (GeneratorDataOutput, str):
+    result, error = check_features_created_types(
+        data.get("features_created"), data["functions"]
+    )
+
+    if not result:
+        return (
+            None,
+            f"The functions chosen are not compatible with the following feature that you want to create ({error})",
+        )
+
+    return GeneratorDataOutput(
+        functions_id=function_data,
+        n_rows=data.get("additional_rows"),
+        model=model,
+    ), ""
+
+
+def process_input(
+    data: dict, function_data: list[FunctionData] | None, model: ModelOutput
+) -> (GeneratorDataOutput, str):
+    if data.get("user_file") is not None:
+        return handle_user_file(data, function_data, model)
+    else:
+        return handle_feature_creation(data, function_data, model)

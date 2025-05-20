@@ -16,23 +16,23 @@ def insert_data():
     # Create Algorithms
     algorithms = [
         {
-            "name": "Random Forest",
-            "description": "Ensemble learning method",
+            "name": "RandomForestClassifier",
+            "description": "A random forest classifier",
             "default_loss_function": "gini",
         },
         {
-            "name": "Neural Network",
-            "description": "Deep learning model",
-            "default_loss_function": "categorical_crossentropy",
+            "name": "MLPClassifier",
+            "description": "Multi-layer Perceptron classifier",
+            "default_loss_function": "log_loss",
         },
         {
-            "name": "SVM",
-            "description": "Support Vector Machine",
+            "name": "SVC",
+            "description": "C-Support Vector Classification",
             "default_loss_function": "hinge",
         },
         {
-            "name": "Logistic Regression",
-            "description": "Linear classification",
+            "name": "LogisticRegression",
+            "description": "Logistic Regression classifier",
             "default_loss_function": "log_loss",
         },
     ]
@@ -69,28 +69,28 @@ def insert_data():
             "dataset_name": "CIFAR-10",
             "size": "50MB",
             "input_shape": "(32,32,3)",
-            "algorithm": algo_objs[1],
+            "algorithm": algo_objs[1],  # MLPClassifier
         },
         {
             "name": "Fraud Detector",
             "dataset_name": "Credit Card Fraud",
             "size": "5MB",
             "input_shape": "(30,)",
-            "algorithm": algo_objs[0],
+            "algorithm": algo_objs[0],  # RandomForestClassifier
         },
         {
             "name": "Sentiment Analyzer",
             "dataset_name": "IMDB Reviews",
             "size": "15MB",
             "input_shape": "(1000,)",
-            "algorithm": algo_objs[3],
+            "algorithm": algo_objs[3],  # LogisticRegression
         },
         {
             "name": "Object Detector",
             "dataset_name": "COCO",
             "size": "120MB",
             "input_shape": "(256,256,3)",
-            "algorithm": algo_objs[1],
+            "algorithm": algo_objs[1],  # MLPClassifier
         },
     ]
 
@@ -125,7 +125,7 @@ def insert_data():
         for v in range(1, random.randint(2, 4)):
             ModelVersion.create(
                 version_name=f"v{v}.0",
-                image_path=f"/models/{model.name.replace(' ', '_')}_v{v}.h5",
+                image_path=f"/models/{model.name.replace(' ', '_')}_v{v}.pkl",
                 loss_function=model.algorithm.default_loss_function,
                 train_loss=random.uniform(0.1, 1.0),
                 val_loss=random.uniform(0.1, 1.0),
@@ -134,27 +134,27 @@ def insert_data():
                 trained_model=model,
             )
 
-    # Create Functions
+    # Create Functions (now using scikit-learn functions)
     functions = [
         {
-            "name": "preprocess_image",
-            "description": "Normalizes and resizes image",
-            "function_reference": "image_utils.preprocess",
+            "name": "StandardScaler",
+            "description": "Standardize features by removing the mean and scaling to unit variance",
+            "function_reference": "sklearn.preprocessing.StandardScaler",
         },
         {
-            "name": "tokenize_text",
-            "description": "Tokenizes input text",
-            "function_reference": "text_utils.tokenize",
+            "name": "CountVectorizer",
+            "description": "Convert a collection of text documents to a matrix of token counts",
+            "function_reference": "sklearn.feature_extraction.text.CountVectorizer",
         },
         {
-            "name": "normalize",
-            "description": "Normalizes numeric values",
-            "function_reference": "math_utils.normalize",
+            "name": "MinMaxScaler",
+            "description": "Transforms features by scaling each feature to a given range",
+            "function_reference": "sklearn.preprocessing.MinMaxScaler",
         },
         {
-            "name": "one_hot_encode",
-            "description": "Encodes categorical values",
-            "function_reference": "category_utils.encode",
+            "name": "OneHotEncoder",
+            "description": "Encode categorical features as a one-hot numeric array",
+            "function_reference": "sklearn.preprocessing.OneHotEncoder",
         },
     ]
 
@@ -162,14 +162,15 @@ def insert_data():
     for func in functions:
         func_objs.append(Function.create(**func))
 
-    # Create Parameters
+    # Create Parameters (real parameters from scikit-learn functions)
     parameters = [
-        {"name": "target_size", "value": "256", "parameter_type": "float"},
-        {"name": "mean", "value": "0.5", "parameter_type": "float"},
-        {"name": "std", "value": "0.5", "parameter_type": "float"},
-        {"name": "max_tokens", "value": "1000", "parameter_type": "float"},
-        {"name": "min_value", "value": "0", "parameter_type": "float"},
-        {"name": "max_value", "value": "1", "parameter_type": "float"},
+        {"name": "with_mean", "value": "True", "parameter_type": "bool"},
+        {"name": "with_std", "value": "True", "parameter_type": "bool"},
+        {"name": "max_features", "value": "1000", "parameter_type": "int"},
+        {"name": "ngram_range", "value": "(1,1)", "parameter_type": "tuple"},
+        {"name": "feature_range", "value": "(0,1)", "parameter_type": "tuple"},
+        {"name": "categories", "value": "auto", "parameter_type": "str"},
+        {"name": "handle_unknown", "value": "error", "parameter_type": "str"},
     ]
 
     param_objs = []
@@ -179,21 +180,24 @@ def insert_data():
     # Create FunctionParameter relationships
     FunctionParameter.create(
         function=func_objs[0], parameter=param_objs[0]
-    )  # preprocess_image - target_size
+    )  # StandardScaler - with_mean
     FunctionParameter.create(
         function=func_objs[0], parameter=param_objs[1]
-    )  # preprocess_image - mean
+    )  # StandardScaler - with_std
     FunctionParameter.create(
-        function=func_objs[0], parameter=param_objs[2]
-    )  # preprocess_image - std
+        function=func_objs[1], parameter=param_objs[2]
+    )  # CountVectorizer - max_features
     FunctionParameter.create(
         function=func_objs[1], parameter=param_objs[3]
-    )  # tokenize_text - max_tokens
+    )  # CountVectorizer - ngram_range
     FunctionParameter.create(
         function=func_objs[2], parameter=param_objs[4]
-    )  # normalize - min_value
+    )  # MinMaxScaler - feature_range
     FunctionParameter.create(
-        function=func_objs[2], parameter=param_objs[5]
-    )  # normalize - max_value
+        function=func_objs[3], parameter=param_objs[5]
+    )  # OneHotEncoder - categories
+    FunctionParameter.create(
+        function=func_objs[3], parameter=param_objs[6]
+    )  # OneHotEncoder - handle_unknown
 
     print("Successfully populated database with dummy data!")
