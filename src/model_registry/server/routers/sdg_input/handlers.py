@@ -193,12 +193,15 @@ def handle_user_file(
     if not user_file:
         return None, "Error parsing input dataset"
 
-    return GeneratorDataOutput(
-        functions_id=function_data,
-        n_rows=data.get("additional_rows"),
-        model=model,
-        dataset=user_file,
-    ), ""
+    return (
+        GeneratorDataOutput(
+            functions_id=function_data,
+            n_rows=data.get("additional_rows"),
+            model=model,
+            dataset=user_file,
+        ),
+        "",
+    )
 
 
 def handle_feature_creation(
@@ -214,11 +217,14 @@ def handle_feature_creation(
             f"The functions chosen are not compatible with the following feature that you want to create ({error})",
         )
 
-    return GeneratorDataOutput(
-        functions_id=function_data,
-        n_rows=data.get("additional_rows"),
-        model=model,
-    ), ""
+    return (
+        GeneratorDataOutput(
+            functions_id=function_data,
+            n_rows=data.get("additional_rows"),
+            model=model,
+        ),
+        "",
+    )
 
 
 def process_input(
