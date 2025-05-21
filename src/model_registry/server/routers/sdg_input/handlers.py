@@ -189,6 +189,14 @@ def check_features_created_types(features: list[dict], function_ids: list[int]):
 def handle_user_file(
     data: dict, function_data: list[FunctionData] | None, model
 ) -> (GeneratorDataOutput, str):
+    """
+    Create the GeneratorDataOutput object from the user file
+
+    :param data: the dictionary containing the input data
+    :param function_data: the list of functions to pass to the generator
+    :param model: the chosen AI model
+    :return: the GeneratorDataOutput object or an error message
+    """
     user_file = check_user_file(data.get("user_file"))
     if not user_file:
         return None, "Error parsing input dataset"
@@ -207,6 +215,14 @@ def handle_user_file(
 def handle_feature_creation(
     data: dict, function_data: list[FunctionData] | None, model
 ) -> (GeneratorDataOutput, str):
+    """
+    Create the GeneratorDataOutput object from the list of features
+
+    :param data: the dictionary containing the input data
+    :param function_data: the list of functions to pass to the generator
+    :param model: the chosen AI model
+    :return: the GeneratorDataOutput object or an error message
+    """
     result, error = check_features_created_types(
         data.get("features_created"), data["functions"]
     )
@@ -230,6 +246,14 @@ def handle_feature_creation(
 def process_input(
     data: dict, function_data: list[FunctionData] | None, model: ModelOutput
 ) -> (GeneratorDataOutput, str):
+    """
+    Handle the input data based on whether it's a user file or feature creation.
+
+    :param data: the dictionary containing the input data
+    :param function_data: the list of functions to pass to the generator
+    :param model: the chosen AI model
+    :return: the GeneratorDataOutput object or an error message
+    """
     if data.get("user_file") is not None:
         return handle_user_file(data, function_data, model)
     else:
