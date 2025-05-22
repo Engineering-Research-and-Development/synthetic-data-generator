@@ -3,7 +3,7 @@ from fastapi import APIRouter, Path
 from starlette.responses import JSONResponse
 
 from database.schema import Parameter, Function, FunctionParameter
-from .validation_schema import FunctionParameterOut
+from .validation_schema import FunctionParameterOut, FunctionParameterIn, FunctionID
 
 router = APIRouter(prefix="/functions", tags=["Functions"])
 
@@ -63,3 +63,39 @@ async def get_function_parameters_by_function_id(
     ]
 
     return FunctionParameterOut(function=function, parameter=parameters)
+
+
+@router.post(
+    "/",
+    status_code=201,
+    name="Add new function to the DB",
+    summary="Create a new function given the parameters",
+    responses={500: {"model": str}},
+    response_model=FunctionID,
+)
+async def create_new_function(payload: FunctionParameterIn):
+    function = payload.function
+    parameters = payload.parameters
+
+    function = Function.get_or_create(
+        name=function.name, defaults={"description": function.description}
+    )
+    for parameter in parameters:
+        parameter = Parameter.get_or_create(
+            name=parameter.name, defaults={"parameter_type": parameter.parameter_type}
+        )
+        FunctionParameter.get_or_create(function=function.id, parameter=parameter.id)
+
+    return FunctionID(id=function.id)
+
+
+@router.delete(
+    "/{function_id}",
+    status_code=200,
+    name="Delete a function given his id",
+    summary="It deletes a function given the id",
+    responses={404: {"model": str}},
+)
+async def delete_function(function_id: int):
+    Function.delete_by_id(function_id)
+    return JSONResponse(status_code=200, content="ok")

@@ -17,7 +17,7 @@ router = APIRouter(prefix="/algorithms", tags=["Algorithms"])
     "/",
     status_code=201,
     name="Create a new algorithm",
-    summary="It creates an algorith given the all the information and allowed datatypes",
+    summary="Creates an algorith given the information and allowed datatypes",
     responses={500: {"model": str}},
     response_model=AlgorithmID,
 )
