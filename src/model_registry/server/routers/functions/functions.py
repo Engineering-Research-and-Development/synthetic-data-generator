@@ -72,17 +72,25 @@ async def create_new_function(payload: FunctionParameterIn):
     parameters = payload.parameters
 
     function, _ = Function.get_or_create(
-        name=function.name, defaults={"description": function.description,
-                                      "function_reference": function.function_reference}
+        name=function.name,
+        defaults={
+            "description": function.description,
+            "function_reference": function.function_reference,
+        },
     )
     for parameter in parameters:
         parameter, _ = Parameter.get_or_create(
-            name=parameter.name, defaults={"parameter_type": parameter.parameter_type,
-                                           "value": parameter.value}
+            name=parameter.name,
+            defaults={
+                "parameter_type": parameter.parameter_type,
+                "value": parameter.value,
+            },
         )
         FunctionParameter.get_or_create(function=function, parameter=parameter)
 
-    return FunctionOut(function=Function.select().where(Function.id == function.id).dicts().get())
+    return FunctionOut(
+        function=Function.select().where(Function.id == function.id).dicts().get()
+    )
 
 
 @router.delete(

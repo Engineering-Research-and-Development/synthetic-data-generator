@@ -12,13 +12,13 @@ def test_create_new_function():
         "function": {
             "name": "RandomForestRegressor",
             "description": "A random forest regressor",
-            "function_reference": "sklearn.ensemble.RandomForestRegressor"
+            "function_reference": "sklearn.ensemble.RandomForestRegressor",
         },
         "parameters": [
             {"name": "n_estimators", "value": "100", "parameter_type": "float"},
             {"name": "max_depth", "value": "3.0", "parameter_type": "float"},
-            {"name": "min_samples_split", "value": "2.0", "parameter_type": "float"}
-        ]
+            {"name": "min_samples_split", "value": "2.0", "parameter_type": "float"},
+        ],
     }
 
     response = requests.post(f"{BASE_URL}/", json=payload)
@@ -30,6 +30,7 @@ def test_create_new_function():
 
     # Store IDs for later tests
     function_id = response_data["function"]["id"]
+
 
 def test_get_function_by_id():
     response = requests.get(f"{BASE_URL}/{function_id}")
@@ -58,7 +59,9 @@ def test_get_all_functions():
     assert isinstance(functions, list)
     if function_id:  # Only check if we've created a function
         assert any(func["function"]["id"] == function_id for func in functions)
-        our_function = next(func for func in functions if func["function"]["id"] == function_id)
+        our_function = next(
+            func for func in functions if func["function"]["id"] == function_id
+        )
         assert our_function["function"]["name"] == "RandomForestRegressor"
 
 
@@ -68,11 +71,11 @@ def test_delete_function():
         "function": {
             "name": "TemporaryFunction",
             "description": "Will be deleted",
-            "function_reference": "test.TemporaryFunction"
+            "function_reference": "test.TemporaryFunction",
         },
         "parameters": [
             {"name": "temp_param", "value": "1.0", "parameter_type": "float"}
-        ]
+        ],
     }
     create_response = requests.post(f"{BASE_URL}/", json=create_payload)
     temp_function_id = create_response.json()["function"]["id"]
@@ -89,13 +92,21 @@ def test_delete_function():
 def test_invalid_function_creation():
     # Test missing required fields
     invalid_payloads = [
-        {"function": {"name": "MissingFields"}},  # Missing description and function_reference
+        {
+            "function": {"name": "MissingFields"}
+        },  # Missing description and function_reference
         {"function": {"description": "NoName"}},  # Missing name
         {"parameters": [{"name": "OnlyParams"}]},  # Missing function
         {
-            "function": {"name": "Valid", "description": "Valid", "function_reference": "valid.ref"},
-            "parameters": [{"name": "invalid_param"}]  # Missing value and parameter_type
-        }
+            "function": {
+                "name": "Valid",
+                "description": "Valid",
+                "function_reference": "valid.ref",
+            },
+            "parameters": [
+                {"name": "invalid_param"}
+            ],  # Missing value and parameter_type
+        },
     ]
 
     for payload in invalid_payloads:

@@ -1,4 +1,5 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
+
 from pydantic import BaseModel, Field, PositiveInt
 
 
