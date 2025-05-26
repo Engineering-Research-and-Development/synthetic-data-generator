@@ -3,7 +3,7 @@ from fastapi import APIRouter, Path
 from starlette.responses import JSONResponse
 
 from database.schema import Parameter, Function, FunctionParameter
-from .validation_schema import FunctionParameterOut, FunctionParameterIn, FunctionID
+from .validation_schema import FunctionParameterOut, FunctionParameterIn, FunctionOut
 
 router = APIRouter(prefix="/functions", tags=["Functions"])
 
@@ -12,22 +12,16 @@ router = APIRouter(prefix="/functions", tags=["Functions"])
     "/",
     name="Get all function parameters",
     summary="Get all the available function parameters",
-    response_model=list[FunctionParameterOut],
+    response_model=list[FunctionOut],
 )
-async def get_all_functions() -> list[FunctionParameterOut]:
+async def get_all_functions() -> list[FunctionOut]:
     """
     This method returns all the function parameters that are present in the model registry
     """
     functions = Function.select().dicts()
     results = [
-        FunctionParameterOut(
+        FunctionOut(
             function=function,
-            parameter=[
-                Parameter.select().where(Parameter.id == p.parameter).dicts().get()
-                for p in FunctionParameter.select().where(
-                    FunctionParameter.function == function["id"]
-                )
-            ],
         )
         for function in functions
     ]
@@ -62,7 +56,7 @@ async def get_function_parameters_by_function_id(
         )
     ]
 
-    return FunctionParameterOut(function=function, parameter=parameters)
+    return FunctionParameterOut(function=function, parameters=parameters)
 
 
 @router.post(
@@ -71,22 +65,24 @@ async def get_function_parameters_by_function_id(
     name="Add new function to the DB",
     summary="Create a new function given the parameters",
     responses={500: {"model": str}},
-    response_model=FunctionID,
+    response_model=FunctionOut,
 )
 async def create_new_function(payload: FunctionParameterIn):
     function = payload.function
     parameters = payload.parameters
 
-    function = Function.get_or_create(
-        name=function.name, defaults={"description": function.description}
+    function, _ = Function.get_or_create(
+        name=function.name, defaults={"description": function.description,
+                                      "function_reference": function.function_reference}
     )
     for parameter in parameters:
-        parameter = Parameter.get_or_create(
-            name=parameter.name, defaults={"parameter_type": parameter.parameter_type}
+        parameter, _ = Parameter.get_or_create(
+            name=parameter.name, defaults={"parameter_type": parameter.parameter_type,
+                                           "value": parameter.value}
         )
-        FunctionParameter.get_or_create(function=function.id, parameter=parameter.id)
+        FunctionParameter.get_or_create(function=function, parameter=parameter)
 
-    return FunctionID(id=function.id)
+    return FunctionOut(function=Function.select().where(Function.id == function.id).dicts().get())
 
 
 @router.delete(

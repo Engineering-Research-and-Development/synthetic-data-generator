@@ -1,7 +1,4 @@
 """This module defines a series of pydantic's model for input and output santitization/validation."""
-
-from typing import Literal
-
 from pydantic import BaseModel, Field, PositiveInt
 
 
@@ -105,19 +102,19 @@ class ModelVersion(BaseModel):
 
 ## FUNCTIONS PYDANTIC MODELS
 class Function(BaseModel):
-    id: int
+    _id: PositiveInt
     name: str
     description: str
     function_reference: str
 
 
 class Parameter(BaseModel):
-    id: int
+    _id: PositiveInt
     name: str
     value: str
-    parameter_type: Literal["float"]
+    parameter_type: str
 
 
 class FunctionParameter(BaseModel):
-    function: int
-    parameter: int
+    function: PositiveInt
+    parameter: PositiveInt

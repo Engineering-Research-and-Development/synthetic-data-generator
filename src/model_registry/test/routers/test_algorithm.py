@@ -1,6 +1,8 @@
 import requests
 
-BASE_URL = "http://localhost:8001/algorithms"
+from ..conftest import port, server
+
+BASE_URL = f"{server}:{port}/algorithms"
 algo_id = None
 
 

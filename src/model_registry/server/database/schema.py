@@ -105,8 +105,8 @@ class Parameter(BaseModelPeewee):
 
 
 class FunctionParameter(BaseModelPeewee):
-    function = ForeignKeyField(Function, backref="function_parameters")
-    parameter = ForeignKeyField(Parameter, backref="function_parameters")
+    function = ForeignKeyField(Function, backref="function_parameters", on_delete="CASCADE")
+    parameter = ForeignKeyField(Parameter, backref="function_parameters", on_delete="CASCADE")
 
     class Meta:
         primary_key = CompositeKey("function", "parameter")

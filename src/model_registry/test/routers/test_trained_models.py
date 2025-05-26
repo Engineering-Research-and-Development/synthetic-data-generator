@@ -1,7 +1,9 @@
 import pytest
 import requests
 
-BASE_URL = "http://localhost:8001/trained_models"
+from ..conftest import server, port
+
+BASE_URL = f"{server}:{port}:8001/trained_models"
 train_id = None
 version_id = None
 
