@@ -3,7 +3,7 @@ import requests
 
 from ..conftest import server, port
 
-BASE_URL = f"{server}:{port}:8001/trained_models"
+BASE_URL = f"{server}:{port}/trained_models"
 train_id = None
 version_id = None
 
