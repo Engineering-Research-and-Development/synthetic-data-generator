@@ -6,7 +6,7 @@ from pydantic import BaseModel, PositiveInt, model_validator, Field
 
 class ParametersInput(BaseModel):
     param_id: PositiveInt
-    value: str
+    value: str | float
 
 
 class FunctionData(BaseModel):
@@ -63,7 +63,7 @@ class FeaturesCreated(BaseModel):
 
 class UserDataInput(BaseModel):
     additional_rows: PositiveInt
-    functions: Optional[List[FunctionData]] = []
+    functions: Optional[List[FunctionData]] = None
     ai_model: AiModel
     user_file: Optional[List[Dict]] = Field(
         default=None, description="The representation of key-value of the data content"

@@ -6,9 +6,9 @@ from starlette.responses import JSONResponse
 
 from .handlers import (
     check_function_parameters,
-    check_ai_model,
     process_input,
 )
+from .checks.models import check_ai_model
 from .validation_schema import UserDataInput, GeneratorResponse
 
 router = APIRouter(prefix="/sdg_input", tags=["SDG Input"])
@@ -26,7 +26,7 @@ async def collect_user_input(input_data: UserDataInput):
     data = input_data.model_dump()
     function_data = None
 
-    if data["functions"]:
+    if data.get("functions"):
         function_data = check_function_parameters(data["functions"])
         if not function_data:
             return JSONResponse(status_code=500, content="Error analysing functions")
