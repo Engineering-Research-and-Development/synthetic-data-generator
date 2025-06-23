@@ -3,6 +3,7 @@ from ai_lib.data_generator.functions.Parameter import Parameter
 
 import numpy as np
 
+
 class ThresholdFunction(UnspecializedFunction):
     def __init__(self, data: np.array, parameters: list[dict]):
         super().__init__(data, parameters)
@@ -12,7 +13,6 @@ class ThresholdFunction(UnspecializedFunction):
         self.upper_strict = None
         self.inner = None
         self._check_parameters()
-
 
     def _check_parameters(self):
         assert len(self.parameters) > 1
@@ -33,17 +33,25 @@ class ThresholdFunction(UnspecializedFunction):
             self.upper_strict = param_mapping["upper_strict"].value
 
         if "lower_threshold" in param_names and "upper_threshold" in param_names:
-            assert param_mapping["lower_threshold"].value < param_mapping["upper_threshold"].value
+            assert (
+                param_mapping["lower_threshold"].value
+                < param_mapping["upper_threshold"].value
+            )
             assert "inner" in param_names
             assert param_mapping["inner"].parameter_type == "bool"
             self.inner = param_mapping["inner"].value
 
-
     def compute(self):
         if self.lower_threshold and self.upper_threshold:
             if self.inner:
-                return self.data[(self.data >= self.lower_threshold) & (self.data <= self.upper_threshold)]
+                return self.data[
+                    (self.data >= self.lower_threshold)
+                    & (self.data <= self.upper_threshold)
+                ]
             else:
-                return self.data[(self.data <= self.lower_threshold) & (self.data >= self.upper_threshold)]
+                return self.data[
+                    (self.data <= self.lower_threshold)
+                    & (self.data >= self.upper_threshold)
+                ]
 
         return self.data
