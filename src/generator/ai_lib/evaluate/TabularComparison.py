@@ -88,14 +88,14 @@ class TabularComparisonEvaluator:
         contingency_scores_distances = []
         for idx, col in enumerate(self._categorical_columns[:-1]):
             for col2 in self._categorical_columns[idx + 1 :]:
-                V_real = self._compute_cramer_v(
+                v_real = self._compute_cramer_v(
                     self._real_data[col].to_numpy(), self._real_data[col2].to_numpy()
                 )
-                V_synth = self._compute_cramer_v(
+                v_synth = self._compute_cramer_v(
                     self._synthetic_data[col].to_numpy(),
                     self._synthetic_data[col2].to_numpy(),
                 )
-                contingency_scores_distances.append(np.abs(V_real - V_synth))
+                contingency_scores_distances.append(np.abs(v_real - v_synth))
 
         final_score = 1 - np.mean(contingency_scores_distances)
         return np.clip(final_score, 0, 1)
