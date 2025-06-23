@@ -9,11 +9,11 @@ from server.file_utils import (
     save_model_payload,
     check_folder,
 )
-from server.middleware_handlers import (
+from server.middleware_handlers.connection import (
     GENERATOR_ALGORITHM_NAMES,
     ALGORITHM_SHORT_TO_LONG,
-    model_to_middleware,
 )
+from server.middleware_handlers.models import model_to_middleware
 from server.utilities import trim_name
 from server.validation_schema import TrainRequest, InferRequest
 

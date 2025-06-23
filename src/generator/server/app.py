@@ -5,7 +5,7 @@ from starlette.responses import RedirectResponse
 
 from server.couch_handlers import create_couch_entry
 from server.handlers import execute_train, execute_infer
-from server.middleware_handlers import (
+from server.middleware_handlers.connection import (
     server_startup,
 )
 from server.validation_schema import InferRequest, TrainRequest, CouchEntry

@@ -1,72 +1,22 @@
 import json
-import os
-from loguru import logger
+
 import requests
-import time
-import threading
-from requests.exceptions import ConnectionError
+from loguru import logger
+
 from ai_lib.NumericDataset import NumericDataset
-from ai_lib.browse_algorithms import browse_algorithms
 from ai_lib.data_generator.models.UnspecializedModel import UnspecializedModel
 from server.file_utils import (
-    create_server_repo_folder_structure,
     list_trained_models,
     retrieve_model_payload,
-    delete_folder,
-    get_folder_full_path,
     save_model_payload,
+    get_folder_full_path,
+    delete_folder,
 )
-
-MIDDLEWARE_ON = False
-MAX_RETRIES = 10
-middleware = os.environ.get("MIDDLEWARE_URL")
-GENERATOR_ALGORITHM_NAMES = []
-ALGORITHM_LONG_NAME_TO_ID = {}
-ALGORITHM_LONG_TO_SHORT = {}
-ALGORITHM_SHORT_TO_LONG = {}
-
-
-def server_startup():
-    """
-    Called at server startup to initialize the server.
-    It creates a folder structure for saving models on the server and
-    syncs the available algorithms from the middleware to the local server.
-    """
-    logger.info("Server startup")
-    create_server_repo_folder_structure()
-    [
-        GENERATOR_ALGORITHM_NAMES.append(algorithm["algorithm"]["name"])
-        for algorithm in browse_algorithms()
-    ]
-    for algorithm in GENERATOR_ALGORITHM_NAMES:
-        ALGORITHM_LONG_TO_SHORT[algorithm] = algorithm.split(".")[-1]
-        ALGORITHM_SHORT_TO_LONG[ALGORITHM_LONG_TO_SHORT[algorithm]] = algorithm
-
-    logger.info("Starting connection procedure to middleware")
-    reconnection_thread = threading.Thread(target=middleware_connect)
-    reconnection_thread.start()
-    logger.info("Server startup completed")
-
-
-def middleware_connect(tries: int = 1):
-    if tries >= MAX_RETRIES:
-        logger.error(
-            f"{tries} connection attempts failed, restart to try new connections"
-        )
-        return
-    if not middleware:
-        logger.error("Middleware not available, running in isolated environment")
-        return
-    try:
-        logger.info(f"Connection attempt n.{tries}")
-        sync_available_algorithms()
-        sync_trained_models()
-    except ConnectionError:
-        time.sleep(2**tries)
-        return middleware_connect(tries + 1)
-    global MIDDLEWARE_ON
-    MIDDLEWARE_ON = True
-    logger.info("Middleware connection successful")
+from server.middleware_handlers.connection import (
+    MIDDLEWARE_ON,
+    ALGORITHM_LONG_NAME_TO_ID,
+    middleware,
+)
 
 
 def model_to_middleware(
@@ -195,27 +145,3 @@ def sync_trained_models():
             delete_folder(get_folder_full_path(local_trained_model))
 
     logger.info("Sync completed")
-
-
-def sync_available_algorithms():
-    """
-    Syncs the available algorithms from the middleware to the local server.
-    """
-    response = requests.get(f"{middleware}algorithms/")
-
-    for remote_algo in response.json().get("algorithms", []):
-        if remote_algo.get("name") not in ALGORITHM_SHORT_TO_LONG.keys():
-            requests.delete(url=f"{middleware}algorithms/{remote_algo.get('id')}")
-
-    for algorithm in browse_algorithms():
-        long_name = algorithm["algorithm"]["name"]
-        algorithm["algorithm"]["name"] = ALGORITHM_LONG_TO_SHORT[long_name]
-        response = requests.post(url=f"{middleware}algorithms/", json=algorithm)
-
-        if not response.status_code == 201:
-            logger.error(f"Error syncing algorithm: {response.text}")
-        else:
-            algo_id = response.json().get("id")
-            ALGORITHM_LONG_NAME_TO_ID[long_name] = algo_id
-
-    logger.info("Algorithm sync completed")
