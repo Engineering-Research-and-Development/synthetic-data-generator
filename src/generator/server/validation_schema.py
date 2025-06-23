@@ -18,11 +18,20 @@ class TrainModelInfo(BaseModel):
     model_name: str
 
 
-class TrainRequest(BaseModel):
-    model: TrainModelInfo
-    dataset: List[DatasetIn]
-    functions_id: list[PositiveInt] = []
-    n_rows: PositiveInt
+class Parameter(BaseModel):
+    param_id: PositiveInt
+    value: str | float
+
+
+class Function(BaseModel):
+    function_id: PositiveInt
+    feature: str = Field(
+        pattern="^[^ ](.*[^ ])?$",
+        description="This field does NOT allow strings that"
+        " start or end with spaces or are empty",
+        examples=["A feature name"],
+    )
+    parameters: List[Parameter]
 
 
 class InferModelInfoData(BaseModel):
@@ -36,9 +45,16 @@ class InferModelInfoNodata(InferModelInfoData):
     training_data_info: List[TrainingDataInfo] = []
 
 
+class TrainRequest(BaseModel):
+    model: TrainModelInfo
+    dataset: List[DatasetIn]
+    functions: Optional[List[Function]] = []
+    n_rows: PositiveInt
+
+
 class InferRequestNoData(BaseModel):
     model: InferModelInfoNodata
-    functions_id: list[PositiveInt] = []
+    functions: Optional[List[Function]] = []
     n_rows: PositiveInt
 
 
