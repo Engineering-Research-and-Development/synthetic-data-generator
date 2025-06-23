@@ -98,10 +98,10 @@ class DatasetOutput(BaseModel):
 
 
 class GeneratorDataOutput(BaseModel):
-    functions_id: Optional[List[FunctionData]]
     model: ModelOutput
-    n_rows: PositiveInt
     dataset: List[DatasetOutput] | None = None
+    functions: Optional[List[FunctionData]]
+    n_rows: PositiveInt
 
 
 class GeneratorResponse(BaseModel):

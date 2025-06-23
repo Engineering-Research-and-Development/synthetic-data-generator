@@ -31,7 +31,7 @@ def determine_column_type(values: list) -> str:
 
 
 def determine_column_datatype(values: list) -> SupportedDatatypes:
-    if all(isinstance(v, int) for v in values):
+    if all(isinstance(v, (int, float)) for v in values):
         return SupportedDatatypes.int
     return SupportedDatatypes.float
 
@@ -84,7 +84,7 @@ def handle_user_file(
 
     return (
         GeneratorDataOutput(
-            functions_id=function_data,
+            functions=function_data,
             n_rows=data.get("additional_rows"),
             model=model,
             dataset=user_file,
