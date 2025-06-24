@@ -12,11 +12,6 @@ from server.file_utils import (
     get_folder_full_path,
     delete_folder,
 )
-from server.middleware_handlers.connection import (
-    MIDDLEWARE_ON,
-    ALGORITHM_LONG_NAME_TO_ID,
-    middleware,
-)
 
 
 def model_to_middleware(
@@ -25,6 +20,9 @@ def model_to_middleware(
     dataset_name: str,
     save_path: str,
     version_name: str,
+    middleware: str,
+    middleware_on: bool,
+    algorithm_long_name_to_id: dict,
 ) -> str:
     """
     Pushes a trained model to the middleware.
@@ -36,6 +34,9 @@ def model_to_middleware(
     The function ultimately posts the model to the middleware for storage and returns
     the response body of the POST request.
 
+    :param middleware:
+    :param middleware_on:
+    :param algorithm_long_name_to_id:
     :param model: The trained model to be pushed
     :param data: The dataset used for training the model
     :param dataset_name: The name of the dataset
@@ -51,7 +52,7 @@ def model_to_middleware(
         "image_path": save_path,
     }
     # Getting the algorithm id
-    algorithm_id = ALGORITHM_LONG_NAME_TO_ID.get(
+    algorithm_id = algorithm_long_name_to_id.get(
         model.self_describe().get("algorithm").get("name")
     )
     trained_model_misc = {
@@ -68,20 +69,22 @@ def model_to_middleware(
         "version": version_info,
         "datatypes": feature_list,
     }
-    return post_model_to_middleware(model_to_save)
+    return post_model_to_middleware(model_to_save, middleware=middleware, middleware_on=middleware_on)
 
 
-def post_model_to_middleware(model_to_save: dict):
+def post_model_to_middleware(model_to_save: dict, middleware: str, middleware_on: bool):
     """
     Posts a trained model to the middleware
 
+    :param middleware:
+    :param middleware_on:
     :param model_to_save: The model to be saved
     :return: The body of the POST request
     """
 
     headers = {"Content-Type": "application/json"}
     body = json.dumps(model_to_save)
-    if MIDDLEWARE_ON:
+    if middleware_on:
         logger.info(f"Pushing {model_to_save.get('model').get('name')} middleware")
         response = requests.post(
             f"{middleware}trained_models/", headers=headers, data=body
@@ -96,7 +99,7 @@ def post_model_to_middleware(model_to_save: dict):
     return body
 
 
-def sync_trained_models():
+def sync_trained_models(middleware: str, algorithm_long_name_to_id: dict, middleware_on: bool):
     """
     Syncs the trained models from the middleware to the local server.
     First check remote trained model with their versions. If models and versions are not available,
@@ -133,13 +136,13 @@ def sync_trained_models():
                     algo_long_name = model_payload.get("model").get(
                         "algorithm_long_name"
                     )
-                    model_payload["model"]["algorithm"] = ALGORITHM_LONG_NAME_TO_ID.get(
+                    model_payload["model"]["algorithm"] = algorithm_long_name_to_id.get(
                         algo_long_name
                     )
                     save_model_payload(
                         get_folder_full_path(local_trained_model), model_payload
                     )
-                post_model_to_middleware(model_payload)
+                post_model_to_middleware(model_payload, middleware=middleware, middleware_on=middleware_on)
         except FileNotFoundError:
             logger.error("Local Payload not found, deleting folder")
             delete_folder(get_folder_full_path(local_trained_model))

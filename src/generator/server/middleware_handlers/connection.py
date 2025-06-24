@@ -52,7 +52,10 @@ def middleware_connect(tries: int = 1) -> None:
         return None
     try:
         logger.info(f"Connection attempt n.{tries}")
-        sync_available_algorithms()
+        sync_available_algorithms(middleware= middleware,
+                                  algorithm_short_to_long=ALGORITHM_SHORT_TO_LONG,
+                                  algorithm_long_to_short=ALGORITHM_LONG_TO_SHORT,
+                                  algorithm_long_name_to_id=ALGORITHM_LONG_NAME_TO_ID)
         sync_trained_models()
     except ConnectionError:
         time.sleep(2**tries)

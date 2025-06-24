@@ -12,6 +12,9 @@ from server.file_utils import (
 from server.middleware_handlers.connection import (
     GENERATOR_ALGORITHM_NAMES,
     ALGORITHM_SHORT_TO_LONG,
+    ALGORITHM_LONG_NAME_TO_ID,
+    middleware,
+    MIDDLEWARE_ON
 )
 from server.middleware_handlers.models import model_to_middleware
 from server.utilities import trim_name
@@ -56,7 +59,8 @@ def execute_train(request: TrainRequest, couch_doc: str):
     # We invoke the model registry saving the model, if failing delete trained model
     try:
         model_payload = model_to_middleware(
-            model, data, "dataset_name", str(folder_path), new_version_name
+            model, data, "dataset_name", str(folder_path), new_version_name,
+            middleware=middleware, algorithm_long_name_to_id=ALGORITHM_LONG_NAME_TO_ID, middleware_on = MIDDLEWARE_ON
         )
         save_model_payload(folder_path, model_payload)
     except KeyError as e:
