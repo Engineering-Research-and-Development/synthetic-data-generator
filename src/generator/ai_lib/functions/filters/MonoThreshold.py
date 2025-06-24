@@ -12,11 +12,6 @@ class MonoThreshold(UnspecializedFunction):
 
     def _check_parameters(self):
         param_mapping = {param.name: param for param in self.parameters}
-        param_names = param_mapping.keys()
-        assert "value" in param_names
-        assert "strict" in param_names
-        assert isinstance(param_mapping["value"].value, float)
-        assert isinstance(param_mapping["strict"].value, bool)
         self.value = param_mapping["value"].value
         self.strict = param_mapping["strict"].value
 
