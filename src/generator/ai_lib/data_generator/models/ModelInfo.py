@@ -3,6 +3,9 @@ class AllowedData:
         self.dtype = dtype
         self.is_categorical = is_categorical
 
+    def to_json(self):
+        return {"type": self.dtype, "is_categorical": self.is_categorical}
+
 
 class ModelInfo:
     def __init__(
@@ -26,10 +29,7 @@ class ModelInfo:
 
         :return: dict containing the model's information
         """
-        allowed_data = [
-            {"type": ad.dtype, "is_categorical": ad.is_categorical}
-            for ad in self.allowed_data
-        ]
+        allowed_data = [ad.to_json() for ad in self.allowed_data]
         system_model_info = {
             "algorithm": {
                 "name": self.name,

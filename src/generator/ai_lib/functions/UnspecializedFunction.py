@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
-from ai_lib.data_generator.functions.Parameter import Parameter
+from ai_lib.functions.Parameter import Parameter
 
 
 class UnspecializedFunction(ABC):
