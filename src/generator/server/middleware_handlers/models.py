@@ -69,7 +69,9 @@ def model_to_middleware(
         "version": version_info,
         "datatypes": feature_list,
     }
-    return post_model_to_middleware(model_to_save, middleware=middleware, middleware_on=middleware_on)
+    return post_model_to_middleware(
+        model_to_save, middleware=middleware, middleware_on=middleware_on
+    )
 
 
 def post_model_to_middleware(model_to_save: dict, middleware: str, middleware_on: bool):
@@ -99,7 +101,9 @@ def post_model_to_middleware(model_to_save: dict, middleware: str, middleware_on
     return body
 
 
-def sync_trained_models(middleware: str, algorithm_long_name_to_id: dict, middleware_on: bool):
+def sync_trained_models(
+    middleware: str, algorithm_long_name_to_id: dict, middleware_on: bool
+):
     """
     Syncs the trained models from the middleware to the local server.
     First check remote trained model with their versions. If models and versions are not available,
@@ -142,7 +146,9 @@ def sync_trained_models(middleware: str, algorithm_long_name_to_id: dict, middle
                     save_model_payload(
                         get_folder_full_path(local_trained_model), model_payload
                     )
-                post_model_to_middleware(model_payload, middleware=middleware, middleware_on=middleware_on)
+                post_model_to_middleware(
+                    model_payload, middleware=middleware, middleware_on=middleware_on
+                )
         except FileNotFoundError:
             logger.error("Local Payload not found, deleting folder")
             delete_folder(get_folder_full_path(local_trained_model))

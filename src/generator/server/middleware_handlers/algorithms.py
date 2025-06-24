@@ -4,11 +4,12 @@ from loguru import logger
 from ai_lib.browse_algorithms import browse_algorithms
 
 
-
-def sync_available_algorithms(middleware: str,
-                              algorithm_short_to_long: dict,
-                              algorithm_long_to_short: dict,
-                              algorithm_long_name_to_id: dict):
+def sync_available_algorithms(
+    middleware: str,
+    algorithm_short_to_long: dict,
+    algorithm_long_to_short: dict,
+    algorithm_long_name_to_id: dict,
+):
     """
     Syncs the available algorithms from the middleware to the local server.
     """
