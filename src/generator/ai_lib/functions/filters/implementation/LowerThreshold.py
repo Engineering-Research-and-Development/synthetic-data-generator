@@ -6,15 +6,15 @@ from ai_lib.functions.filters.MonoThreshold import MonoThreshold
 
 
 class LowerThreshold(MonoThreshold):
-    def __init__(self, data: np.array, parameters: list[dict]):
-        super().__init__(data, parameters)
+    def __init__(self, parameters: list[dict]):
+        super().__init__(parameters)
 
-    def compute(self):
+    def compute(self, data: np.array):
         if self.strict:
-            indexes = np.greater_equal(self.data, self.value)
+            indexes = np.greater_equal(data, self.value)
         else:
-            indexes = np.greater(self.data, self.value)
-        return self.data[indexes], indexes
+            indexes = np.greater(data, self.value)
+        return data[indexes], indexes
 
     @classmethod
     def self_describe(cls):

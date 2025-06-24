@@ -6,21 +6,21 @@ from ai_lib.functions.filters.IntervalThreshold import IntervalThreshold
 
 
 class OuterThreshold(IntervalThreshold):
-    def __init__(self, data: np.array, parameters: list[dict]):
-        super().__init__(data, parameters)
+    def __init__(self, parameters: list[dict]):
+        super().__init__(parameters)
 
-    def compute(self):
+    def compute(self, data: np.array):
         if self.lower_strict:
-            upper_indexes = np.greater_equal(self.data, self.upper_bound)
+            upper_indexes = np.greater_equal(data, self.upper_bound)
         else:
-            upper_indexes = np.greater(self.data, self.upper_bound)
+            upper_indexes = np.greater(data, self.upper_bound)
 
         if self.upper_strict:
-            lower_indexes = np.less_equal(self.data, self.lower_bound)
+            lower_indexes = np.less_equal(data, self.lower_bound)
         else:
-            lower_indexes = np.less_equal(self.data, self.lower_bound)
+            lower_indexes = np.less(data, self.lower_bound)
         final_indexes = lower_indexes | upper_indexes
-        return self.data[final_indexes], final_indexes
+        return data[final_indexes], final_indexes
 
     @classmethod
     def self_describe(cls):

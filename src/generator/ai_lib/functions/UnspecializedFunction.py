@@ -5,12 +5,11 @@ from ai_lib.functions.Parameter import Parameter
 
 
 class UnspecializedFunction(ABC):
-    def __init__(self, data: np.array, parameters: list[dict]):
-        self.data = data
+    def __init__(self, parameters: list[dict]):
         self.parameters = [Parameter.from_json(param) for param in parameters]
 
     @abstractmethod
-    def compute(self):
+    def compute(self, data: np.array):
         raise NotImplementedError
 
     @abstractmethod
