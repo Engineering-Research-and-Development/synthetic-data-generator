@@ -2,19 +2,22 @@ import numpy as np
 
 from ai_lib.functions.FunctionInfo import FunctionInfo
 from ai_lib.functions.Parameter import Parameter
-from ai_lib.functions.filters.MonoThreshold import MonoThreshold
+from ai_lib.functions.filter.MonoThreshold import MonoThreshold
 
 
 class LowerThreshold(MonoThreshold):
     def __init__(self, parameters: list[dict]):
         super().__init__(parameters)
 
-    def compute(self, data: np.array):
+    def _compute(self, data: np.array):
         if self.strict:
             indexes = np.greater_equal(data, self.value)
         else:
             indexes = np.greater(data, self.value)
         return data[indexes], indexes
+
+    def _evaluate(self, data: np.array):
+        return True
 
     @classmethod
     def self_describe(cls):

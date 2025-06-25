@@ -15,8 +15,11 @@ class MonoThreshold(UnspecializedFunction):
         self.value = param_mapping["value"].value
         self.strict = param_mapping["strict"].value
 
-    def compute(self, data: np.array):
-        raise NotImplementedError
+    def _compute(self, data: np.array):
+        pass
+
+    def _evaluate(self, data: np.array):
+        pass
 
     @classmethod
     def self_describe(cls):

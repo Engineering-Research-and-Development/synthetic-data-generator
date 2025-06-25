@@ -19,8 +19,11 @@ class IntervalThreshold(UnspecializedFunction):
         self.upper_strict = param_mapping["upper_strict"].value
         self.lower_strict = param_mapping["lower_strict"].value
 
-    def compute(self, data: np.array):
-        raise NotImplementedError
+    def _compute(self, data: np.array):
+        pass
+
+    def _evaluate(self, data: np.array):
+        pass
 
     @classmethod
     def self_describe(cls):
