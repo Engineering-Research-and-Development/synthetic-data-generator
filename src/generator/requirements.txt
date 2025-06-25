@@ -10,3 +10,4 @@ pyaml
 fastapi[standard]
 loguru
 skops
+statsmodels
