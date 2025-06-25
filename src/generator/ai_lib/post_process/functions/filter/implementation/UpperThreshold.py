@@ -1,19 +1,19 @@
 import numpy as np
 
-from ai_lib.functions.FunctionInfo import FunctionInfo
-from ai_lib.functions.Parameter import Parameter
-from ai_lib.functions.filter.MonoThreshold import MonoThreshold
+from ai_lib.post_process.functions.FunctionInfo import FunctionInfo
+from ai_lib.post_process.functions.Parameter import Parameter
+from ai_lib.post_process.functions.filter.MonoThreshold import MonoThreshold
 
 
-class LowerThreshold(MonoThreshold):
+class UpperThreshold(MonoThreshold):
     def __init__(self, parameters: list[dict]):
         super().__init__(parameters)
 
     def _compute(self, data: np.array):
         if self.strict:
-            indexes = np.greater_equal(data, self.value)
+            indexes = np.less_equal(data, self.value)
         else:
-            indexes = np.greater(data, self.value)
+            indexes = np.less(data, self.value)
         return data[indexes], indexes
 
     def _evaluate(self, data: np.array):
@@ -28,5 +28,5 @@ class LowerThreshold(MonoThreshold):
                 Parameter("value", 0.0, "float"),
                 Parameter("strict", True, "bool"),
             ],
-            description="Mono-threshold function: pick values greater than a lower threshold",
-        )
+            description="Mono-threshold function: picks value less than an upper threshold",
+        ).get_function_info()

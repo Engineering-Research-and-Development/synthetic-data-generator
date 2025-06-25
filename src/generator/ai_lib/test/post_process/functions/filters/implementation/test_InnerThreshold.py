@@ -1,7 +1,8 @@
 import pytest
-import numpy as np
 
-from ai_lib.functions.filter.implementation.InnerThreshold import InnerThreshold
+from ai_lib.post_process.functions.filter.implementation.InnerThreshold import (
+    InnerThreshold,
+)
 
 
 @pytest.fixture

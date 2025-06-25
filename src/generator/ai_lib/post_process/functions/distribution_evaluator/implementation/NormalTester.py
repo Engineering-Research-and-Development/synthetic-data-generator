@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.stats import normaltest, ttest_1samp, kstest, norm
 
-from ai_lib.functions.FunctionInfo import FunctionInfo
-from ai_lib.functions.UnspecializedFunction import UnspecializedFunction
-from ai_lib.functions.Parameter import Parameter
+from ai_lib.post_process.functions.FunctionInfo import FunctionInfo
+from ai_lib.post_process.functions.UnspecializedFunction import UnspecializedFunction
+from ai_lib.post_process.functions.Parameter import Parameter
 
 
 class NormalTester(UnspecializedFunction):
@@ -57,4 +57,4 @@ class NormalTester(UnspecializedFunction):
                 Parameter("standard_deviation", 1.0, "float"),
             ],
             description="Checks if data is normally distributed given a desired mean and standard deviation",
-        )
+        ).get_function_info()

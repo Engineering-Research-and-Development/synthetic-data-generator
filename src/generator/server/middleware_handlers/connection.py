@@ -3,7 +3,7 @@ from loguru import logger
 import time
 import threading
 from requests.exceptions import ConnectionError
-from ai_lib.browse_algorithms import browse_algorithms
+from ai_lib.browser import browse_algorithms
 from server.file_utils import (
     create_server_repo_folder_structure,
 )

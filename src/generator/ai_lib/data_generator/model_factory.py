@@ -32,7 +32,6 @@ def model_factory(model_dict: dict, input_shape: str = None) -> UnspecializedMod
     }
     :param input_shape:
     :return: An instance of a BaseModel class or any subclass
-    :raises: ModelException
     """
     model_file, metadata, model_type, model_name, input_shape_model = parse_model_info(
         model_dict
@@ -63,7 +62,6 @@ def parse_model_info(model_dict: dict):
         "input_shape" [optional] -> contains a stringed tuple that identifies the input layer shape
     }
     :return: model_file, metadata, model_type, model_name, input_shape
-    :raises: ModelException
     """
     model_file = model_dict.get("image", None)
     metadata = model_dict.get("metadata", {})

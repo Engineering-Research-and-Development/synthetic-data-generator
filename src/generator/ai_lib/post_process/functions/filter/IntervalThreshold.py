@@ -1,4 +1,4 @@
-from ai_lib.functions.UnspecializedFunction import UnspecializedFunction
+from ai_lib.post_process.functions.UnspecializedFunction import UnspecializedFunction
 
 import numpy as np
 

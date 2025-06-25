@@ -3,11 +3,6 @@ from pathlib import Path
 import importlib
 from typing import Generator
 
-base_package = "ai_lib.data_generator.models."
-base_model_path = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "data_generator/models/"
-)
-
 
 def find_implementations(
     root_path: str, implementation_folder: str = "implementation"
@@ -38,9 +33,7 @@ def find_implementations(
     return module_paths
 
 
-def browse_algorithms(
-    model_paths: str = base_model_path, model_package: str = base_package
-) -> Generator[dict | None, None, None]:
+def browse(path: str, package: str) -> Generator[dict | None, None, None]:
     """
     Generator function to iterate.
     It exploits the find_implementations function to gather all module names, then extract from each module
@@ -49,8 +42,8 @@ def browse_algorithms(
     :return: dictionary description of each implementation existing in ai_lib
     """
 
-    modules = find_implementations(model_paths)
-    list_module_names = [f"{model_package}{module}" for module in modules]
+    modules = find_implementations(path)
+    list_module_names = [f"{package}{module}" for module in modules]
 
     for module_name in list_module_names:
         class_name = module_name.split(".")[-1]
@@ -62,3 +55,19 @@ def browse_algorithms(
         Class = getattr(module, class_name)
 
         yield Class.self_describe()
+
+
+def browse_functions():
+    base_function_package = "ai_lib.post_process.functions."
+    base_function_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "post_process/functions/"
+    )
+    return browse(base_function_path, base_function_package)
+
+
+def browse_algorithms():
+    base_model_package = "ai_lib.data_generator.models."
+    base_model_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "data_generator/models/"
+    )
+    return browse(base_model_path, base_model_package)

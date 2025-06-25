@@ -1,8 +1,8 @@
 import numpy as np
 
-from ai_lib.functions.FunctionInfo import FunctionInfo
-from ai_lib.functions.Parameter import Parameter
-from ai_lib.functions.filter.IntervalThreshold import IntervalThreshold
+from ai_lib.post_process.functions.FunctionInfo import FunctionInfo
+from ai_lib.post_process.functions.Parameter import Parameter
+from ai_lib.post_process.functions.filter.IntervalThreshold import IntervalThreshold
 
 
 class InnerThreshold(IntervalThreshold):
@@ -38,4 +38,4 @@ class InnerThreshold(IntervalThreshold):
                 Parameter("upper_strict", True, "bool"),
             ],
             description="Filters data between a given interval",
-        )
+        ).get_function_info()

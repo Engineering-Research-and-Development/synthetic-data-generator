@@ -1,4 +1,4 @@
-from ai_lib.functions.Parameter import Parameter
+from ai_lib.post_process.functions.Parameter import Parameter
 
 
 class FunctionInfo:
