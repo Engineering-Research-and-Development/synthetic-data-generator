@@ -39,9 +39,11 @@ class NormalTester(UnspecializedFunction):
         :param data:
         :return: False if null hypotesis is rejected (p < 0.05), True if it is failed to reject (p > 0.05)
         """
+        def cdf_function(x):
+            return norm.cdf(x, loc=self.mean, scale=self.std)
+
         _, p_normal = normaltest(data)
         _, p_t = ttest_1samp(data, self.mean)
-        cdf_function = lambda x: norm.cdf(x, loc=self.mean, scale=self.std)
         _, p_k = kstest(data, cdf_function)
         p = min(p_normal, p_t, p_k)
 

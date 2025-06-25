@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ai_lib.post_process.functions.distribution_evaluator.implementation import (
+from ai_lib.post_process.functions.distribution_evaluator.implementation.NormalTester import (
     NormalTester,
 )
 
