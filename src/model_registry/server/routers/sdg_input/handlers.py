@@ -10,7 +10,7 @@ from .validation_schema import (
 )
 
 
-def structure_function_paramers(
+def structure_function_parameters(
     function: FunctionData, selected_param: list[FunctionParameter]
 ) -> FunctionDataOut:
     """
