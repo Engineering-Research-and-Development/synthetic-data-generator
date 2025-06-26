@@ -64,7 +64,7 @@ def check_function_parameters(functions: list[FunctionData]) -> list[FunctionDat
         if len(input_param) != len(parameter_ids_list):
             return []
         if all(p in parameter_ids_list for p in input_param):
-            function_data.append(structure_function_paramers(function, selected_param))
+            function_data.append(structure_function_parameters(function, selected_param))
             continue
         else:
             return []
