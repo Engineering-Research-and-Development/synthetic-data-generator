@@ -19,18 +19,19 @@ class TrainModelInfo(BaseModel):
 
 
 class Parameter(BaseModel):
-    param_id: PositiveInt
-    value: str | float
+    name: str
+    value: str
+    parameter_type: str
 
 
 class Function(BaseModel):
-    function_id: PositiveInt
     feature: str = Field(
         pattern="^[^ ](.*[^ ])?$",
         description="This field does NOT allow strings that"
         " start or end with spaces or are empty",
         examples=["A feature name"],
     )
+    function_reference: str
     parameters: List[Parameter]
 
 
