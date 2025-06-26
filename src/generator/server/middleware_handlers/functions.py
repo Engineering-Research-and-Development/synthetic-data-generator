@@ -21,6 +21,6 @@ def sync_available_functions(middleware: str, list_function_names: list[str]):
         response = requests.post(url=f"{middleware}functions/", json=function)
 
         if not response.status_code == 201:
-            logger.error(f"Error syncing algorithm: {response.text}")
+            logger.error(f"Error syncing functions: {response.text}")
 
     logger.info("Function sync completed")
