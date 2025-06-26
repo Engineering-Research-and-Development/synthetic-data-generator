@@ -3,11 +3,12 @@ from loguru import logger
 import time
 import threading
 from requests.exceptions import ConnectionError
-from ai_lib.browser import browse_algorithms
+from ai_lib.browser import browse_algorithms, browse_functions
 from server.file_utils import (
     create_server_repo_folder_structure,
 )
 from server.middleware_handlers.algorithms import sync_available_algorithms
+from server.middleware_handlers.functions import sync_available_functions
 from server.middleware_handlers.models import sync_trained_models
 
 MIDDLEWARE_ON = False
@@ -17,6 +18,10 @@ GENERATOR_ALGORITHM_NAMES = []
 ALGORITHM_LONG_NAME_TO_ID = {}
 ALGORITHM_LONG_TO_SHORT = {}
 ALGORITHM_SHORT_TO_LONG = {}
+GENERATOR_FUNCTION_NAMES = []
+FUNCTION_LONG_TO_SHORT = {}
+FUNCTION_SHORT_TO_LONG = {}
+FUNCTION_LONG_NAME_TO_ID = {}
 
 
 def server_startup():
@@ -34,6 +39,11 @@ def server_startup():
     for algorithm in GENERATOR_ALGORITHM_NAMES:
         ALGORITHM_LONG_TO_SHORT[algorithm] = algorithm.split(".")[-1]
         ALGORITHM_SHORT_TO_LONG[ALGORITHM_LONG_TO_SHORT[algorithm]] = algorithm
+
+    [
+        GENERATOR_FUNCTION_NAMES.append(function["function"]["function_reference"])
+        for function in browse_functions()
+    ]
 
     logger.info("Starting connection procedure to middleware")
     reconnection_thread = threading.Thread(target=middleware_connect)
@@ -62,6 +72,10 @@ def middleware_connect(tries: int = 1) -> None:
             middleware=middleware,
             algorithm_long_name_to_id=ALGORITHM_LONG_NAME_TO_ID,
             middleware_on=True,
+        )
+        sync_available_functions(
+            middleware=middleware,
+            list_function_names=GENERATOR_FUNCTION_NAMES,
         )
     except ConnectionError:
         time.sleep(2**tries)
