@@ -10,7 +10,7 @@ def sync_available_functions(middleware: str, list_function_names: list[str]):
     """
     response = requests.get(f"{middleware}functions/")
 
-    for remote_function in response.json().get("functions", []):
+    for remote_function in response.json():
         if (
             remote_function.get("function").get("function_reference")
             not in list_function_names
