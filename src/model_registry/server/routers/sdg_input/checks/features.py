@@ -25,7 +25,7 @@ def handle_feature_creation(
 
     return (
         GeneratorDataOutput(
-            functions_id=function_data,
+            functions=function_data,
             n_rows=data.get("additional_rows"),
             model=model,
         ),
