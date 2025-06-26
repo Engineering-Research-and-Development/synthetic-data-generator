@@ -97,8 +97,25 @@ class DatasetOutput(BaseModel):
         use_enum_values = True
 
 
+class ParametersOut(BaseModel):
+    name: str
+    value: str
+    parameter_type: str
+
+
+class FunctionDataOut(BaseModel):
+    feature: str = Field(
+        pattern="^[^ ](.*[^ ])?$",
+        description="This field does NOT allow strings that"
+        " start or end with spaces or are empty",
+        examples=["A feature name"],
+    )
+    function_reference: str
+    parameters: List[ParametersOut]
+
+
 class GeneratorDataOutput(BaseModel):
-    functions_id: Optional[List[FunctionData]]
+    functions_id: Optional[List[FunctionDataOut]]
     model: ModelOutput
     n_rows: PositiveInt
     dataset: List[DatasetOutput] | None = None

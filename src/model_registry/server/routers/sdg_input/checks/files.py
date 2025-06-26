@@ -3,8 +3,8 @@ from typing import Union
 from routers.sdg_input.validation_schema import (
     SupportedDatatypes,
     DatasetOutput,
-    FunctionData,
     GeneratorDataOutput,
+    FunctionDataOut,
 )
 import json
 
@@ -68,7 +68,7 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
 
 
 def handle_user_file(
-    data: dict, function_data: list[FunctionData] | None, model
+    data: dict, function_data: list[FunctionDataOut] | None, model
 ) -> (GeneratorDataOutput, str):
     """
     Create the GeneratorDataOutput object from the user file
