@@ -58,7 +58,11 @@ def middleware_connect(tries: int = 1) -> None:
             algorithm_long_to_short=ALGORITHM_LONG_TO_SHORT,
             algorithm_long_name_to_id=ALGORITHM_LONG_NAME_TO_ID,
         )
-        sync_trained_models()
+        sync_trained_models(
+            middleware=middleware,
+            algorithm_long_name_to_id=ALGORITHM_LONG_NAME_TO_ID,
+            middleware_on=True,
+        )
     except ConnectionError:
         time.sleep(2**tries)
         return middleware_connect(tries + 1)
