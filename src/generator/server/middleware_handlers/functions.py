@@ -11,7 +11,10 @@ def sync_available_functions(middleware: str, list_function_names: list[str]):
     response = requests.get(f"{middleware}functions/")
 
     for remote_function in response.json().get("functions", []):
-        if remote_function.get("function_reference") not in list_function_names:
+        if (
+            remote_function.get("function").get("function_reference")
+            not in list_function_names
+        ):
             requests.delete(url=f"{middleware}functions/{remote_function.get('id')}")
 
     for function in browse_functions():
