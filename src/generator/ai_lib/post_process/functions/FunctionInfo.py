@@ -16,8 +16,10 @@ class FunctionInfo:
 
     def get_function_info(self):
         return {
-            "name": self.name,
-            "description": self.description,
-            "function_reference": self.function_reference,
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "function_reference": self.function_reference,
+            },
             "parameters": [param.to_json() for param in self.Parameters],
         }
