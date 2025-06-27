@@ -8,10 +8,10 @@ from ai_lib.post_process.functions.filter.implementation.InnerThreshold import (
 @pytest.fixture
 def correct_instance():
     params = [
-        {"name": "upper_bound", "value": 50.0, "parameter_type": "float"},
-        {"name": "lower_bound", "value": 10.0, "parameter_type": "float"},
-        {"name": "upper_strict", "value": True, "parameter_type": "bool"},
-        {"name": "lower_strict", "value": False, "parameter_type": "bool"},
+        {"name": "upper_bound", "value": "50.0", "parameter_type": "float"},
+        {"name": "lower_bound", "value": "10.0", "parameter_type": "float"},
+        {"name": "upper_strict", "value": "True", "parameter_type": "bool"},
+        {"name": "lower_strict", "value": "False", "parameter_type": "bool"},
     ]
     return InnerThreshold(parameters=params)
 

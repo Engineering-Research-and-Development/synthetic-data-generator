@@ -9,8 +9,8 @@ from ai_lib.post_process.functions.distribution_evaluator.implementation.NormalT
 @pytest.fixture
 def correct_instance():
     params = [
-        {"name": "mean", "value": 0.0, "parameter_type": "float"},
-        {"name": "standard_deviation", "value": 1.0, "parameter_type": "float"},
+        {"name": "mean", "value": "0.0", "parameter_type": "float"},
+        {"name": "standard_deviation", "value": "1.0", "parameter_type": "float"},
     ]
     return NormalTester(parameters=params)
 
@@ -27,29 +27,29 @@ def test_check_parameters(correct_instance):
 
 
 def test_compute(correct_instance):
-    data = np.random.normal(correct_instance.mean, correct_instance.std, 1000)
+    data = np.random.normal(correct_instance.mean, correct_instance.std, 10000)
     compute_data, indexes = correct_instance._compute(data)
-    assert data.shape == (1000,)
-    assert indexes.shape == (1000,)
+    assert data.shape == (10000,)
+    assert indexes.shape == (10000,)
     assert np.all(compute_data == data)
     assert np.all(indexes == np.zeros(len(data)))
 
 
 def test_evaluate(correct_instance):
-    correct_data = np.random.normal(correct_instance.mean, correct_instance.std, 1000)
+    correct_data = np.random.normal(correct_instance.mean, correct_instance.std, 10000)
     assert correct_instance._evaluate(correct_data)
 
 
 def test_evaluate_wrong(correct_instance):
-    wrong_data = np.random.normal(5, 1, 1000)
-    wrong_data_2 = np.random.normal(0, 10, 1000)
+    wrong_data = np.random.normal(5, 1, 10000)
+    wrong_data_2 = np.random.normal(0, 10, 10000)
     assert not correct_instance._evaluate(wrong_data)
     assert not correct_instance._evaluate(wrong_data_2)
 
 
 def test_get_result(correct_instance):
-    data_correct = np.random.normal(correct_instance.mean, correct_instance.std, 1000)
+    data_correct = np.random.normal(correct_instance.mean, correct_instance.std, 10000)
     results = correct_instance.get_results(data_correct)
-    assert results["results"].shape == (1000,)
-    assert results["indexes"].shape == (1000,)
+    assert results["results"].shape == (10000,)
+    assert results["indexes"].shape == (10000,)
     assert results["evaluation_results"]
