@@ -84,7 +84,7 @@ def handle_user_file(
 
     return (
         GeneratorDataOutput(
-            functions=function_data,
+            functions_id=function_data,
             n_rows=data.get("additional_rows"),
             model=model,
             dataset=user_file,
