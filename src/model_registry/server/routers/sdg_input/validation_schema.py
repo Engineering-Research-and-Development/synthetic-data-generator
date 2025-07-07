@@ -115,7 +115,7 @@ class FunctionDataOut(BaseModel):
 
 
 class GeneratorDataOutput(BaseModel):
-    functions_id: Optional[List[FunctionDataOut]]
+    functions: Optional[List[FunctionDataOut]]
     model: ModelOutput
     n_rows: PositiveInt
     dataset: List[DatasetOutput] | None = None
