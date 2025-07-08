@@ -23,11 +23,12 @@ def try_parse_number(value: str) -> Union[int, float, str]:
 
 
 def determine_column_type(values: list) -> str:
-    return (
-        "continuous"
-        if all(isinstance(v, (int, float)) for v in values)
-        else "categorical"
-    )
+    if all(isinstance(v, (int, float)) for v in values):
+        return "continuous"
+    elif all(isinstance(v, list) for v in values):
+        return "time_series"
+    else:
+        return "categorical"
 
 
 def determine_column_datatype(values: list) -> SupportedDatatypes:
