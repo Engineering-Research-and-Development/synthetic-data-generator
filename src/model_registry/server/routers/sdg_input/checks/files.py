@@ -50,6 +50,8 @@ def check_user_file(user_file: list[dict]) -> list[DatasetOutput]:
     # Create Polars DataFrame
     df = pl.DataFrame(parsed_data)
 
+    # Remove empty columns
+    df = df.drop('')
     outputs = []
     for col in df.columns:
         values = df[col].to_list()
