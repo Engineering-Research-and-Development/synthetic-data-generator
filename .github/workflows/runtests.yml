@@ -1,0 +1,49 @@
+name: Run integration tests
+
+on:
+  schedule:
+    # Ogni giorno alle 08:00 UTC
+    - cron: "0 8 * * *"
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Skip weekends
+        run: |
+          DAY=$(date +%u)
+          if [ "$DAY" -ge 6 ]; then
+            echo "Weekend detected, skipping integration tests."
+            exit 0
+          fi
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start integration services
+        run: docker compose up -d
+        working-directory: .
+
+      - name: Wait for services
+        run: sleep 15
+
+      - name: Build integration test image
+        run: |
+          docker build -t integration-tests:latest .
+        working-directory: ./test
+
+      - name: Run integration tests
+        run: |
+          docker run --rm \
+            --network host \
+            integration-tests:latest
+
+      - name: Stop services
+        if: always()
+        run: docker compose down

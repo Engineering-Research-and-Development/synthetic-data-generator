@@ -52,7 +52,7 @@ services:
     container_name: sdg-middleware
     depends_on:
       - database
-    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:middleware
+    image: ghcr.io/engineering-research-and-development/synthetic_data_generator_middleware:latest
     ports:
       - "8001:8001"
     environment:
@@ -61,15 +61,15 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_DB: "postgres"
-      generator_url: "http://generator:8010"
-      allowed_origins: '*'
+      GENERATOR_URL: "http://generator:8010"
+      ALLOWED_ORIGINS: '*'
 
   generator:
     container_name: sdg-generator
     depends_on:
       - sdg-middleware
       - couchDb
-    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:generator
+    image: ghcr.io/engineering-research-and-development/synthetic_data_generator_server:latest
     environment:
       COUCHDB_USER: "admin"
       COUCHDB_PASSWORD: "password"
@@ -81,6 +81,6 @@ services:
 
   frontend:
     container_name: sdg-frontend
-    image: ghcr.io/engineering-research-and-development/synthetic-data-generator:frontend
+    image: ghcr.io/engineering-research-and-development/synthetic_data_generator_frontend:v0.0.5
     ports:
       - "5173:3000"
