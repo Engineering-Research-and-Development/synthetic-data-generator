@@ -2,8 +2,7 @@ name: Run integration tests
 
 on:
   schedule:
-    # Ogni giorno alle 08:00 UTC
-    - cron: "0 8 * * *"
+    - cron: "30 6 * * 1-5"
 
 jobs:
   integration-tests:
@@ -14,14 +13,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
-      - name: Skip weekends
-        run: |
-          DAY=$(date +%u)
-          if [ "$DAY" -ge 6 ]; then
-            echo "Weekend detected, skipping integration tests."
-            exit 0
-          fi
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
