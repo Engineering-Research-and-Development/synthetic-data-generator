@@ -1,116 +1,616 @@
 {
-  "additional_rows": 100,
-  "functions": [
-  ],
-  "ai_model": {
-    "selected_model_id": 1,
-    "model_version": "0",
-    "new_model": true,
-    "new_model_name": "TimeSeries_Test"
-  },
-  "data": {
-    "input_type": "user_file",
-    "user_file": [
-      { "group_index": 1, "status": "Ok", "score": 85.4, "count": 12 },
-      { "group_index": 1, "status": "Ok", "score": 87.2, "count": 13 },
-      { "group_index": 1, "status": "Non Ok", "score": 72.3, "count": 8 },
-      { "group_index": 1, "status": "Ok", "score": 91.7, "count": 15 },
-      { "group_index": 1, "status": "Ok", "score": 88.2, "count": 11 },
-      { "group_index": 1, "status": "Non Ok", "score": 65.9, "count": 7 },
-      { "group_index": 1, "status": "Ok", "score": 89.5, "count": 14 },
-      { "group_index": 1, "status": "Ok", "score": 86.8, "count": 12 },
-      { "group_index": 1, "status": "Ok", "score": 90.3, "count": 16 },
-      { "group_index": 1, "status": "Non Ok", "score": 68.7, "count": 9 },
-      { "group_index": 1, "status": "Ok", "score": 92.1, "count": 17 },
-      { "group_index": 1, "status": "Ok", "score": 88.9, "count": 13 },
-      { "group_index": 1, "status": "Ok", "score": 87.4, "count": 14 },
-      { "group_index": 1, "status": "Non Ok", "score": 70.2, "count": 8 },
-      { "group_index": 1, "status": "Ok", "score": 89.8, "count": 15 },
-      { "group_index": 1, "status": "Ok", "score": 91.3, "count": 16 },
-      { "group_index": 1, "status": "Ok", "score": 86.5, "count": 12 },
-      { "group_index": 1, "status": "Non Ok", "score": 67.1, "count": 7 },
-      { "group_index": 1, "status": "Ok", "score": 90.7, "count": 15 },
-      { "group_index": 1, "status": "Ok", "score": 88.3, "count": 14 },
-      { "group_index": 2, "status": "Ok", "score": 93.5, "count": 18 },
-      { "group_index": 2, "status": "Ok", "score": 95.2, "count": 20 },
-      { "group_index": 2, "status": "Ok", "score": 94.8, "count": 19 },
-      { "group_index": 2, "status": "Non Ok", "score": 70.8, "count": 9 },
-      { "group_index": 2, "status": "Ok", "score": 96.4, "count": 21 },
-      { "group_index": 2, "status": "Ok", "score": 94.2, "count": 18 },
-      { "group_index": 2, "status": "Ok", "score": 97.1, "count": 22 },
-      { "group_index": 2, "status": "Ok", "score": 95.7, "count": 20 },
-      { "group_index": 2, "status": "Non Ok", "score": 73.4, "count": 10 },
-      { "group_index": 2, "status": "Ok", "score": 96.9, "count": 21 },
-      { "group_index": 2, "status": "Ok", "score": 94.5, "count": 19 },
-      { "group_index": 2, "status": "Ok", "score": 95.8, "count": 20 },
-      { "group_index": 2, "status": "Ok", "score": 93.2, "count": 18 },
-      { "group_index": 2, "status": "Non Ok", "score": 71.9, "count": 9 },
-      { "group_index": 2, "status": "Ok", "score": 97.3, "count": 22 },
-      { "group_index": 2, "status": "Ok", "score": 96.1, "count": 21 },
-      { "group_index": 2, "status": "Ok", "score": 94.7, "count": 19 },
-      { "group_index": 2, "status": "Ok", "score": 95.4, "count": 20 },
-      { "group_index": 2, "status": "Non Ok", "score": 72.6, "count": 10 },
-      { "group_index": 2, "status": "Ok", "score": 96.8, "count": 21 },
-      { "group_index": 3, "status": "Non Ok", "score": 68.7, "count": 6 },
-      { "group_index": 3, "status": "Non Ok", "score": 65.3, "count": 5 },
-      { "group_index": 3, "status": "Ok", "score": 90.3, "count": 17 },
-      { "group_index": 3, "status": "Non Ok", "score": 69.8, "count": 7 },
-      { "group_index": 3, "status": "Ok", "score": 86.5, "count": 13 },
-      { "group_index": 3, "status": "Non Ok", "score": 71.2, "count": 8 },
-      { "group_index": 3, "status": "Ok", "score": 92.8, "count": 18 },
-      { "group_index": 3, "status": "Non Ok", "score": 66.4, "count": 6 },
-      { "group_index": 3, "status": "Ok", "score": 88.9, "count": 15 },
-      { "group_index": 3, "status": "Non Ok", "score": 70.5, "count": 7 },
-      { "group_index": 3, "status": "Ok", "score": 89.7, "count": 16 },
-      { "group_index": 3, "status": "Non Ok", "score": 67.8, "count": 6 },
-      { "group_index": 3, "status": "Ok", "score": 91.4, "count": 17 },
-      { "group_index": 3, "status": "Non Ok", "score": 68.9, "count": 7 },
-      { "group_index": 3, "status": "Ok", "score": 87.2, "count": 14 },
-      { "group_index": 3, "status": "Non Ok", "score": 69.5, "count": 7 },
-      { "group_index": 3, "status": "Ok", "score": 90.1, "count": 16 },
-      { "group_index": 3, "status": "Non Ok", "score": 66.7, "count": 6 },
-      { "group_index": 3, "status": "Ok", "score": 88.3, "count": 15 },
-      { "group_index": 3, "status": "Non Ok", "score": 70.1, "count": 8 },
-      { "group_index": 4, "status": "Ok", "score": 78.9, "count": 10 },
-      { "group_index": 4, "status": "Ok", "score": 79.5, "count": 11 },
-      { "group_index": 4, "status": "Non Ok", "score": 67.4, "count": 5 },
-      { "group_index": 4, "status": "Ok", "score": 80.1, "count": 12 },
-      { "group_index": 4, "status": "Ok", "score": 78.3, "count": 10 },
-      { "group_index": 4, "status": "Non Ok", "score": 73.5, "count": 8 },
-      { "group_index": 4, "status": "Ok", "score": 79.8, "count": 11 },
-      { "group_index": 4, "status": "Ok", "score": 81.2, "count": 12 },
-      { "group_index": 4, "status": "Ok", "score": 78.7, "count": 10 },
-      { "group_index": 4, "status": "Non Ok", "score": 68.9, "count": 6 },
-      { "group_index": 4, "status": "Ok", "score": 80.4, "count": 11 },
-      { "group_index": 4, "status": "Ok", "score": 79.1, "count": 11 },
-      { "group_index": 4, "status": "Ok", "score": 77.9, "count": 10 },
-      { "group_index": 4, "status": "Non Ok", "score": 70.2, "count": 7 },
-      { "group_index": 4, "status": "Ok", "score": 80.8, "count": 12 },
-      { "group_index": 4, "status": "Ok", "score": 79.6, "count": 11 },
-      { "group_index": 4, "status": "Ok", "score": 78.2, "count": 10 },
-      { "group_index": 4, "status": "Non Ok", "score": 69.7, "count": 7 },
-      { "group_index": 4, "status": "Ok", "score": 81.5, "count": 12 },
-      { "group_index": 4, "status": "Ok", "score": 79.3, "count": 11 },
-      { "group_index": 5, "status": "Ok", "score": 91.2, "count": 18 },
-      { "group_index": 5, "status": "Ok", "score": 93.7, "count": 20 },
-      { "group_index": 5, "status": "Ok", "score": 92.4, "count": 19 },
-      { "group_index": 5, "status": "Non Ok", "score": 69.3, "count": 7 },
-      { "group_index": 5, "status": "Ok", "score": 94.1, "count": 21 },
-      { "group_index": 5, "status": "Ok", "score": 91.8, "count": 18 },
-      { "group_index": 5, "status": "Ok", "score": 93.5, "count": 20 },
-      { "group_index": 5, "status": "Ok", "score": 92.9, "count": 19 },
-      { "group_index": 5, "status": "Non Ok", "score": 71.5, "count": 8 },
-      { "group_index": 5, "status": "Ok", "score": 94.8, "count": 21 },
-      { "group_index": 5, "status": "Ok", "score": 91.5, "count": 18 },
-      { "group_index": 5, "status": "Ok", "score": 93.2, "count": 19 },
-      { "group_index": 5, "status": "Ok", "score": 92.6, "count": 19 },
-      { "group_index": 5, "status": "Non Ok", "score": 70.8, "count": 8 },
-      { "group_index": 5, "status": "Ok", "score": 94.5, "count": 21 },
-      { "group_index": 5, "status": "Ok", "score": 91.9, "count": 18 },
-      { "group_index": 5, "status": "Ok", "score": 93.8, "count": 20 },
-      { "group_index": 5, "status": "Ok", "score": 92.1, "count": 19 },
-      { "group_index": 5, "status": "Non Ok", "score": 68.7, "count": 7 },
-      { "group_index": 5, "status": "Ok", "score": 94.2, "count": 20 }
-    ]
-  }
+    "additional_rows": 100,
+    "data": {
+        "input_type": "user_file",
+        "functions": [
+        ],
+        "ai_model": {
+            "selected_model_id": 1,
+            "model_version": "0",
+            "new_model": true,
+            "new_model_name": "TimeSeries_Test"
+        },
+        "user_file": [
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 85.4,
+                "count": 12
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 87.2,
+                "count": 13
+            },
+            {
+                "group_index": 1,
+                "status": "Non Ok",
+                "score": 72.3,
+                "count": 8
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 91.7,
+                "count": 15
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 88.2,
+                "count": 11
+            },
+            {
+                "group_index": 1,
+                "status": "Non Ok",
+                "score": 65.9,
+                "count": 7
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 89.5,
+                "count": 14
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 86.8,
+                "count": 12
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 90.3,
+                "count": 16
+            },
+            {
+                "group_index": 1,
+                "status": "Non Ok",
+                "score": 68.7,
+                "count": 9
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 92.1,
+                "count": 17
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 88.9,
+                "count": 13
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 87.4,
+                "count": 14
+            },
+            {
+                "group_index": 1,
+                "status": "Non Ok",
+                "score": 70.2,
+                "count": 8
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 89.8,
+                "count": 15
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 91.3,
+                "count": 16
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 86.5,
+                "count": 12
+            },
+            {
+                "group_index": 1,
+                "status": "Non Ok",
+                "score": 67.1,
+                "count": 7
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 90.7,
+                "count": 15
+            },
+            {
+                "group_index": 1,
+                "status": "Ok",
+                "score": 88.3,
+                "count": 14
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 93.5,
+                "count": 18
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 95.2,
+                "count": 20
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 94.8,
+                "count": 19
+            },
+            {
+                "group_index": 2,
+                "status": "Non Ok",
+                "score": 70.8,
+                "count": 9
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 96.4,
+                "count": 21
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 94.2,
+                "count": 18
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 97.1,
+                "count": 22
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 95.7,
+                "count": 20
+            },
+            {
+                "group_index": 2,
+                "status": "Non Ok",
+                "score": 73.4,
+                "count": 10
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 96.9,
+                "count": 21
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 94.5,
+                "count": 19
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 95.8,
+                "count": 20
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 93.2,
+                "count": 18
+            },
+            {
+                "group_index": 2,
+                "status": "Non Ok",
+                "score": 71.9,
+                "count": 9
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 97.3,
+                "count": 22
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 96.1,
+                "count": 21
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 94.7,
+                "count": 19
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 95.4,
+                "count": 20
+            },
+            {
+                "group_index": 2,
+                "status": "Non Ok",
+                "score": 72.6,
+                "count": 10
+            },
+            {
+                "group_index": 2,
+                "status": "Ok",
+                "score": 96.8,
+                "count": 21
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 68.7,
+                "count": 6
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 65.3,
+                "count": 5
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 90.3,
+                "count": 17
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 69.8,
+                "count": 7
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 86.5,
+                "count": 13
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 71.2,
+                "count": 8
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 92.8,
+                "count": 18
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 66.4,
+                "count": 6
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 88.9,
+                "count": 15
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 70.5,
+                "count": 7
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 89.7,
+                "count": 16
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 67.8,
+                "count": 6
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 91.4,
+                "count": 17
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 68.9,
+                "count": 7
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 87.2,
+                "count": 14
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 69.5,
+                "count": 7
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 90.1,
+                "count": 16
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 66.7,
+                "count": 6
+            },
+            {
+                "group_index": 3,
+                "status": "Ok",
+                "score": 88.3,
+                "count": 15
+            },
+            {
+                "group_index": 3,
+                "status": "Non Ok",
+                "score": 70.1,
+                "count": 8
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 78.9,
+                "count": 10
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 79.5,
+                "count": 11
+            },
+            {
+                "group_index": 4,
+                "status": "Non Ok",
+                "score": 67.4,
+                "count": 5
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 80.1,
+                "count": 12
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 78.3,
+                "count": 10
+            },
+            {
+                "group_index": 4,
+                "status": "Non Ok",
+                "score": 73.5,
+                "count": 8
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 79.8,
+                "count": 11
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 81.2,
+                "count": 12
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 78.7,
+                "count": 10
+            },
+            {
+                "group_index": 4,
+                "status": "Non Ok",
+                "score": 68.9,
+                "count": 6
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 80.4,
+                "count": 11
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 79.1,
+                "count": 11
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 77.9,
+                "count": 10
+            },
+            {
+                "group_index": 4,
+                "status": "Non Ok",
+                "score": 70.2,
+                "count": 7
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 80.8,
+                "count": 12
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 79.6,
+                "count": 11
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 78.2,
+                "count": 10
+            },
+            {
+                "group_index": 4,
+                "status": "Non Ok",
+                "score": 69.7,
+                "count": 7
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 81.5,
+                "count": 12
+            },
+            {
+                "group_index": 4,
+                "status": "Ok",
+                "score": 79.3,
+                "count": 11
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 91.2,
+                "count": 18
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 93.7,
+                "count": 20
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 92.4,
+                "count": 19
+            },
+            {
+                "group_index": 5,
+                "status": "Non Ok",
+                "score": 69.3,
+                "count": 7
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 94.1,
+                "count": 21
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 91.8,
+                "count": 18
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 93.5,
+                "count": 20
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 92.9,
+                "count": 19
+            },
+            {
+                "group_index": 5,
+                "status": "Non Ok",
+                "score": 71.5,
+                "count": 8
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 94.8,
+                "count": 21
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 91.5,
+                "count": 18
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 93.2,
+                "count": 19
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 92.6,
+                "count": 19
+            },
+            {
+                "group_index": 5,
+                "status": "Non Ok",
+                "score": 70.8,
+                "count": 8
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 94.5,
+                "count": 21
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 91.9,
+                "count": 18
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 93.8,
+                "count": 20
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 92.1,
+                "count": 19
+            },
+            {
+                "group_index": 5,
+                "status": "Non Ok",
+                "score": 68.7,
+                "count": 7
+            },
+            {
+                "group_index": 5,
+                "status": "Ok",
+                "score": 94.2,
+                "count": 20
+            }
+        ]
+    }
 }
