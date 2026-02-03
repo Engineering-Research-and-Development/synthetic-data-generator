@@ -19,4 +19,4 @@ def test_train_sdg_input(filename, raw_payload):
         f"[TRAIN] {filename} failed ({response.status_code}): {response.text}"
     )
 
-    check_pushed_model(payload["ai_model"]["new_model_name"])
+    check_pushed_model(payload["data"]["ai_model"]["new_model_name"])
