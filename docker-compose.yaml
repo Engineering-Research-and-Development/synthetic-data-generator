@@ -76,6 +76,7 @@ services:
       COUCHDB_DB: "model_results"
       COUCHDB_HOST: "couch"
       MIDDLEWARE_URL: "http://sdg-middleware:8001/"
+      EPOCHS: 1
     ports:
       - "8010:8010"
 
