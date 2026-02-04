@@ -5,7 +5,7 @@
         "functions": [
         ],
         "ai_model": {
-            "selected_model_id": 2,
+            "selected_model_id": 3,
             "model_version": "0",
             "new_model": true,
             "new_model_name": "test_name"
